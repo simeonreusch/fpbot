@@ -56,7 +56,6 @@ def plot_lightcurve(ztf_name, SNT=4.0, logger=None):
 	now = Time(time.time(), format='unix', scale='utc').mjd
 	t0_dist = np.asarray(lc.obsmjd.values - now)
 	lc.insert(2, "t0_dist",  t0_dist)
-	lc.to_csv('test.csv')
 	uplim = lc.query("mag == 99")
 	lc = lc.query("mag < 99")
 	len_after_sn_cut = len(lc)

@@ -10,7 +10,7 @@ from ztflc import forcephotometry
 from astropy.time import Time
 from datetime import datetime, date
 logger = logging.getLogger('forced_photometry')
-hdlr = logging.FileHandler('./forced_photometry_log')
+hdlr = logging.FileHandler('./forced_photometry.log')
 logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
@@ -45,7 +45,7 @@ do_saltfit = commandline_args.saltfit
 if rl or do_fit or not no_dl:
 	print('Connect to AMPEL to obtain ra and dec of {}'.format(ztf_name))
 	try:
-		from ztflc import ampel_connector
+		import ampel_connector
 	except:
 		quit()
 	ras, decs = ampel_connector.get_ra_dec(ztf_name)

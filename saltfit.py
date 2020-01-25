@@ -47,7 +47,7 @@ class SaltFit( object ):
 			fname = bands[bandname]
 			b = np.loadtxt(fname)
 			band = sncosmo.Bandpass(b[:,0], b[:,1], name=bandname)
-			sncosmo.registry.register(band)
+			sncosmo.registry.register(band, force=True)
 
 	@staticmethod
 	def get_mwebv(self):
@@ -66,17 +66,24 @@ class SaltFit( object ):
 		salt_model.set(z = self.z)
 		salt_model.set(mwebv  = self.mwebv)
 		self.load_ztf_filters()
-		self.fitresult, self.fitted_model = sncosmo.fit_lc(lc_sncosmo, salt_model, ['t0', 'x0', 'x1', 'c'], phase_range=(-30., 50.), minsnr=self.snt)
-		if self.fitresult.success is True:
+		try:
+			self.fitresult, self.fitted_model = sncosmo.fit_lc(lc_sncosmo, salt_model, ['t0', 'x0', 'x1', 'c'], phase_range=(-30., 50.), minsnr=self.snt)
+			import matplotlib.pyplot as plt
+			fig = sncosmo.plot_lc(lc_sncosmo, model=self.fitted_model, errors=self.fitresult.errors, figtext=str(self.ztf_name))
+			plotdir = os.path.join(LOCALDATA, 'SALT')
+			if not os.path.exists(plotdir):
+				os.makedirs(plotdir)
+			plt.savefig(os.path.join(os.path.join(plotdir, '{}_SALT.png'.format(self.ztf_name))))
+			plt.close(fig)
+			self.logger.info("{} Plotted.".format(self.ztf_name))
+		except:
+			self.logger.info("{} Fit exited with error".format(self.ztf_name))
+			self.fitresult = sncosmo.utils.Result({'name': self.ztf_name, 'success': False})
+			self.fitted_model = None
+			return
+		if 	self.fitresult.success is True:
 			self.logger.info("{} Fit succeeded!".format(self.ztf_name))
-		import matplotlib.pyplot as plt
-		fig = sncosmo.plot_lc(lc_sncosmo, model=self.fitted_model, errors=self.fitresult.errors, figtext=str(self.ztf_name))
-		plotdir = os.path.join(LOCALDATA, 'SALT')
-		if not os.path.exists(plotdir):
-			os.makedirs(plotdir)
-		plt.savefig(os.path.join(os.path.join(plotdir, '{}_SALT.png'.format(self.ztf_name))))
-		plt.close(fig)
-		self.logger.info("{} Plotted.".format(self.ztf_name))
+
 
 def fit_salt(ztf_name, logger=None):
 	saltfit = SaltFit(ztf_name, plot=True, logger=logger)
