@@ -28,7 +28,8 @@ The basic file is forced_photometry.py, which can be run using different flags. 
 
 `./forced_photometry.py supernovae.txt -dl -fit -filecheck` loads images for all ZTF objects found in supernovae.txt and then performs a full filecheck on all images downloaded by ztfquery (not only the ones in the textfile).
 
-Requirements:
+## Requirements
+
 - [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC. 
 - [ztflc](https://github.com/mickaelrigault/ztflc) is used for PSF-fitting.
 - Either Marshal credentials or a connection to AMPEL are neccessary for determining object ra and dec.
