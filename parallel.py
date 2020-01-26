@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+# Author: Simeon Reusch (simeon.reusch@desy.de)
+# License: BSD-3-Clause
+
 import multiprocessing, time, os, argparse, sys
 from ztflc import forcephotometry
 from ztflc.io import LOCALDATA
 import numpy as np
-from astropy.time import Time
 import ztfquery
 import pandas as pd
 
@@ -18,9 +20,6 @@ logger.setLevel(logging.INFO)
 
 parser = argparse.ArgumentParser(description='Used to obtain forced photometry for selection of SNe in parallel')
 parser.add_argument('name', type=str, help='Provide a ZTF name (e.g. "ZTF19aaelulu") or a .txt-file containing a list of ZTF names')
-# parser.add_argument('-file', type=str, default="sne.txt", help="Specify a textfile containing a list of ZTF names. Default: sne.txt")
-# parser.add_argument('-name', type=str, help="Specify a ZTF name")
-# parser.add_argument('-names', type=str, help="Specify a list with several ZTF names")
 parser.add_argument('-nprocess', type=int, default=4, help="Number of parallel threads. Default: 4")
 parser.add_argument('-dl', action='store_true', help="Download the files from IPAC")
 parser.add_argument('-fit', action='store_true', help="Fit and plot the lightcurve")
@@ -49,17 +48,12 @@ def fp(ztf_name):
 	if do_fit:
 		try:
 			logger.info('Connect to AMPEL to obtain ra and dec of {}'.format(ztf_name))
-			from ztflc import ampel_connector
-			ras, decs = ampel_connector.get_ra_dec(ztf_name)
-			ra = np.median(ras)
-			dec = np.median(decs)
-			now = Time(time.time(), format='unix', scale='utc').jd
-			jdmin = 2457388
-			jdmax = now
-			fp = forcephotometry.ForcePhotometry.from_coords(ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=ztf_name)
+			import ampel_connector
+			ampel = ampel_connector.AmpelConnector(ztf_name)
+			ampel.get_info(ztf_name)
+			fp = forcephotometry.ForcePhotometry.from_coords(ra=ampel.ra, dec=ampel.dec, jdmin=ampel.jdmin, jdmax=ampel.jdmax, name=ztf_name)
 			fp.load_metadata()
 			fp.load_filepathes()
-			SNT = 4.0
 			logger.info('{} Fitting PSF'.format(ztf_name))
 			import matplotlib.pyplot as plt
 			fp.run_forcefit(verbose=True)
@@ -73,7 +67,7 @@ def fp(ztf_name):
 			fp.store()
 			print('{} Plotting lightcurve'.format(ztf_name))
 			from plot import plot_lightcurve
-			plot_lightcurve(ztf_name, SNT)
+			plot_lightcurve(ztf_name, SNT=4.0)
 			logger.info('{} successfully fitted and plotted'.format(ztf_name))
 		except:
 			logger.error('{} ERROR while fitting and plotting'.format(ztf_name))
@@ -103,25 +97,14 @@ else:
 print("Doing forced photometry for {} SNe".format(len(sne_list)))
 print("logs are store in forced_photometry.log")
 
-sne_before_cleanup = len(sne_list)
-sne_list = check_data(sne_list)
-print("{} of {} SNe have lightcurves available".format(len(sne_list), sne_before_cleanup))
-
 if do_download:
 	print('Connecting to AMPEL database')
-	try:
-		from ztflc import ampel_connector
-	except:
-		quit()
+	import ampel_connector
 	for ztf_name in sne_list:
 		logger.info("{} obtaining ra/dec from AMPEL".format(ztf_name))
-		ras, decs = ampel_connector.get_ra_dec(ztf_name)
-		ra = np.median(ras)
-		dec = np.median(decs)
-		now = Time(time.time(), format='unix', scale='utc').jd
-		jdmin = 2457388
-		jdmax = now
-		fp = forcephotometry.ForcePhotometry.from_coords(ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=ztf_name)
+		ampel = ampel_connector.AmpelConnector(ztf_name)
+		ampel.get_info(ztf_name)
+		fp = forcephotometry.ForcePhotometry.from_coords(ra=ampel.ra, dec=ampel.dec, jdmin=ampel.jdmin, jdmax=ampel.jdmax, name=ztf_name)
 		logger.info('{} Downloading data'.format(ztf_name))
 		fp.load_metadata()
 		# fp.load_filepathes(filecheck=False)
@@ -131,7 +114,10 @@ if do_filecheck:
 	print("Running filecheck. This can take several hours.")
 	badfiles = ztfquery.io.run_full_filecheck(erasebad=True, nprocess=nprocess, redownload=True)
 	print(badfiles)
-	quit()
+
+sne_before_cleanup = len(sne_list)
+sne_list = check_data(sne_list)
+print("{} of {} SNe have lightcurves available. The objects are either missing from IPAC or you have to download them first (-dl parameter)".format(len(sne_list), sne_before_cleanup))
 
 # TODO: pass logger
 with multiprocessing.Pool(nprocess) as pool:
@@ -152,7 +138,7 @@ if do_saltfit:
 	savepath = os.path.join(LOCALDATA, 'SALT', 'SALT_FIT.csv')
 	fitresult_df.to_csv(savepath)
 
-print("{} of {} fits were successful\n".format(len(fitresult_df), len(sne_list)))
-endtime = time.time()
-duration = endtime - startime
-print("The script took {:.1f} minutes".format(duration/60))
+	print("{} of {} fits were successful\n".format(len(fitresult_df), len(sne_list)))
+	endtime = time.time()
+	duration = endtime - startime
+	print("The script took {:.1f} minutes".format(duration/60))
