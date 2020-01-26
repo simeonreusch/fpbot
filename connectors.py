@@ -8,7 +8,7 @@ import numpy as np
 from astropy.time import Time
 
 class AmpelConnector():
-    def __init__(self, ztf_name, logger=None, **kwargs):
+    def __init__(self, ztf_name, logger=None):
         if logger is None:
             logging.basicConfig(level = logging.INFO)
             self.logger = logging.getLogger()
@@ -69,3 +69,6 @@ class AmpelConnector():
         now = Time(time.time(), format='unix', scale='utc').jd
         self.jdmin = 2457388
         self.jdmax = now
+
+class MarshalConnector():
+    def __init__(self, ztf_name, logger=None)
