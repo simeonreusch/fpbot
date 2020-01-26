@@ -13,7 +13,7 @@ m = marshal.MarshalAccess()
 # m.load_target_sources("Cosmology")
 m = m.load_local("Cosmology")
 
-class SaltFit( object ):
+class SaltFit():
 	def __init__(self, ztf_name, logger=None, **kwargs):
 		if logger is None:
 			logging.basicConfig(level = logging.INFO)
