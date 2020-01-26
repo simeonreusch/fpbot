@@ -60,16 +60,16 @@ def fp(ztf_name):
 		logger.info('{} Fitting PSF'.format(ztf_name))
 		import matplotlib.pyplot as plt
 		try:
-			fp.run_forcefit(verbose=True)
-			fig = plt.figure(dpi = 300)
-			ax = fig.add_subplot(111)
-			fp.show_lc(ax=ax)
-			plotdir = os.getenv("ZTFDATA", "forcephotometry")
-			if not os.path.exists(plotdir):
-				os.makedirs(plotdir)
-			fig.savefig(os.path.join(plotdir, "{}_flux.png".format(ztf_name)))
-			fp.store()
-			print('{} Plotting lightcurve'.format(ztf_name))
+			# fp.run_forcefit(verbose=True)
+			# fig = plt.figure(dpi = 300)
+			# ax = fig.add_subplot(111)
+			# fp.show_lc(ax=ax)
+			# plotdir = os.getenv("ZTFDATA", "forcephotometry")
+			# if not os.path.exists(plotdir):
+			# 	os.makedirs(plotdir)
+			# fig.savefig(os.path.join(plotdir, "{}_flux.png".format(ztf_name)))
+			# fp.store()
+			# print('{} Plotting lightcurve'.format(ztf_name))
 			from plot import plot_lightcurve
 			plot_lightcurve(ztf_name, SNT=4.0)
 			logger.info('{} successfully fitted and plotted'.format(ztf_name))

@@ -78,7 +78,7 @@ def plot_lightcurve(ztf_name, SNT=4.0, logger=None):
 		return t0 + dist_to_t0
 
 	# plot
-	fig, ax = plt.subplots(1,1, figsize = [12,4])
+	fig, ax = plt.subplots(1,1, figsize = [14,4.2])
 	fig.subplots_adjust(top=0.8)
 	ax2 = ax.secondary_xaxis('top', functions=(t0_dist, t0_to_mjd))
 	ax2.set_xlabel("Days from {}".format(date.today()))
@@ -100,4 +100,4 @@ def plot_lightcurve(ztf_name, SNT=4.0, logger=None):
 	ax.set_ylim([23,15.5])
 	ax.legend(loc=0, framealpha=1, title="SNT={:.0f}".format(SNT), fontsize='small', title_fontsize="small")
 	lc_plot_path = os.path.join(lc_plotdir, "{}_SNT_{}.png".format(ztf_name, SNT))
-	fig.savefig(lc_plot_path, dpi=300)
+	fig.savefig(lc_plot_path, dpi=300, bbox_inches = "tight")
