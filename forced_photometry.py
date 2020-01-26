@@ -109,13 +109,16 @@ if do_download:
 	import connectors
 	for ztf_name in sne_list:
 		logger.info("{} obtaining ra/dec from AMPEL".format(ztf_name))
-		ampel = connectors.AmpelConnector(ztf_name)
-		ampel.get_info()
-		fp = forcephotometry.ForcePhotometry.from_coords(ra=ampel.ra, dec=ampel.dec, jdmin=ampel.jdmin, jdmax=ampel.jdmax, name=ztf_name)
+		try:
+			connector = connectors.AmpelConnector(ztf_name)
+		except sqlalchemy.exc.OperationalError:
+			print("AMPEL connection failed, trying MARSHAL")
+			connector = connectors.MarshalConnector(ztf_name)
+		connector.get_info()
+		fp = forcephotometry.ForcePhotometry.from_coords(ra=connector.ra, dec=connector.dec, jdmin=connector.jdmin, jdmax=connector.jdmax, name=ztf_name)
 		logger.info('{} Downloading data'.format(ztf_name))
 		fp.load_metadata()
-		# fp.load_filepathes(filecheck=False)
-		fp.io.download_data(nprocess=32, overwrite=False, show_progress=True, verbose=False)
+		fp.io.download_data(nprocess=32, overwrite=False, show_progress=True, verbose=False, ignore_warnings=True)
 
 if do_filecheck:
 	print("Running filecheck. This can take several hours.")
