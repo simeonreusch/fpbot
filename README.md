@@ -22,7 +22,7 @@ The basic file is forced_photometry.py, which can be run using different flags. 
 
 `-filecheck` Checks all images downloaded for data integrity and redownloads corrupt images.
 
-**Examples:
+**Examples**:
 
 `./forced_photometry.py ZTF18abtmbaz -dl -fit -saltfit -nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
 
