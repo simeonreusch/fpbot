@@ -113,3 +113,6 @@ class MarshalConnector():
             self.ra = np.median(ras[ind])
             self.dec = np.median(decs[ind])
             self.jd = np.median(jds[ind])
+        now = Time(time.time(), format='unix', scale='utc').jd
+        self.jdmin = 2457388
+        self.jdmax = now

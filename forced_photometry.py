@@ -2,14 +2,13 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import multiprocessing, time, os, argparse, sys
+import multiprocessing, time, os, argparse, sys, logging, sqlalchemy
 from ztflc import forcephotometry
 from ztflc.io import LOCALDATA
 import numpy as np
 import ztfquery
 import pandas as pd
 
-import logging
 logger = logging.getLogger('parallel')
 hdlr = logging.FileHandler('./forced_photometry.log')
 logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
@@ -46,16 +45,21 @@ def check_data(sne_list):
 
 def fp(ztf_name):
 	if do_fit:
+		logger.info('Connect to AMPEL or MARSHAL to obtain ra and dec of {}'.format(ztf_name))
+		import connectors
 		try:
-			logger.info('Connect to AMPEL to obtain ra and dec of {}'.format(ztf_name))
-			import connectors
-			ampel = connectors.AmpelConnector(ztf_name)
-			ampel.get_info()
-			fp = forcephotometry.ForcePhotometry.from_coords(ra=ampel.ra, dec=ampel.dec, jdmin=ampel.jdmin, jdmax=ampel.jdmax, name=ztf_name)
-			fp.load_metadata()
-			fp.load_filepathes()
-			logger.info('{} Fitting PSF'.format(ztf_name))
-			import matplotlib.pyplot as plt
+			connector = connectors.AmpelConnector(ztf_name)
+			connector.get_info()
+		except sqlalchemy.exc.OperationalError:
+			print("AMPEL connection failed, trying MARSHAL")
+			connector = connectors.MarshalConnector(ztf_name)
+			connector.get_info()
+		fp = forcephotometry.ForcePhotometry.from_coords(ra=connector.ra, dec=connector.dec, jdmin=connector.jdmin, jdmax=connector.jdmax, name=ztf_name)
+		fp.load_metadata()
+		fp.load_filepathes(filecheck=False)
+		logger.info('{} Fitting PSF'.format(ztf_name))
+		import matplotlib.pyplot as plt
+		try:
 			fp.run_forcefit(verbose=True)
 			fig = plt.figure(dpi = 300)
 			ax = fig.add_subplot(111)
