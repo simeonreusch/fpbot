@@ -80,7 +80,7 @@ def fp(ztf_name):
 ### MAIN ###
 
 #TO DO: docstrings, ordentliches logging, funktionen auslagern
-startime = time.time() 
+startime = time.time()
 
 if name[:3] == "ZTF" and len(name) == 12:
 	sne_list = [name]
