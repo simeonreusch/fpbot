@@ -72,6 +72,19 @@ class SaltFit( object ):
 			self.fitresult['name'] = self.ztf_name
 			self.fitresult['peak_mag'] = self.fitted_model.source_peakmag(band = 'p48g', magsys = 'ab')
 			self.fitresult['peak_abs_mag'] = self.fitted_model.source_peakabsmag(band = 'p48g', magsys = 'ab', cosmo = cosmo)
+			self.fitted_model.parameters[2] = self.fitted_model.parameters[2] + self.fitresult.errors['x0']
+			self.fitted_model.parameters[3] = self.fitted_model.parameters[3] + self.fitresult.errors['x1']
+			self.fitted_model.parameters[4] = self.fitted_model.parameters[4] + self.fitresult.errors['c']
+			self.fitresult['peak_mag_upper'] = self.fitted_model.source_peakmag(band = 'p48g', magsys = 'ab')
+			self.fitresult['peak_abs_mag_upper'] = self.fitted_model.source_peakabsmag(band = 'p48g', magsys = 'ab', cosmo = cosmo)
+			self.fitted_model.parameters[2] = self.fitted_model.parameters[2] - 2*self.fitresult.errors['x0']
+			self.fitted_model.parameters[3] = self.fitted_model.parameters[3] - 2*self.fitresult.errors['x1']
+			self.fitted_model.parameters[4] = self.fitted_model.parameters[4] - 2*self.fitresult.errors['c']
+			self.fitresult['peak_mag_lower'] = self.fitted_model.source_peakmag(band = 'p48g', magsys = 'ab')
+			self.fitresult['peak_abs_mag_lower'] = self.fitted_model.source_peakabsmag(band = 'p48g', magsys = 'ab', cosmo = cosmo)
+			self.fitted_model.parameters[2] = self.fitted_model.parameters[2] + self.fitresult.errors['x0']
+			self.fitted_model.parameters[3] = self.fitted_model.parameters[3] + self.fitresult.errors['x1']
+			self.fitted_model.parameters[4] = self.fitted_model.parameters[4] + self.fitresult.errors['c']
 			import matplotlib.pyplot as plt
 			fig = sncosmo.plot_lc(lc_sncosmo, model=self.fitted_model, errors=self.fitresult.errors, figtext=str(self.ztf_name))
 			plotdir = os.path.join(LOCALDATA, 'SALT')

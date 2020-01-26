@@ -28,7 +28,7 @@ commandline_args = parser.parse_args()
 nprocess = commandline_args.nprocess
 name = commandline_args.name
 do_download = commandline_args.dl
-do_fit = commandline_args.fit
+do_psffit = commandline_args.fit
 do_saltfit = commandline_args.saltfit
 do_filecheck = commandline_args.filecheck
 
@@ -44,7 +44,7 @@ def check_data(sne_list):
 
 
 def fp(ztf_name):
-	if do_fit:
+	if do_psffit:
 		logger.info('Connect to AMPEL or MARSHAL to obtain ra and dec of {}'.format(ztf_name))
 		import connectors
 		try:
@@ -60,16 +60,16 @@ def fp(ztf_name):
 		logger.info('{} Fitting PSF'.format(ztf_name))
 		import matplotlib.pyplot as plt
 		try:
-			# fp.run_forcefit(verbose=True)
-			# fig = plt.figure(dpi = 300)
-			# ax = fig.add_subplot(111)
-			# fp.show_lc(ax=ax)
-			# plotdir = os.getenv("ZTFDATA", "forcephotometry")
-			# if not os.path.exists(plotdir):
-			# 	os.makedirs(plotdir)
-			# fig.savefig(os.path.join(plotdir, "{}_flux.png".format(ztf_name)))
-			# fp.store()
-			# print('{} Plotting lightcurve'.format(ztf_name))
+			fp.run_forcefit(verbose=True)
+			fig = plt.figure(dpi = 300)
+			ax = fig.add_subplot(111)
+			fp.show_lc(ax=ax)
+			plotdir = os.getenv("ZTFDATA", "forcephotometry")
+			if not os.path.exists(plotdir):
+				os.makedirs(plotdir)
+			fig.savefig(os.path.join(plotdir, "{}_flux.png".format(ztf_name)))
+			fp.store()
+			print('{} Plotting lightcurve'.format(ztf_name))
 			from plot import plot_lightcurve
 			plot_lightcurve(ztf_name, SNT=4.0)
 			logger.info('{} successfully fitted and plotted'.format(ztf_name))
@@ -122,10 +122,12 @@ if do_filecheck:
 	badfiles = ztfquery.io.run_full_filecheck(erasebad=True, nprocess=nprocess, redownload=True)
 	print(badfiles)
 
-if not do_fit:
+if not do_psffit:
 	sne_before_cleanup = len(sne_list)
 	sne_list = check_data(sne_list)
-	print("{} of {} SNe have lightcurves available. The objects are either missing from IPAC or you have to download them first (-dl parameter)".format(len(sne_list), sne_before_cleanup))
+	sne_after_cleanup = len(sne_list)
+	if sne_after_cleanup < sne_before_cleanup:
+		print("{} of {} SNe have lightcurves available. The objects are either missing from IPAC or you have to download them first (-dl parameter)".format(len(sne_list), sne_before_cleanup))
 
 # TODO: pass logger
 with multiprocessing.Pool(nprocess) as pool:
@@ -135,12 +137,12 @@ with multiprocessing.Pool(nprocess) as pool:
 		pool.map(fp, sne_list)
 	
 if do_saltfit:
-	fitresult_df = pd.DataFrame(columns=['name', 'chisquare', 'ndof', 'red_chisq', 'z', 't0', 't0_err', 'x0', 'x0_err', 'x1', 'x1_err', 'c', 'c_err', 'peak_mag', 'peak_abs_mag'])
+	fitresult_df = pd.DataFrame(columns=['name', 'chisquare', 'ndof', 'red_chisq', 'z', 't0', 't0_err', 'x0', 'x0_err', 'x1', 'x1_err', 'c', 'c_err', 'peak_mag', 'peak_abs_mag', 'peak_mag_upper', 'peak_mag_lower', 'peak_abs_mag_upper', 'peak_abs_mag_lower'])
 
 	for fitresult in result:
 		if fitresult[0]['success'] is True:
-			name, chisquare, ndof, z, t0, x0, x1, c, t0_err, x0_err, x1_err, c_err, peak_mag, peak_abs_mag = fitresult[0]['name'], fitresult[0]['chisq'], fitresult[0]['ndof'], fitresult[0]['parameters'][0], fitresult[0]['parameters'][1], fitresult[0]['parameters'][2], fitresult[0]['parameters'][3], fitresult[0]['parameters'][4], fitresult[0]['errors']['t0'], fitresult[0]['errors']['x0'], fitresult[0]['errors']['x1'], fitresult[0]['errors']['c'], fitresult[0]['peak_mag'], fitresult[0]['peak_abs_mag']
-			results = pd.Series([name, chisquare, ndof, chisquare/ndof if ndof > 0 else 999, z, t0, t0_err, x0, x0_err, x1, x1_err, c, c_err, peak_mag, peak_abs_mag], index=fitresult_df.columns)
+			name, chisquare, ndof, z, t0, x0, x1, c, t0_err, x0_err, x1_err, c_err, peak_mag, peak_abs_mag, peak_mag_upper, peak_mag_lower, peak_abs_mag_upper, peak_abs_mag_lower = fitresult[0]['name'], fitresult[0]['chisq'], fitresult[0]['ndof'], fitresult[0]['parameters'][0], fitresult[0]['parameters'][1], fitresult[0]['parameters'][2], fitresult[0]['parameters'][3], fitresult[0]['parameters'][4], fitresult[0]['errors']['t0'], fitresult[0]['errors']['x0'], fitresult[0]['errors']['x1'], fitresult[0]['errors']['c'], fitresult[0]['peak_mag'], fitresult[0]['peak_abs_mag'], fitresult[0]['peak_mag_upper'], fitresult[0]['peak_mag_lower'], fitresult[0]['peak_abs_mag_upper'], fitresult[0]['peak_abs_mag_lower']
+			results = pd.Series([name, chisquare, ndof, chisquare/ndof if ndof > 0 else 999, z, t0, t0_err, x0, x0_err, x1, x1_err, c, c_err, peak_mag, peak_abs_mag, peak_mag_upper, peak_mag_lower, peak_abs_mag_upper, peak_abs_mag_lower], index=fitresult_df.columns)
 			fitresult_df = fitresult_df.append(results, ignore_index=True)
 
 	savepath = os.path.join(LOCALDATA, 'SALT', 'SALT_FIT.csv')
@@ -150,3 +152,4 @@ if do_saltfit:
 	endtime = time.time()
 	duration = endtime - startime
 	print("The script took {:.1f} minutes".format(duration/60))
+	print(fitresult_df)
