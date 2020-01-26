@@ -1,5 +1,15 @@
 # ztffps
 
+Provides a forced photometry pipeline based on ztfquery and ztflc.
+
+## Installation
+
+The majority of required packages can be installed with the command:
+
+```pip install -r requirements.txt```
+
+## Usage
+
 The basic file is forced_photometry.py, which can be run using different flags. A ZTF name always has to be provided (or a textfile containing one ZTF name in each line)
 
 `-dl`        Downloads the images used for forced photometry from IPAC. Needs a valid IPAC account.
