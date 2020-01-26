@@ -31,3 +31,4 @@ Examples:
 Requirements:
 - [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC. 
 - [ztflc](https://github.com/mickaelrigault/ztflc) is used for PSF-fitting.
+- Either Marshal credentials or a connection to AMPEL are neccessary for determining object ra and dec.
