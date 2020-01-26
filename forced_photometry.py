@@ -48,9 +48,9 @@ def fp(ztf_name):
 	if do_fit:
 		try:
 			logger.info('Connect to AMPEL to obtain ra and dec of {}'.format(ztf_name))
-			import ampel_connector
-			ampel = ampel_connector.AmpelConnector(ztf_name)
-			ampel.get_info(ztf_name)
+			import connectors
+			ampel = connectors.AmpelConnector(ztf_name)
+			ampel.get_info()
 			fp = forcephotometry.ForcePhotometry.from_coords(ra=ampel.ra, dec=ampel.dec, jdmin=ampel.jdmin, jdmax=ampel.jdmax, name=ztf_name)
 			fp.load_metadata()
 			fp.load_filepathes()
@@ -82,6 +82,8 @@ def fp(ztf_name):
 #TO DO: docstrings, ordentliches logging, funktionen auslagern
 startime = time.time()
 
+
+
 if name[:3] == "ZTF" and len(name) == 12:
 	sne_list = [name]
 	nprocess=1
@@ -95,15 +97,16 @@ else:
 	assert sne_list[0][:3] == "ZTF" and len(sne_list[0]) == 12, "You have to provide either a ZTF name or a file containing ZTF names (1 per line)"
 
 print("Doing forced photometry for {} SNe".format(len(sne_list)))
-print("logs are store in forced_photometry.log")
+print("Logs are store in forced_photometry.log")
+
 
 if do_download:
 	print('Connecting to AMPEL database')
-	import ampel_connector
+	import connectors
 	for ztf_name in sne_list:
 		logger.info("{} obtaining ra/dec from AMPEL".format(ztf_name))
-		ampel = ampel_connector.AmpelConnector(ztf_name)
-		ampel.get_info(ztf_name)
+		ampel = connectors.AmpelConnector(ztf_name)
+		ampel.get_info()
 		fp = forcephotometry.ForcePhotometry.from_coords(ra=ampel.ra, dec=ampel.dec, jdmin=ampel.jdmin, jdmax=ampel.jdmax, name=ztf_name)
 		logger.info('{} Downloading data'.format(ztf_name))
 		fp.load_metadata()
@@ -115,9 +118,10 @@ if do_filecheck:
 	badfiles = ztfquery.io.run_full_filecheck(erasebad=True, nprocess=nprocess, redownload=True)
 	print(badfiles)
 
-sne_before_cleanup = len(sne_list)
-sne_list = check_data(sne_list)
-print("{} of {} SNe have lightcurves available. The objects are either missing from IPAC or you have to download them first (-dl parameter)".format(len(sne_list), sne_before_cleanup))
+if not do_fit:
+	sne_before_cleanup = len(sne_list)
+	sne_list = check_data(sne_list)
+	print("{} of {} SNe have lightcurves available. The objects are either missing from IPAC or you have to download them first (-dl parameter)".format(len(sne_list), sne_before_cleanup))
 
 # TODO: pass logger
 with multiprocessing.Pool(nprocess) as pool:

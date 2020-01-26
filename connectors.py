@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-# Author: Simeon Reusch (simeon.reusch@desy.de)
+# Author: Simeon Reusch (simeon.reusch@desy.de); MarshalConnector based on code by Nora Linn Strotjohann (nora.linn.strotjohann@gmail.com)
 # License: BSD-3-Clause
 
 import os, getpass, socket, sqlalchemy, logging, time
 from ampel.ztf.archive.ArchiveDB import ArchiveDB
 import numpy as np
 from astropy.time import Time
+import ztfquery
+
+MARSHAL_BASEURL = "http://skipper.caltech.edu:8080/cgi-bin/growth/view_avro.cgi?name="
 
 class AmpelConnector():
     def __init__(self, ztf_name, logger=None):
@@ -54,7 +57,7 @@ class AmpelConnector():
             raise e
 
 
-    def get_info(self, ztf_name):
+    def get_info(self):
         ztf_object = self.ampel_client.get_alerts_for_object(self.ztf_name, with_history=True)
         query_res = [i for i in ztf_object]
         ras = []
@@ -71,4 +74,42 @@ class AmpelConnector():
         self.jdmax = now
 
 class MarshalConnector():
-    def __init__(self, ztf_name, logger=None)
+    def __init__(self, ztf_name, logger=None):
+        self.auth = ztfquery.io._load_id_("marshal")
+        self.ztf_name = ztf_name
+        self.url = MARSHAL_BASEURL + self.ztf_name
+        
+
+    def get_info(self):
+        import requests
+        import pandas as pd
+
+        request = requests.get(self.url, auth=self.auth)
+        tables = pd.read_html(request.content)
+        mtb = tables[len(tables)-1]
+        ndet = len(mtb)
+
+        if ndet == 0:
+            self.ra = 999
+            self.dec = 999
+            self.jd = 999
+        else:
+            ra = np.zeros(ndet)
+            dec = np.zeros(ndet)
+            jd = np.zeros(ndet)
+            for i in range(ndet):
+                line = mtb.values[i][0].split(",")
+                for j in range(len(line)):
+                    if line[j][:7] == '  "ra":':
+                        ra[i] = float(line[j].split(':')[1])
+                    if line[j][:8] == '  "dec":':
+                        dec[i] = float(line[j].split(':')[1])
+                    if line[j][:7] == '  "jd":':
+                        jd[i] = float(line[j].split(':')[1])
+            ras = ra[ra!=0]
+            decs = dec[ra!=0]
+            jds = jd[ra!=0]
+            ind = np.argsort(jds)
+            self.ra = np.median(ras[ind])
+            self.dec = np.median(decs[ind])
+            self.jd = np.median(jds[ind])
