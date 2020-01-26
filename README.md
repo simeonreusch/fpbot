@@ -17,5 +17,5 @@ Example:
 `./forced_photometry.py ZTF18abtmbaz -dl -fit -saltfit -nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
 
 Requirements:
-- [ztfquery](https://github.com/mickaelrigault/ztfquery) has to be up and running. It's used to download the image files from IPAC. 
+- [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC. 
 - [ztflc](https://github.com/mickaelrigault/ztflc) is used for PSF-fitting.
