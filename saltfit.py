@@ -42,7 +42,7 @@ class SaltFit( object ):
 		self.lightcurve["Fratio_unc"] = np.sqrt( (self.lightcurve["ampl.err"] / self.lightcurve.F0)**2 + (self.lightcurve.ampl * self.lightcurve["F0.err"] / self.lightcurve.F0**2)**2 )
 
 	def load_ztf_filters(self):
-		bands = {'p48r' : 'ztfr_eff.txt', 'p48g' : 'ztfg_eff.txt'}
+		bands = {'p48r' : 'data/ztfr_eff.txt', 'p48g' : 'data/ztfg_eff.txt'}
 		for bandname in bands.keys():
 			fname = bands[bandname]
 			b = np.loadtxt(fname)
@@ -57,6 +57,7 @@ class SaltFit( object ):
 
 	def fit(self, snt=4, **kwargs):
 		from astropy.table import Table
+		from astropy.cosmology import Planck15 as cosmo 
 		self.snt = snt
 		dust = sncosmo.CCM89Dust()
 		self.modify_columns(self)
@@ -68,6 +69,9 @@ class SaltFit( object ):
 		self.load_ztf_filters()
 		try:
 			self.fitresult, self.fitted_model = sncosmo.fit_lc(lc_sncosmo, salt_model, ['t0', 'x0', 'x1', 'c'], phase_range=(-30., 50.), minsnr=self.snt)
+			self.fitresult['name'] = self.ztf_name
+			self.fitresult['peak_mag'] = self.fitted_model.source_peakmag(band = 'p48g', magsys = 'ab')
+			self.fitresult['peak_abs_mag'] = self.fitted_model.source_peakabsmag(band = 'p48g', magsys = 'ab', cosmo = cosmo)
 			import matplotlib.pyplot as plt
 			fig = sncosmo.plot_lc(lc_sncosmo, model=self.fitted_model, errors=self.fitresult.errors, figtext=str(self.ztf_name))
 			plotdir = os.path.join(LOCALDATA, 'SALT')
@@ -88,5 +92,4 @@ class SaltFit( object ):
 def fit_salt(ztf_name, logger=None):
 	saltfit = SaltFit(ztf_name, plot=True, logger=logger)
 	saltfit.fit(snt=4)
-	saltfit.fitresult['name'] = ztf_name
 	return saltfit.fitresult, saltfit.fitted_model

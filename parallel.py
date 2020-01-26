@@ -17,9 +17,10 @@ logger.addHandler(hdlr)
 logger.setLevel(logging.INFO)
 
 parser = argparse.ArgumentParser(description='Used to obtain forced photometry for selection of SNe in parallel')
-parser.add_argument('-file', type=str, default="sne.txt", help="Specify a textfile containing a list of ZTF names. Default: sne.txt")
-parser.add_argument('-name', type=str, help="Specify a ZTF name")
-parser.add_argument('-names', type=str, help="Specify a list with several ZTF names")
+parser.add_argument('name', type=str, help='Provide a ZTF name (e.g. "ZTF19aaelulu") or a .txt-file containing a list of ZTF names')
+# parser.add_argument('-file', type=str, default="sne.txt", help="Specify a textfile containing a list of ZTF names. Default: sne.txt")
+# parser.add_argument('-name', type=str, help="Specify a ZTF name")
+# parser.add_argument('-names', type=str, help="Specify a list with several ZTF names")
 parser.add_argument('-nprocess', type=int, default=4, help="Number of parallel threads. Default: 4")
 parser.add_argument('-dl', action='store_true', help="Download the files from IPAC")
 parser.add_argument('-fit', action='store_true', help="Fit and plot the lightcurve")
@@ -27,16 +28,11 @@ parser.add_argument('-saltfit', action="store_true", help="Do a SALT2 fit")
 parser.add_argument('-filecheck', action="store_true", help="Runs a full filecheck on the ZTFDATA directory. Can take several hours")
 commandline_args = parser.parse_args()
 nprocess = commandline_args.nprocess
-file = commandline_args.file
 name = commandline_args.name
 do_download = commandline_args.dl
 do_fit = commandline_args.fit
 do_saltfit = commandline_args.saltfit
 do_filecheck = commandline_args.filecheck
-
-if name:
-	nprocess=1
-
 
 def check_data(sne_list):
 	cleaned_list = []
@@ -92,12 +88,20 @@ def fp(ztf_name):
 #TO DO: docstrings, ordentliches logging, funktionen auslagern
 startime = time.time()
 
-if name:
+if name[:3] == "ZTF" and len(name) == 12:
 	sne_list = [name]
+	nprocess=1
 else:
-	sne = open("{}".format(file), "r")
-	sne_list = sne.read().splitlines()
+	try:
+		sne = open("{}".format(name), "r")
+		sne_list = sne.read().splitlines()
+	except FileNotFoundError as e:
+		print("\nYou have to provide either a ZTF name or a file containing ZTF names (1 per line)\n")
+		raise e
+	assert sne_list[0][:3] == "ZTF" and len(sne_list[0]) == 12, "You have to provide either a ZTF name or a file containing ZTF names (1 per line)"
+
 print("Doing forced photometry for {} SNe".format(len(sne_list)))
+print("logs are store in forced_photometry.log")
 
 sne_before_cleanup = len(sne_list)
 sne_list = check_data(sne_list)
@@ -137,12 +141,12 @@ with multiprocessing.Pool(nprocess) as pool:
 		pool.map(fp, sne_list)
 	
 if do_saltfit:
-	fitresult_df = pd.DataFrame(columns=['name', 'chisquare', 'ndof', 'red_chisq', 'z', 't0', 't0_err', 'x0', 'x0_err', 'x1', 'x1_err', 'c', 'c_err'])
+	fitresult_df = pd.DataFrame(columns=['name', 'chisquare', 'ndof', 'red_chisq', 'z', 't0', 't0_err', 'x0', 'x0_err', 'x1', 'x1_err', 'c', 'c_err', 'peak_mag', 'peak_abs_mag'])
 
 	for fitresult in result:
 		if fitresult[0]['success'] is True:
-			name, chisquare, ndof, z, t0, x0, x1, c, t0_err, x0_err, x1_err, c_err = fitresult[0]['name'], fitresult[0]['chisq'], fitresult[0]['ndof'], fitresult[0]['parameters'][0], fitresult[0]['parameters'][1], fitresult[0]['parameters'][2], fitresult[0]['parameters'][3], fitresult[0]['parameters'][4], fitresult[0]['errors']['t0'], fitresult[0]['errors']['x0'], fitresult[0]['errors']['x1'], fitresult[0]['errors']['c']
-			results = pd.Series([name, chisquare, ndof, chisquare/ndof if ndof > 0 else 999, z, t0, t0_err, x0, x0_err, x1, x1_err, c, c_err], index=fitresult_df.columns)
+			name, chisquare, ndof, z, t0, x0, x1, c, t0_err, x0_err, x1_err, c_err, peak_mag, peak_abs_mag = fitresult[0]['name'], fitresult[0]['chisq'], fitresult[0]['ndof'], fitresult[0]['parameters'][0], fitresult[0]['parameters'][1], fitresult[0]['parameters'][2], fitresult[0]['parameters'][3], fitresult[0]['parameters'][4], fitresult[0]['errors']['t0'], fitresult[0]['errors']['x0'], fitresult[0]['errors']['x1'], fitresult[0]['errors']['c'], fitresult[0]['peak_mag'], fitresult[0]['peak_abs_mag']
+			results = pd.Series([name, chisquare, ndof, chisquare/ndof if ndof > 0 else 999, z, t0, t0_err, x0, x0_err, x1, x1_err, c, c_err, peak_mag, peak_abs_mag], index=fitresult_df.columns)
 			fitresult_df = fitresult_df.append(results, ignore_index=True)
 
 	savepath = os.path.join(LOCALDATA, 'SALT', 'SALT_FIT.csv')
