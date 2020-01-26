@@ -4,7 +4,7 @@ Provides a forced photometry pipeline based on ztfquery and ztflc.
 
 ## Installation
 
-The majority of required packages can be installed with the command:
+The majority of required packages can be installed by issuing:
 
 ```pip install -r requirements.txt```
 
