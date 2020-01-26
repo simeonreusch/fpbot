@@ -8,4 +8,8 @@ The basic file is forced_photometry.py, which can be run using different flags. 
 
 `-saltfit`  Fits the lightcurve using SALT2 as provided by sncosmo
 
-`-saltfit`  Only applied if a textfile is passed. Specifies the number of processes spawned for parallel computing
+`-nprocess`  Only applied if a textfile is passed. Specifies the number of processes spawned for parallel computing
+
+Examples:
+
+`./forced_photometry.py ZTF18abtmbaz -fit -saltfit -nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
