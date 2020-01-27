@@ -12,6 +12,8 @@ import logging
 m = marshal.MarshalAccess()
 # m.load_target_sources("Cosmology")
 m = m.load_local("Cosmology")
+import sfdmap
+dustmap = sfdmap.SFDMap()
 
 
 _ALPHA_JLA_ = 0.141

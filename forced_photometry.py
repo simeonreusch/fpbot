@@ -8,11 +8,10 @@ from ztflc.io import LOCALDATA
 import numpy as np
 import ztfquery
 import pandas as pd
-import sfdmap
-dustmap = sfdmap.SFDMap()
+
 
 # TODO
-# days ago as input argument, should be passed to pot
+# days ago as input argument, should be passed to plot
 # snt as input parameter, should be passed to plot
 
 logger = logging.getLogger('parallel')
@@ -93,10 +92,6 @@ def fp(ztf_name):
 #TO DO: docstrings, ordentliches logging, funktionen auslagern
 startime = time.time()
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 if name[:3] == "ZTF" and len(name) == 12:
 	sne_list = [name]
 else:
