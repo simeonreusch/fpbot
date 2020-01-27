@@ -24,7 +24,7 @@ The basic file is forced_photometry.py, which can be run using different flags. 
 
 **Examples**:
 
-`./forced_photometry.py ZTF18abtmbaz -dl -fit -saltfit -nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
+`./forced_photometry.py ZTF19abimkwn -dl -fit -saltfit -nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
 
 `./forced_photometry.py supernovae.txt -dl -fit -filecheck` loads images for all ZTF objects found in supernovae.txt and additionally performs a full filecheck on all images downloaded by ztfquery (not only the ones in the textfile).
 

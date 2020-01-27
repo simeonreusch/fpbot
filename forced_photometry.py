@@ -86,8 +86,6 @@ def fp(ztf_name):
 #TO DO: docstrings, ordentliches logging, funktionen auslagern
 startime = time.time()
 
-
-
 if name[:3] == "ZTF" and len(name) == 12:
 	sne_list = [name]
 	nprocess=1
@@ -102,7 +100,6 @@ else:
 
 print("Doing forced photometry for {} SNe".format(len(sne_list)))
 print("Logs are store in forced_photometry.log")
-
 
 if do_download:
 	print('Connecting to AMPEL database')

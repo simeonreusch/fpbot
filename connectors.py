@@ -48,12 +48,12 @@ class AmpelConnector():
         try:
             self.ampel_client = ArchiveDB('postgresql://{0}:{1}@localhost:{2}/ztfarchive'.format(self.username, self.password, self.port))
         except sqlalchemy.exc.OperationalError as e:
-            print("---------------------------------------------------------------------------")
+            print("------------------------------------------------------------------------------------------------------")
             print("You can't access the archive database without first opening the port.")
             print("Open a new terminal and run the following command:")
             print("ssh -L5432:localhost:5433 ztf-wgs.zeuthen.desy.de")
-            print("If that command doesn't work, you are either not a desy user or you have a problem in your ssh config.")
-            print("---------------------------------------------------------------------------")
+            print("If that command doesn't work, you are either not a DESY user or you have a problem in your ssh config.")
+            print("------------------------------------------------------------------------------------------------------")
             raise e
 
 
