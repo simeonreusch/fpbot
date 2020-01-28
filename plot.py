@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, date
 
 
-def plot_lightcurve(ztf_name, SNT=4.0, logger=None):
+def plot_lightcurve(ztf_name, snt=5.0, logger=None):
 	if logger is None:
 		logging.basicConfig(level = logging.INFO)
 		logger = logging.getLogger()
@@ -38,7 +38,7 @@ def plot_lightcurve(ztf_name, SNT=4.0, logger=None):
 	maglims = np.asarray(lc['maglim'].values)
 	for i, Fratio in enumerate(Fratios):
 		Fratio_unc = Fratios_unc[i]
-		if Fratio > (Fratio_unc * SNT):
+		if Fratio > (Fratio_unc * snt):
 			upper_limit = np.nan
 			mag = -2.5 * np.log10(Fratio)
 			mag_unc = 2.5 / np.log(10) * Fratio_unc / Fratio
@@ -67,7 +67,7 @@ def plot_lightcurve(ztf_name, SNT=4.0, logger=None):
 	r_uplim = uplim[uplim['filter'].isin(filterlist[1])]
 	i_uplim = uplim[uplim['filter'].isin(filterlist[2])]
 
-	logger.info("{} {} of {} datapoints survived SNT cut of {}".format(ztf_name, len_after_sn_cut, len_before_sn_cut, SNT))
+	logger.info("{} {} of {} datapoints survived SNT cut of {}".format(ztf_name, len_after_sn_cut, len_before_sn_cut, snt))
 
 	def t0_dist(obsmjd):
 		t0 = Time(time.time(), format='unix', scale='utc').mjd
@@ -98,6 +98,6 @@ def plot_lightcurve(ztf_name, SNT=4.0, logger=None):
 	ax.axvline(x=now, color="grey", linewidth=0.5, linestyle='--')
 	# ax.set_ylim(ax.get_ylim()[::-1])
 	ax.set_ylim([23,15.5])
-	ax.legend(loc=0, framealpha=1, title="SNT={:.0f}".format(SNT), fontsize='small', title_fontsize="small")
-	lc_plot_path = os.path.join(lc_plotdir, "{}_SNT_{}.png".format(ztf_name, SNT))
+	ax.legend(loc=0, framealpha=1, title="SNT={:.0f}".format(snt), fontsize='small', title_fontsize="small")
+	lc_plot_path = os.path.join(lc_plotdir, "{}_SNT_{}.png".format(ztf_name, snt))
 	fig.savefig(lc_plot_path, dpi=300, bbox_inches = "tight")

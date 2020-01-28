@@ -12,8 +12,7 @@ import logging
 m = marshal.MarshalAccess()
 # m.load_target_sources("Cosmology")
 m = m.load_local("Cosmology")
-import sfdmap
-dustmap = sfdmap.SFDMap()
+
 
 
 _ALPHA_JLA_ = 0.141
@@ -24,7 +23,7 @@ _BETA_JLA_UNC_ = 0.075
 
 class SaltFit():
 
-	def __init__(self, ztf_name, logger=None, **kwargs):
+	def __init__(self, ztf_name, mwebv, logger=None, **kwargs):
 		if logger is None:
 			logging.basicConfig(level = logging.INFO)
 			self.logger = logging.getLogger()
@@ -35,6 +34,7 @@ class SaltFit():
 		self.ra = m.target_sources.query('name == "{}"'.format(ztf_name))['ra'].values[0]
 		self.dec = m.target_sources.query('name == "{}"'.format(ztf_name))['dec'].values[0]
 		self.z = m.target_sources.query('name == "{}"'.format(ztf_name))['redshift'].values[0]
+		self.mwebv = mwebv 
 
 	def modify_columns(self):
 		self.lightcurve.replace(['ZTF_r', 'ZTF_g', 'ZTF_i'], ['p48r', 'p48g', 'p48i'], inplace=True)
@@ -58,20 +58,21 @@ class SaltFit():
 			band = sncosmo.Bandpass(b[:,0], b[:,1], name=bandname)
 			sncosmo.registry.register(band, force=True)
 
-	def fit(self, SNT=5, **kwargs):
+	def fit(self, snt=5, **kwargs):
 		from astropy.table import Table
 		from astropy.cosmology import Planck15 as cosmo 
-		self.SNT = SNT
+		self.snt = snt
 		dust = sncosmo.CCM89Dust()
 		self.modify_columns()
-		self.lightcurve = self.lightcurve.query('chi2 > 0 and Fratio > (Fratio_unc * @self.SNT)')
-		lc_sncosmo = Table.from_pandas(self.lightcurve.query('filter == ("p48g", "p48r") and chi2 > 0')[['mjd', 'filter', 'flux', 'flux_err', 'zp', 'zpsys']])
+		self.lightcurve = self.lightcurve.query('chi2 > 0 and Fratio > (Fratio_unc * @self.snt)')
+		lc_sncosmo = Table.from_pandas(self.lightcurve.query('chi2 > 0')[['mjd', 'filter', 'flux', 'flux_err', 'zp', 'zpsys']])
 		salt_model = sncosmo.Model(source='salt2', effects = [dust], effect_names = ['mw'], effect_frames = ['obs'])
 		salt_model.set(z = self.z)
-		salt_model.set(mwebv = dustmap.ebv(self.ra, self.dec))
+		salt_model.set(mwebv = self.mwebv)
 		self.load_ztf_filters()
+
 		try:
-			self.fitresult, self.fitted_model = sncosmo.fit_lc(lc_sncosmo, salt_model, ['t0', 'x0', 'x1', 'c'], phase_range=(-30., 50.), minsnr=self.SNT)
+			self.fitresult, self.fitted_model = sncosmo.fit_lc(lc_sncosmo, salt_model, ['t0', 'x0', 'x1', 'c'], phase_range=(-30., 50.), minsnr=self.snt)
 			ab = sncosmo.get_magsystem('ab')
 			flux_zp = ab.zpbandflux('p48g')
 			bandflux = self.fitted_model.bandflux(band = 'p48g', time = self.fitresult['parameters'][1], zpsys = 'ab')
@@ -98,11 +99,12 @@ class SaltFit():
 			self.fitresult = sncosmo.utils.Result({'name': self.ztf_name, 'success': False})
 			self.fitted_model = None
 			return
+
 		if 	self.fitresult.success is True:
 			self.logger.info("{} Fit succeeded!".format(self.ztf_name))
 
 
-def fit_salt(ztf_name, logger=None):
-	saltfit = SaltFit(ztf_name, plot=True, logger=logger)
-	saltfit.fit(SNT=5)
+def fit_salt(ztf_name, mwebv, snt, logger=None):
+	saltfit = SaltFit(ztf_name, mwebv = mwebv, plot=True, logger=logger)
+	saltfit.fit(snt=snt)
 	return saltfit.fitresult, saltfit.fitted_model
