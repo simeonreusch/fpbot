@@ -13,26 +13,28 @@ parser.add_argument('-daysago', type=int, default=None, help="Number of days in 
 parser.add_argument('-dl', action='store_true', help="Download the files from IPAC")
 parser.add_argument('-fit', action='store_true', help="Fit and plot the lightcurve")
 parser.add_argument('-saltfit', action="store_true", help="Do a SALT2 fit")
+parser.add_argument('-snt', type=float, default=5.0, help="What signal to noise ratio is desired? Default: 5")
 parser.add_argument('-filecheck', action="store_true", help="Runs a full filecheck on the ZTFDATA directory. Can take several hours")
 commandline_args = parser.parse_args()
 nprocess = commandline_args.nprocess
-objects = commandline_args.name
+snt = commandline_args.snt
+name = commandline_args.name
 daysago = commandline_args.daysago
 do_download = commandline_args.dl
 do_psffit = commandline_args.fit
 do_saltfit = commandline_args.saltfit
 do_filecheck = commandline_args.filecheck
 
-# objects = ["ZTF18abiirfq", "ZTF18abqjurg", "ZTF19aafmfxg", "ZTF19aamvmer"]
-pl = pipeline.ForcedPhotometryPipeline(objects=objects)
-# pl = pipeline.ForcedPhotometryPipeline(objects=['ZTF19aagmpeq', 'ZTF19abhzdjp', 'ZTF19abhzelh', 'ZTF18aboztku', 'ZTF18aboztta'])
+pl = pipeline.ForcedPhotometryPipeline(file_or_name=name, daysago=daysago)
 
-# pl = pipeline.ForcedPhotometryPipeline(objects=["ZTF18abiirfq", "ZTF18abqjurg", "ZTF19aafmfxg", "ZTF19aamvmer"])
-print(pl.ZTF_object_infos)
-# pl.download()
-# pl.psffit(nprocess=4, snt=5)
-pl.saltfit()
-
+if do_filecheck:
+	pl.global_filecheck()
+if do_download:
+	pl.download()
+if do_psffit:
+	pl.psffit(nprocess=nprocess, snt=snt)
+if do_saltfit:
+	pl.saltfit()
 
 		# except:
 			# print('{} ERROR while fitting and plotting'.format(ztf_name))

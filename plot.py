@@ -86,7 +86,7 @@ def plot_lightcurve(ztf_name, snt=5.0, logger=None):
 	ax.grid(b=True, axis='y')
 	ax.set_xlabel('MJD')
 	ax.set_ylabel('magnitude [AB]')
-	ax.set_xlim([np.min(uplim.obsmjd.values)-20, np.max(uplim.obsmjd.values)+20])
+	ax.set_xlim([np.min(uplim.obsmjd.values)-3, np.max(uplim.obsmjd.values)+3])
 	# ax.set_xlim([np.min(lc.obsmjd.values)-20, np.max(lc.obsmjd.values)+20])
 	ax2.set_xlim([ax.get_xlim()[0] - now, ax.get_xlim()[1] -now ])
 	ax.scatter(g_uplim.obsmjd.values, g_uplim.upper_limit.values, color ='green', marker="v", s=1.3, alpha=0.5)

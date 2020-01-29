@@ -149,7 +149,10 @@ class MarshalInfo():
             dec = np.zeros(ndet)
             jd = np.zeros(ndet)
             for i in range(ndet):
-                line = mtb.values[i][0].split(",")
+                try:
+                    line = mtb.values[i][0].split(",")
+                except:
+                    print(mtb.values[i][0])
                 for j in range(len(line)):
                     if line[j][:7] == '  "ra":':
                         ra[i] = float(line[j].split(':')[1])

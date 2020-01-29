@@ -9,16 +9,17 @@ import pandas as pd
 import numpy as np
 import sncosmo
 import logging
+
+# TODO: 
+# we have to talk about this
 m = marshal.MarshalAccess()
 # m.load_target_sources("Cosmology")
 m = m.load_local("Cosmology")
 
-
-
 _ALPHA_JLA_ = 0.141
-_ALPHA_JLA_UNC_ = 0.006
+# _ALPHA_JLA_UNC_ = 0.006
 _BETA_JLA_ = 3.101
-_BETA_JLA_UNC_ = 0.075
+# _BETA_JLA_UNC_ = 0.075
 
 
 class SaltFit():

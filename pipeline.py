@@ -14,17 +14,19 @@ import pandas as pd
 # TODO
 # days ago as input argument, should be passed to plot
 # snt as input parameter, should be passed to plot
+# CREATE LOCAL FILE THAT STORES ZTF_NAME, RA/DEC + MWEBV
+# os.path.expanduser("~") is auch nice
 
 class ForcedPhotometryPipeline():
 
-	def __init__(self, objects=None, daysago=None):
+	def __init__(self, file_or_name=None, daysago=None):
 		self.startime = time.time()
 		self.logger = logging.getLogger('pipeline')
 
-		if objects is None:
-			print("You have to initialize this class with at least one name of a ZTF object")
+		if file_or_name is None:
+			print("You have to initialize this class with at least one name of a ZTF object for which to perform forced photometry.")
 		else:
-			self.objects=objects
+			self.file_or_name=file_or_name
 
 		hdlr = logging.FileHandler('./pipeline.log')
 		logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
@@ -34,20 +36,37 @@ class ForcedPhotometryPipeline():
 		self.logger.setLevel(logging.INFO)
 		self.daysago = daysago
 
-		if type(self.objects) == str:
-			self.get_ZTF_object_names()
-		if type(self.objects) == list:
-			self.object_list = self.objects
+		if type(self.file_or_name) == str:
+		# TODO: 
+		# check if it is a ZTF object name. Or ZTF transient?
+			self.use_if_ztf()
+		# something like self.check_if_ZTF_object
+		if type(self.file_or_name) == list:
+		# TODO: 
+		# check if all of them are ZTF object names
+			self.object_list = self.file_or_name
 		self.create_info_dataframe()
-		self.get_ra_dec()
+		self.get_position_and_timerange()
 
-	def get_ZTF_object_names(self):
-		if self.objects[:3] == "ZTF" and len(self.objects) == 12:
-			self.object_list = [self.objects]
+	@staticmethod
+	def is_ztf_string(string):
+		if string[:3] == "ZTF" and len(string) == 12 and (int(string[3]) == 1 or int(string[3]) == 2):
+			return True
 		else:
+			return False
+
+	def use_if_ztf(self):
+		if self.is_ztf_string(self.file_or_name):
+			self.object_list = [self.file_or_name]
+		else:
+			self.object_list = []
 			try:
-				objects = open("{}".format(self.objects), "r")
-				self.object_list = objects.read().splitlines()
+				file = open("{}".format(self.objects), "r")
+				self.lines = file.read().splitlines()
+				for line in self.lines:
+					if self.is_ztf_string(line):
+						self.object_list.append(line)
+
 			except FileNotFoundError as e:
 				print("\nYou have to provide either a ZTF name or a file containing ZTF names (1 per line)\n")
 				raise e
@@ -60,15 +79,17 @@ class ForcedPhotometryPipeline():
 		ZTF_object_infos = pd.DataFrame.from_dict(_data)
 		self.ZTF_object_infos = ZTF_object_infos.set_index('ZTF_name')
 
-	def get_ra_dec(self):
-		print('Connecting to AMPEL/Marshal')
+	def get_position_and_timerange(self):
+		print('Connecting to Marshal')
 		import connectors
 		connector = connectors.MarshalInfo(self.object_list, nprocess=32)
 		for result in connector.queryresult:
 			if self.daysago is None:
 				_jdmin = 2457388
+				print("\nNo 'daysago' given, full timerange used")
 			else:
-				_jdmin = result[3] - self.daysago
+				_jdmin = result[4] - self.daysago
+				print("\nData from {} days ago till today is used".format(self.daysago))
 			_jdmax = result[4]
 			_ra = result[1]
 			_dec = result[2]
@@ -112,7 +133,7 @@ class ForcedPhotometryPipeline():
 			fp.load_metadata()
 			fp.io.download_data(nprocess=32, overwrite=False, show_progress=True, verbose=False, ignore_warnings=True)
 
-	def check_psf_data(self):
+	def check_if_psf_data_exists(self):
 		self.cleaned_list = []
 		for ztf_name in self.object_list:
 			try:
@@ -121,49 +142,43 @@ class ForcedPhotometryPipeline():
 			except FileNotFoundError:
 				pass
 
+	def check_info_info_df_exists(self):
+		raise NotImplementedError
+
 	def psffit(self, nprocess=4, snt=5, daysago=None):
 		object_count = len(self.object_list)
 		snt_ = [snt]*object_count
 		daysago_ = [daysago]*object_count
 		from astropy.utils.console import ProgressBar
 		bar = ProgressBar(object_count)
+		_ras = self.ZTF_object_infos['ra'].values
+		_decs = self.ZTF_object_infos['dec'].values
+		_jdmins = self.ZTF_object_infos['jdmin'].values
+		_jdmaxs = self.ZTF_object_infos['jdmax'].values
 		with multiprocessing.Pool(nprocess) as p:
-			for j, result in enumerate(p.imap_unordered(self._psffit_multiprocessing_, zip(self.object_list, snt_, daysago_))):
+			for j, result in enumerate(p.imap_unordered(self._psffit_multiprocessing_, zip(self.object_list, snt_, daysago_, _ras, _decs, _jdmins, _jdmaxs))):
 				if bar is not None:
 					bar.update(j)
 			if bar is not None:
 				bar.update(object_count)
 
 	@staticmethod
-	def filecheck():
+	def global_filecheck():
 		print("Running filecheck. This can take several hours.")
 		badfiles = ztfquery.io.run_full_filecheck(erasebad=True, nprocess=nprocess, redownload=True)
-		print(badfiles)
+		print("BADFILES:\n{}".format(badfiles))
 
-		# todo: Verbosity-option
+		# TODO:
+		# Verbosity-option
 	@staticmethod
 	def _psffit_multiprocessing_(args):
-		ztf_name, snt, daysago = args
+		ztf_name, snt, daysago, ra, dec, jdmin, jdmax = args
 		import connectors
-		print(ztf_name)
-		print('Connect to AMPEL or MARSHAL to obtain ra and dec of {}'.format(ztf_name))
-		try:
-			connector = connectors.AmpelConnector(ztf_name)
-			connector.get_info()
-		except sqlalchemy.exc.OperationalError:
-			print("AMPEL connection failed, trying MARSHAL")
-			connector = connectors.MarshalConnector(ztf_name)
-			connector.get_info()
-		if daysago is None:
-			jdmin = 2457388
-		else:
-			jdmin = connector.jdmax - daysago
-		fp = forcephotometry.ForcePhotometry.from_coords(ra=connector.ra, dec=connector.dec, jdmin=jdmin, jdmax=connector.jdmax, name=ztf_name)
+		fp = forcephotometry.ForcePhotometry.from_coords(ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=ztf_name)
 		fp.load_metadata()
 		fp.load_filepathes(filecheck=False)
 		print('{} Fitting PSF'.format(ztf_name))
 		import matplotlib.pyplot as plt
-		# try:
 		fp.run_forcefit(verbose=True)
 		fig = plt.figure(dpi = 300)
 		ax = fig.add_subplot(111)
@@ -178,18 +193,25 @@ class ForcedPhotometryPipeline():
 		plot_lightcurve(ztf_name, snt=5.0)
 		print('{} successfully fitted and plotted'.format(ztf_name))
 
+	# @staticmethod
+	# def _plot_nofit_multiprocessing_(args):
+	# 	ztf_name 
+	# 	from plot import plot_lightcurve
+	# 	plot_lightcurve(ztf_name, snt=5.0)
+	# 	print('{} successfully plotted'.format(ztf_name))
+
 	def saltfit(self, snt=5):
-		self.check_psf_data()
+		self.check_if_psf_data_exists()
 		import sfdmap
+		from astropy.utils.console import ProgressBar
 		from saltfit import fit_salt
+
 		dustmap = sfdmap.SFDMap()
 		for ztf_name in self.cleaned_list:
 			_mwebv = dustmap.ebv(self.ZTF_object_infos.loc["{}".format(ztf_name), 'ra'], self.ZTF_object_infos.loc["{}".format(ztf_name), 'dec'])
 			self.ZTF_object_infos.loc["{}".format(ztf_name), 'mwebv'] = _mwebv
 		object_count = len(self.cleaned_list)
-		# mwebv_ = self.ZTF_object_infos['mwebv'].values
-		# snt_ = [snt]*object_count
-		from astropy.utils.console import ProgressBar
+		
 		bar = ProgressBar(object_count)
 		fitresults = []
 		fitted_models = []
@@ -213,7 +235,6 @@ class ForcedPhotometryPipeline():
 
 		savepath = os.path.join(LOCALDATA, 'SALT', 'SALT_FIT.csv')
 		fitresult_df.to_csv(savepath)
-		print(fitresult_df)
 
 		print("{} of {} fits were performed successfully\n".format(len(fitresult_df), object_count))
 
@@ -225,39 +246,13 @@ class ForcedPhotometryPipeline():
 		fitresult, fitted_model = fit_salt(ztf_name=ztf_name, mwebv=mwebv, snt=snt)
 		return fitresult, fitted_model
 
-# def saltfit_multiprocessing(ztf_name):
-# 	logger.info("{} SALT fitting".format(ztf_name))
-# 	fitresult, fitted_model = fit_salt(ztf_name)
-# 	return fitresult, fitted_model
-
-### MAIN ###
-
-#TO DO: docstrings, ordentliches logging, funktionen auslagern
-
-
-
-
-# # downloading files
-# if do_download:
-# 	download()
-
-# # global filecheck
-# if do_filecheck:
-# 	filecheck()
-
-
-# # TODO: pass logger
-
-# # psf-fit and saltfit
-# if do_psffit:
-
 
 # if do_saltfit:
 # 	from saltfit import fit_salt
 # 	with multiprocessing.Pool(nprocess) as pool:
 # 		pool.map(saltfit_multiprocessing, sne_list)
 # 		sne_before_cleanup = len(sne_list)
-# 		sne_list = check_psf_data(sne_list)
+# 		sne_list = check_if_psf_data_is_there(sne_list)
 # 		sne_after_cleanup = len(sne_list)
 # 		if sne_after_cleanup < sne_before_cleanup:
 # 			print("{} of {} SNe have lightcurves available. The objects are either missing from IPAC or you have to download them first (-dl parameter)".format(len(sne_list), sne_before_cleanup))
