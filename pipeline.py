@@ -61,7 +61,7 @@ class ForcedPhotometryPipeline():
 		else:
 			self.object_list = []
 			try:
-				file = open("{}".format(self.objects), "r")
+				file = open("{}".format(self.file_or_name), "r")
 				self.lines = file.read().splitlines()
 				for line in self.lines:
 					if self.is_ztf_string(line):
@@ -97,29 +97,6 @@ class ForcedPhotometryPipeline():
 			self.ZTF_object_infos.loc["{}".format(result[0]), 'dec'] = _dec
 			self.ZTF_object_infos.loc["{}".format(result[0]), 'jdmin'] = _jdmin
 			self.ZTF_object_infos.loc["{}".format(result[0]), 'jdmax'] = _jdmax
-
-
-		# connector = connectors.AmpelConnector(self.object_list)
-		# connector.get_info()
-		# for ztf_name in self.object_list:
-		# 	self.logger.info("{} obtaining ra/dec from AMPEL".format(ztf_name))
-		# 	try:
-		# 		connector = connectors.AmpelConnector(ztf_name)
-		# 	except sqlalchemy.exc.OperationalError:
-		# 		print("AMPEL connection failed, trying MARSHAL")
-		# 		connector = connectors.MarshalConnector(ztf_name)
-		# 	connector.get_info()
-		# 	if self.daysago is None:
-		# 		_jdmin = 2457388
-		# 	else:
-		# 		_jdmin = connector.jdmax - self.daysago
-		# 	_jdmax = connector.jdmax
-		# 	_ra = connector.ra
-		# 	_dec = connector.dec
-		# 	self.ZTF_object_infos.loc["{}".format(ztf_name), 'ra'] = _ra
-		# 	self.ZTF_object_infos.loc["{}".format(ztf_name), 'dec'] = _dec
-		# 	self.ZTF_object_infos.loc["{}".format(ztf_name), 'jdmin'] = _jdmin
-		# 	self.ZTF_object_infos.loc["{}".format(ztf_name), 'jdmax'] = _jdmax
 
 	def download(self):
 		for ztf_name in self.object_list:
