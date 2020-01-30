@@ -124,8 +124,7 @@ class MarshalInfo():
         results = []
         with multiprocessing.Pool(nprocess) as p:
             for index, result in enumerate( p.map(self._get_info_multiprocessor_, zip(ztf_names, urls, auth_))):
-                print(index)
-                bar.update(index)
+                bar.update()
                 results.append(result)
             bar.update(object_count)
         self.queryresult = results
@@ -168,7 +167,7 @@ class MarshalInfo():
             dec = np.median(decs[ind])
             jd = np.median(jds[ind])
         now = Time(time.time(), format='unix', scale='utc').jd
-        jdmin = 2457388
+        jdmin = 2458209
         jdmax = now
         return[ztf_name, ra, dec, jdmin, jdmax]
 

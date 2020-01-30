@@ -2,7 +2,7 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import argparse
+import argparse, time
 import pipeline
 
 # neccessary args
@@ -11,9 +11,9 @@ parser.add_argument('name', type=str, help='Provide a ZTF name (e.g. "ZTF19aaelu
 
 # optional args, defining what to run
 parser.add_argument('-dl', action='store_true', help="Download the files from IPAC")
-parser.add_argument('-fit', action='store_true', help="Do PSF fit and plot the lightcurve")
-parser.add_argument('-plot', action='store_true', help="Plot the lightcurve. Note: '-fit' always also plots.")
-parser.add_argument('-saltfit', action="store_true", help="Do a SALT2 fit")
+parser.add_argument('-fit', '-f', action='store_true', help="Do PSF fit and plot the lightcurve")
+parser.add_argument('-plot', '-p', action='store_true', help="Plot the lightcurve. Note: '-fit' always also plots.")
+parser.add_argument('-saltfit', '-salt', '-sf', action="store_true", help="Do a SALT2 fit")
 
 # operational args, defining how to run
 parser.add_argument('--nprocess', type=int, default=4, help="Number of parallel threads. Default: 4")
@@ -44,7 +44,11 @@ if do_psffit:
 if do_plot:
 	pl.plot()
 if do_saltfit:
-	pl.saltfit()
+	pl.saltfit(quality_checks=True)
 
 		# except:
 			# print('{} ERROR while fitting and plotting'.format(ztf_name))
+
+endtime = time.time()
+duration = endtime - pl.startime
+print("\nThe script took {:.1f} minutes".format(duration/60))

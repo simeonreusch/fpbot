@@ -12,8 +12,7 @@ import pandas as pd
 
 
 # TODO
-# days ago as input argument, should be passed to plot
-# snt as input parameter, should be passed to plot
+# ra/dec option as run parameter
 # CREATE LOCAL FILE THAT STORES ZTF_NAME, RA/DEC + MWEBV
 # os.path.expanduser("~") is auch nice
 
@@ -47,7 +46,11 @@ class ForcedPhotometryPipeline():
 		# check if all of them are ZTF object names
 			self.object_list = self.file_or_name
 		self.create_info_dataframe()
-		self.get_position_and_timerange()
+		try:
+			self.get_position_and_timerange()
+		except ValueError:
+			print("\nMarshal not reachable at the moment (temporary outages are frequent)")
+			quit()
 
 	@staticmethod
 	def is_ztf_string(string):
@@ -84,13 +87,16 @@ class ForcedPhotometryPipeline():
 		print('Connecting to Marshal')
 		import connectors
 		connector = connectors.MarshalInfo(self.object_list, nprocess=32)
+		if self.daysago is None:
+			print("\nNo 'daysago' given, full timerange used")
+		else:
+			print("\nData from {} days ago till today is used".format(self.daysago))
+
 		for result in connector.queryresult:
 			if self.daysago is None:
 				_jdmin = 2457388
-				print("\nNo 'daysago' given, full timerange used")
 			else:
 				_jdmin = result[4] - self.daysago
-				print("\nData from {} days ago till today is used".format(self.daysago))
 			_jdmax = result[4]
 			_ra = result[1]
 			_dec = result[2]
@@ -182,14 +188,14 @@ class ForcedPhotometryPipeline():
 		print('{} Plotting lightcurve'.format(ztf_name))
 		from plot import plot_lightcurve
 		plot_lightcurve(ztf_name, snt=snt)
-		print('{} successfully fitted and plotted'.format(ztf_name))
+		print('\n{} successfully fitted and plotted'.format(ztf_name))
 
 	@staticmethod
 	def _plot_multiprocessing_(args):
 		ztf_name, snt, daysago = args
 		from plot import plot_lightcurve
 		plot_lightcurve(ztf_name, snt=snt, daysago=daysago)
-		print('{} plotted'.format(ztf_name))
+		print('\n{} plotted'.format(ztf_name))
 
 	# @staticmethod
 	# def _plot_nofit_multiprocessing_(args):
@@ -198,7 +204,7 @@ class ForcedPhotometryPipeline():
 	# 	plot_lightcurve(ztf_name, snt=5.0)
 	# 	print('{} successfully plotted'.format(ztf_name))
 
-	def saltfit(self, snt=5):
+	def saltfit(self, snt=5, quality_checks=False):
 		self.check_if_psf_data_exists()
 		import sfdmap
 		from astropy.utils.console import ProgressBar
@@ -214,10 +220,11 @@ class ForcedPhotometryPipeline():
 		fitresults = []
 		fitted_models = []
 
-		fitresult_df = pd.DataFrame(columns=['name', 'chisquare', 'ndof', 'red_chisq', 'z', 't0', 't0_err', 'x0', 'x0_err', 'x1', 'x1_err', 'c', 'c_err', 'peak_mag', 'peak_abs_mag', 'peak_abs_mag_for_comparison', 'peak_abs_mag_corrected'])
+		fitresult_df = pd.DataFrame(columns=['name', 'chisquare', 'ndof', 'red_chisq', 'z', 't0', 't0_err', 'x0', 'x0_err', 'x1', 'x1_err', 'c', 'c_err', 'peak_mag', 'peak_abs_mag', 'peak_abs_mag_for_comparison', 'peak_abs_mag_corrected', 'z_spectro', 'z_precision', 'g_obs', 'r_obs', 'i_obs', 'nr_filters', 'obs_total'])
 
 		for index, ztf_name in enumerate(self.cleaned_list):
-			fitresult, fitted_model = fit_salt(ztf_name=ztf_name, snt=snt, mwebv=self.ZTF_object_infos.loc["{}".format(ztf_name), 'mwebv'])
+			print("\n{} performing SALT fit".format(ztf_name))
+			fitresult, fitted_model = fit_salt(ztf_name=ztf_name, snt=snt, mwebv=self.ZTF_object_infos.loc["{}".format(ztf_name), 'mwebv'], quality_checks=quality_checks)
 			if bar is not None:
 				bar.update(index)
 			fitresults.append(fitresult)
@@ -226,15 +233,14 @@ class ForcedPhotometryPipeline():
 			bar.update(object_count)
 		
 		for fitresult in fitresults:
-			if fitresult['success'] is True:
-				name, chisquare, ndof, z, t0, x0, x1, c, t0_err, x0_err, x1_err, c_err, peak_mag, peak_abs_mag, peak_abs_mag_for_comparison, peak_abs_mag_corrected = fitresult['name'], fitresult['chisq'], fitresult['ndof'], fitresult['parameters'][0], fitresult['parameters'][1], fitresult['parameters'][2], fitresult['parameters'][3], fitresult['parameters'][4], fitresult['errors']['t0'], fitresult['errors']['x0'], fitresult['errors']['x1'], fitresult['errors']['c'], fitresult['peak_mag'], fitresult['peak_abs_mag'], fitresult['peak_abs_mag_for_comparison'], fitresult['peak_abs_mag_corrected']
-				results = pd.Series([name, chisquare, ndof, chisquare/ndof if ndof > 0 else 999, z, t0, t0_err, x0, x0_err, x1, x1_err, c, c_err, peak_mag, peak_abs_mag, peak_abs_mag_for_comparison, peak_abs_mag_corrected], index=fitresult_df.columns)
+			if fitresult is not None:
+				results = pd.Series(fitresult, index=fitresult_df.columns)
 				fitresult_df = fitresult_df.append(results, ignore_index=True)
 
 		savepath = os.path.join(LOCALDATA, 'SALT', 'SALT_FIT.csv')
 		fitresult_df.to_csv(savepath)
 
-		print("{} of {} fits were performed successfully\n".format(len(fitresult_df), object_count))
+		print("\n{} of {} fits were performed successfully\n".format(len(fitresult_df), object_count))
 
 	@staticmethod
 	def _saltfit_multiprocessing_(args):
@@ -269,6 +275,3 @@ class ForcedPhotometryPipeline():
 # 	print("{} of {} fits were successful\n".format(len(fitresult_df), len(sne_list)))
 
 
-# endtime = time.time()
-# duration = endtime - startime
-# print("The script took {:.1f} minutes".format(duration/60))

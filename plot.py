@@ -29,7 +29,7 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
 		axis_min = mjdmin
 		axis_max = now + 1
 	else:
-		mjdmin = 2457388 - 2400000.5
+		mjdmin = 2458209 - 2400000.5
 		axis_min = np.min(lc.obsmjd.values) - 10
 		axis_max = now + 10
 	lc.query('obsmjd > @mjdmin', inplace = True)
@@ -110,7 +110,7 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
 	ax.errorbar(i.obsmjd.values, i.mag.values, i.mag_err.values, color = 'orange', fmt='.', label='ZTF i', mec="black", mew=0.5)
 	ax.axvline(x=now, color="grey", linewidth=0.5, linestyle='--')
 	# ax.set_ylim(ax.get_ylim()[::-1])
-	ax.set_ylim([23,15.5])
+	ax.set_ylim([22.5,15.5])
 	# ax.set_ylim([23,18.5])
 	ax.legend(loc=0, framealpha=1, title="SNT={:.0f}".format(snt), fontsize='small', title_fontsize="small")
 	lc_plot_path = os.path.join(lc_plotdir, "{}_SNT_{}.png".format(ztf_name, snt))
