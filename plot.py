@@ -23,8 +23,12 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
 
 	#apply time-range cut:
 	if daysago is not None:
-		
+		now = Time(time.time(), format='unix', scale='utc').jd
+		jdmin = now - daysago
+	else:
+		jdmin = 2457388
 
+	print(lc)
 
 	# add magnitudes, upper limits, errors and times
 	mags = []
