@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, date
 
 
-def plot_lightcurve(ztf_name, snt=5.0, logger=None):
+def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
 	if logger is None:
 		logging.basicConfig(level = logging.INFO)
 		logger = logging.getLogger()
@@ -20,6 +20,10 @@ def plot_lightcurve(ztf_name, snt=5.0, logger=None):
 	if not os.path.exists(lc_plotdir):
 		os.makedirs(lc_plotdir)
 	lc = pd.read_csv(lc_path)
+
+	#apply time-range cut:
+	if daysago is not None:
+		
 
 
 	# add magnitudes, upper limits, errors and times
@@ -86,7 +90,7 @@ def plot_lightcurve(ztf_name, snt=5.0, logger=None):
 	ax.grid(b=True, axis='y')
 	ax.set_xlabel('MJD')
 	ax.set_ylabel('magnitude [AB]')
-	ax.set_xlim([np.min(uplim.obsmjd.values)-3, np.max(uplim.obsmjd.values)+3])
+	ax.set_xlim([np.min(uplim.obsmjd.values)-1, np.max(uplim.obsmjd.values)+1])
 	# ax.set_xlim([np.min(lc.obsmjd.values)-20, np.max(lc.obsmjd.values)+20])
 	ax2.set_xlim([ax.get_xlim()[0] - now, ax.get_xlim()[1] -now ])
 	ax.scatter(g_uplim.obsmjd.values, g_uplim.upper_limit.values, color ='green', marker="v", s=1.3, alpha=0.5)

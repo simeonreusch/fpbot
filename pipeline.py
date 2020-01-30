@@ -167,7 +167,7 @@ class ForcedPhotometryPipeline():
 		fp.store()
 		print('{} Plotting lightcurve'.format(ztf_name))
 		from plot import plot_lightcurve
-		plot_lightcurve(ztf_name, snt=5.0)
+		plot_lightcurve(ztf_name, snt=snt)
 		print('{} successfully fitted and plotted'.format(ztf_name))
 
 	# @staticmethod
