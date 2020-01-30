@@ -170,7 +170,7 @@ class ForcedPhotometryPipeline():
 		fp.load_filepathes(filecheck=False)
 		print('{} Fitting PSF'.format(ztf_name))
 		import matplotlib.pyplot as plt
-		fp.run_forcefit(verbose=False)
+		fp.run_forcefit(verbose=True)
 		fig = plt.figure(dpi = 300)
 		ax = fig.add_subplot(111)
 		fp.show_lc(ax=ax)

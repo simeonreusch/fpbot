@@ -14,19 +14,23 @@ The basic file is forced_photometry.py, which can be run using different flags. 
 
 `-dl`        Downloads the images used for forced photometry from IPAC. Needs a valid IPAC account.
 
-`-fit`       Performs the PSF-photometry fit and generates plots of the lightcurves.
+`-fit`       Performs the PSF-photometry fit and generates plots of the lightcurve(s).
+
+`-plot`     Plots the lightcurve(s).
 
 `-saltfit`   Fits the lightcurve using SALT2 as provided by sncosmo.
 
-`-nprocess`  Only applied if a textfile is passed. Specifies the number of processes spawned for parallel computing. Default is 4.
+`--nprocess`  Only applied if a textfile is passed. Specifies the number of processes spawned for parallel computing. Default is 4.
 
-`-filecheck` Checks all images downloaded for data integrity and redownloads corrupt images.
+`--daysago`  Determines how old the datapoints used should be. Default uses all datapoints available.
+
+`--filecheck` Checks all images downloaded for data integrity and redownloads corrupt images.
 
 **Examples**:
 
-`./forced_photometry.py ZTF19abimkwn -dl -fit -saltfit -nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
+`./forced_photometry.py ZTF19abimkwn -dl -fit -saltfit --nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
 
-`./forced_photometry.py supernovae.txt -dl -fit -filecheck` loads images for all ZTF objects found in supernovae.txt and additionally performs a full filecheck on all images downloaded by ztfquery (not only the ones in the textfile).
+`./forced_photometry.py supernovae.txt -plot --filecheck` Plots all lightcurves for ZTF transients found in supernovae.txt and additionally performs a full filecheck on all images downloaded by ztfquery (not only the ones in the textfile).
 
 ## Requirements
 
