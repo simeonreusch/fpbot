@@ -22,13 +22,17 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
 	lc = pd.read_csv(lc_path)
 
 	#apply time-range cut:
-	if daysago is not None:
-		now = Time(time.time(), format='unix', scale='utc').jd
-		jdmin = now - daysago
-	else:
-		jdmin = 2457388
+	now = Time(time.time(), format='unix', scale='utc').mjd
 
-	print(lc)
+	if daysago is not None:
+		mjdmin = now - daysago
+		axis_min = mjdmin
+		axis_max = now + 1
+	else:
+		mjdmin = 2457388 - 2400000.5
+		axis_min = np.min(lc.obsmjd.values) - 10
+		axis_max = now + 10
+	lc.query('obsmjd > @mjdmin', inplace = True)
 
 	# add magnitudes, upper limits, errors and times
 	mags = []
@@ -57,11 +61,11 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
 		upper_limits.append(upper_limit)
 		mags.append(mag)
 		mags_unc.append(mag_unc)
+
 	lc["upper_limit"] = upper_limits
 	lc["mag"] = mags
 	lc["mag_err"] = mags_unc
 	len_before_sn_cut = len(lc)
-	now = Time(time.time(), format='unix', scale='utc').mjd
 	t0_dist = np.asarray(lc.obsmjd.values - now)
 	lc.insert(2, "t0_dist",  t0_dist)
 	uplim = lc.query("mag == 99")
@@ -85,8 +89,10 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
 		t0 = Time(time.time(), format='unix', scale='utc').mjd
 		return t0 + dist_to_t0
 
-	# plot
+	# Actual plotting
+	
 	fig, ax = plt.subplots(1,1, figsize = [14,4.2])
+	# fig, ax = plt.subplots(1,1, figsize = [6,6])
 	fig.subplots_adjust(top=0.8)
 	ax2 = ax.secondary_xaxis('top', functions=(t0_dist, t0_to_mjd))
 	ax2.set_xlabel("Days from {}".format(date.today()))
@@ -94,9 +100,8 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
 	ax.grid(b=True, axis='y')
 	ax.set_xlabel('MJD')
 	ax.set_ylabel('magnitude [AB]')
-	ax.set_xlim([np.min(uplim.obsmjd.values)-1, np.max(uplim.obsmjd.values)+1])
-	# ax.set_xlim([np.min(lc.obsmjd.values)-20, np.max(lc.obsmjd.values)+20])
-	ax2.set_xlim([ax.get_xlim()[0] - now, ax.get_xlim()[1] -now ])
+	ax.set_xlim([axis_min, axis_max])
+	ax2.set_xlim([ax.get_xlim()[0] - now, ax.get_xlim()[1] - now ])
 	ax.scatter(g_uplim.obsmjd.values, g_uplim.upper_limit.values, color ='green', marker="v", s=1.3, alpha=0.5)
 	ax.scatter(r_uplim.obsmjd.values, r_uplim.upper_limit.values, color = 'red', marker="v", s=1.3, alpha=0.5)
 	ax.scatter(i_uplim.obsmjd.values, i_uplim.upper_limit.values, color = 'orange', marker="v", s=1.3, alpha=0.5)
@@ -106,6 +111,7 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
 	ax.axvline(x=now, color="grey", linewidth=0.5, linestyle='--')
 	# ax.set_ylim(ax.get_ylim()[::-1])
 	ax.set_ylim([23,15.5])
+	# ax.set_ylim([23,18.5])
 	ax.legend(loc=0, framealpha=1, title="SNT={:.0f}".format(snt), fontsize='small', title_fontsize="small")
 	lc_plot_path = os.path.join(lc_plotdir, "{}_SNT_{}.png".format(ztf_name, snt))
 	fig.savefig(lc_plot_path, dpi=300, bbox_inches = "tight")

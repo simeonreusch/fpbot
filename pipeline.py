@@ -19,7 +19,7 @@ import pandas as pd
 
 class ForcedPhotometryPipeline():
 
-	def __init__(self, file_or_name=None, daysago=None):
+	def __init__(self, file_or_name=None, daysago=None, snt=5.0):
 		self.startime = time.time()
 		self.logger = logging.getLogger('pipeline')
 
@@ -35,6 +35,7 @@ class ForcedPhotometryPipeline():
 		self.logger.addHandler(hdlr) 
 		self.logger.setLevel(logging.INFO)
 		self.daysago = daysago
+		self.snt = snt
 
 		if type(self.file_or_name) == str:
 		# TODO: 
@@ -122,10 +123,10 @@ class ForcedPhotometryPipeline():
 	def check_info_info_df_exists(self):
 		raise NotImplementedError
 
-	def psffit(self, nprocess=4, snt=5, daysago=None):
+	def psffit(self, nprocess=4):
 		object_count = len(self.object_list)
-		snt_ = [snt]*object_count
-		daysago_ = [daysago]*object_count
+		snt_ = [self.snt]*object_count
+		daysago_ = [self.daysago]*object_count
 		from astropy.utils.console import ProgressBar
 		bar = ProgressBar(object_count)
 		_ras = self.ZTF_object_infos['ra'].values
@@ -134,6 +135,19 @@ class ForcedPhotometryPipeline():
 		_jdmaxs = self.ZTF_object_infos['jdmax'].values
 		with multiprocessing.Pool(nprocess) as p:
 			for j, result in enumerate(p.imap_unordered(self._psffit_multiprocessing_, zip(self.object_list, snt_, daysago_, _ras, _decs, _jdmins, _jdmaxs))):
+				if bar is not None:
+					bar.update(j)
+			if bar is not None:
+				bar.update(object_count)
+
+	def plot(self, nprocess=4):
+		object_count = len(self.object_list)
+		snt_ = [self.snt]*object_count
+		daysago_ = [self.daysago]*object_count
+		from astropy.utils.console import ProgressBar
+		bar = ProgressBar(object_count)
+		with multiprocessing.Pool(nprocess) as p:
+			for j, result in enumerate(p.imap_unordered(self._plot_multiprocessing_, zip(self.object_list, snt_, daysago_))):
 				if bar is not None:
 					bar.update(j)
 			if bar is not None:
@@ -169,6 +183,13 @@ class ForcedPhotometryPipeline():
 		from plot import plot_lightcurve
 		plot_lightcurve(ztf_name, snt=snt)
 		print('{} successfully fitted and plotted'.format(ztf_name))
+
+	@staticmethod
+	def _plot_multiprocessing_(args):
+		ztf_name, snt, daysago = args
+		from plot import plot_lightcurve
+		plot_lightcurve(ztf_name, snt=snt, daysago=daysago)
+		print('{} plotted'.format(ztf_name))
 
 	# @staticmethod
 	# def _plot_nofit_multiprocessing_(args):
