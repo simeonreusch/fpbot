@@ -11,102 +11,81 @@ import ztfquery
 
 MARSHAL_BASEURL = "http://skipper.caltech.edu:8080/cgi-bin/growth/view_avro.cgi?name="
 
-# class AmpelConnector():
-#     def __init__(self, ztf_names, nprocess=16, logger=None):
-#         if logger is None:
-#             logging.basicConfig(level = logging.INFO)
-#             self.logger = logging.getLogger()
-#         else:
-#             self.logger = logger
+class AmpelInfo():
+    def __init__(self, ztf_names, nprocess=16, logger=None):
+        if logger is None:
+            logging.basicConfig(level = logging.INFO)
+            self.logger = logging.getLogger('cosmology')
+        else:
+            self.logger = logger
 
-#         self.ztf_names = ztf_names
-#         self.nprocess = nprocess
+        self.ztf_names = ztf_names
+        self.nprocess = nprocess
 
-#         _ampel_user = ".AMPEL_user.txt"
-#         _ampel_pass = ".AMPEL_pass.txt"
+        _ampel_user = ".AMPEL_user.txt"
+        _ampel_pass = ".AMPEL_pass.txt"
 
-#         try:
-#             with open(_ampel_user, "r") as f:
-#                 self.username = f.read()
-#         except FileNotFoundError:
-#             self.username = getpass.getpass(prompt='Username: ', stream=None)
-#         with open(_ampel_user, "wb") as f:
-#             f.write(self.username.encode())
-#         try:
-#             with open(_ampel_pass, "r") as f:
-#                 self.password = f.read()
-#         except FileNotFoundError:
-#             self.password = getpass.getpass(prompt='Password: ', stream=None)
-#         with open(_ampel_pass, "wb") as f:
-#             f.write(self.password.encode())
+        try:
+            with open(_ampel_user, "r") as f:
+                self.username = f.read()
+        except FileNotFoundError:
+            self.username = getpass.getpass(prompt='Username: ', stream=None)
+        with open(_ampel_user, "wb") as f:
+            f.write(self.username.encode())
+        try:
+            with open(_ampel_pass, "r") as f:
+                self.password = f.read()
+        except FileNotFoundError:
+            self.password = getpass.getpass(prompt='Password: ', stream=None)
+        with open(_ampel_pass, "wb") as f:
+            f.write(self.password.encode())
 
-#         if socket.gethostname() == "wgs33.zeuthen.desy.de":
-#             self.port = 5433
-#         else:
-#             self.port = 5432
+        if socket.gethostname() == "wgs33.zeuthen.desy.de":
+            self.port = 5433
+        else:
+            self.port = 5432
 
-#         self.logger.info('postgresql://{0}:{1}@localhost:{2}/ztfarchive'.format(self.username, self.password, self.port))
+        self.logger.info('postgresql://{0}:{1}@localhost:{2}/ztfarchive'.format(self.username, self.password, self.port))
 
-#         try:
-#             self.ampel_client = ArchiveDB('postgresql://{0}:{1}@localhost:{2}/ztfarchive'.format(self.username, self.password, self.port))
-#         except sqlalchemy.exc.OperationalError as e:
-#             print("---------------------------------------------------------------------")
-#             print("You can't access the archive database without first opening the port.")
-#             print("Open a new terminal and run the following command:")
-#             print("ssh -L5432:localhost:5433 ztf-wgs.zeuthen.desy.de")
-#             print("If that command doesn't work, you are either not a DESY user,")
-#             print("the credentials are wrong or your ssh-config is erroneous .")
-#             print("---------------------------------------------------------------------")
-#             raise e
+        try:
+            self.ampel_client = ArchiveDB('postgresql://{0}:{1}@localhost:{2}/ztfarchive'.format(self.username, self.password, self.port))
+        except sqlalchemy.exc.OperationalError as e:
+            print("---------------------------------------------------------------------")
+            print("You can't access the archive database without first opening the port.")
+            print("Open a new terminal and run the following command:")
+            print("ssh -L5432:localhost:5433 ztf-wgs.zeuthen.desy.de")
+            print("If that command doesn't work, you are either not a DESY user,")
+            print("the credentials are wrong or your ssh-config is erroneous .")
+            print("---------------------------------------------------------------------")
+            raise e
 
-#     def get_info(self):
-#         # ztf_object = self.ampel_client.get_alerts_for_object(self.ztf_name, with_history=True)
-#         # query_res = [i for i in ztf_object]
-#         # ras = []
-#         # decs = []
-#         # for res in query_res:
-#         #     ra = res['candidate']['ra']
-#         #     dec = res['candidate']['dec']
-#         #     ras.append(ra)
-#         #     decs.append(dec)
-#         # self.ra = np.median(ras)
-#         # self.dec = np.median(decs)
-#         # now = Time(time.time(), format='unix', scale='utc').jd
-#         # self.jdmin = 2457388
-#         # self.jdmax = now
-#         object_count = len(self.ztf_names)
-#         username_ = [self.username]*object_count
-#         password_ = [self.password]*object_count
-#         port_ = [self.port]*object_count
-#         ampel_client = [self.ampel_client]*object_count
-#         from astropy.utils.console import ProgressBar
-#         bar = ProgressBar(object_count)
-#         with multiprocessing.Pool(self.nprocess) as p:
-#             for j, result in enumerate(p.imap_unordered(self._get_alerts_multiprocessor_, zip(self.ztf_names, username_, password_, port_))):
-#                 if bar is not None:
-#                     bar.update(j)
-#             if bar is not None:
-#                 bar.update(object_count)
-#         print(result)
+        self.queryresult = self.get_info()
 
-#     @staticmethod
-#     def _get_alerts_multiprocessor_(args):
-#         ztf_name, username, password, port = args
-#         # ztf_object = ArchiveDB('postgresql://{0}:{1}@localhost:{2}/ztfarchive'.format(username, password, port))
-#         query_res = [i for i in ztf_object]
-#         ras = []
-#         decs = []
-#         for res in query_res:
-#             ra = res['candidate']['ra']
-#             dec = res['candidate']['dec']
-#             ras.append(ra)
-#             decs.append(dec)
-#         self.ra = np.median(ras)
-#         self.dec = np.median(decs)
-#         now = Time(time.time(), format='unix', scale='utc').jd
-#         self.jdmin = 2457388
-#         self.jdmax = now
-#         return [ztf_name, ra, dec, jdmin, jdmax]
+    def get_info(self):
+        object_count = len(self.ztf_names)
+        print("\nObtaining ra/decs from AMPEL")
+        from astropy.utils.console import ProgressBar
+        bar = ProgressBar(object_count)
+        queryresult = []
+        for index, ztf_name in enumerate(self.ztf_names):
+            ampel_object = self.ampel_client.get_alerts_for_object(ztf_name, with_history=True)
+            query_res = [i for i in ampel_object]
+            ras = []
+            decs = []
+            for res in query_res:
+                ra = res['candidate']['ra']
+                dec = res['candidate']['dec']
+                ras.append(ra)
+                decs.append(dec)
+            ra = np.median(ras)
+            dec = np.median(decs)
+            now = Time(time.time(), format='unix', scale='utc').jd
+            jdmin = 2458209
+            jdmax = now
+            result = [ztf_name, ra, dec, jdmin, jdmax]
+            queryresult.append(result)
+            bar.update()
+        return queryresult
 
 class MarshalInfo():
     def __init__(self, ztf_names, nprocess=16, logger=None):
@@ -170,37 +149,3 @@ class MarshalInfo():
         jdmin = 2458209
         jdmax = now
         return[ztf_name, ra, dec, jdmin, jdmax]
-
-    # def get_info(self):
-    #     request = requests.get(self.url, auth=self.auth)
-    #     tables = pd.read_html(request.content)
-    #     mtb = tables[len(tables)-1]
-    #     ndet = len(mtb)
-
-    #     if ndet == 0:
-    #         self.ra = 999
-    #         self.dec = 999
-    #         self.jd = 999
-    #     else:
-    #         ra = np.zeros(ndet)
-    #         dec = np.zeros(ndet)
-    #         jd = np.zeros(ndet)
-    #         for i in range(ndet):
-    #             line = mtb.values[i][0].split(",")
-    #             for j in range(len(line)):
-    #                 if line[j][:7] == '  "ra":':
-    #                     ra[i] = float(line[j].split(':')[1])
-    #                 if line[j][:8] == '  "dec":':
-    #                     dec[i] = float(line[j].split(':')[1])
-    #                 if line[j][:7] == '  "jd":':
-    #                     jd[i] = float(line[j].split(':')[1])
-    #         ras = ra[ra!=0]
-    #         decs = dec[ra!=0]
-    #         jds = jd[ra!=0]
-    #         ind = np.argsort(jds)
-    #         self.ra = np.median(ras[ind])
-    #         self.dec = np.median(decs[ind])
-    #         self.jd = np.median(jds[ind])
-    #     now = Time(time.time(), format='unix', scale='utc').jd
-    #     self.jdmin = 2457388
-    #     self.jdmax = now

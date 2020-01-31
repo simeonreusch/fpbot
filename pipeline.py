@@ -48,6 +48,7 @@ class ForcedPhotometryPipeline():
 		self.create_info_dataframe()
 		try:
 			self.get_position_and_timerange()
+			self.ZTF_object_infos.to_csv('ra_dec_table.csv')
 		except ValueError:
 			print("\nMarshal not reachable at the moment (temporary outages are frequent)")
 			quit()
@@ -84,9 +85,11 @@ class ForcedPhotometryPipeline():
 		self.ZTF_object_infos = ZTF_object_infos.set_index('ZTF_name')
 
 	def get_position_and_timerange(self):
-		print('Connecting to Marshal')
+		print('Connecting to AMPEL')
+		# print('Connecting to Marshal')
 		import connectors
-		connector = connectors.MarshalInfo(self.object_list, nprocess=32)
+		# connector = connectors.MarshalInfo(self.object_list, nprocess=32)
+		connector = connectors.AmpelInfo(self.object_list)
 		if self.daysago is None:
 			print("\nNo 'daysago' given, full timerange used")
 		else:
