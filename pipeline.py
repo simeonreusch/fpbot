@@ -9,8 +9,6 @@ import numpy as np
 import ztfquery
 import pandas as pd
 
-
-
 # TODO
 # ra/dec option as run parameter
 # CREATE LOCAL FILE THAT STORES ZTF_NAME, RA/DEC + MWEBV
@@ -48,7 +46,7 @@ class ForcedPhotometryPipeline():
 		self.create_info_dataframe()
 		try:
 			self.get_position_and_timerange()
-			self.ZTF_object_infos.to_csv('ra_dec_table.csv')
+			# self.ZTF_object_infos.to_csv('ra_dec_table.csv')
 		except ValueError:
 			print("\nMarshal not reachable at the moment (temporary outages are frequent)")
 			quit()
@@ -85,9 +83,16 @@ class ForcedPhotometryPipeline():
 		self.ZTF_object_infos = ZTF_object_infos.set_index('ZTF_name')
 
 	def get_position_and_timerange(self):
-		# TODO
-		# add check if object is already in ra/dec-file
-		# print('Connecting to AMPEL')
+		ra_dec_path = os.path.join(LOCALDATA, "ra_dec_table.csv")
+
+		if os.path.exists(ra_dec_path):
+			ra_dec_table = pd.read_csv(ra_dec_path)
+			# ra_dec_table = ra_dec_table.set_index('ZTF_name')
+
+		for ztf_name in self.object_list:
+			
+
+		
 		print('Connecting to Marshal')
 		import connectors
 		connector = connectors.MarshalInfo(self.object_list, nprocess=32)

@@ -25,19 +25,18 @@ class Cosmology():
 	# custom parameters
 	max_redshift = 0.08 # maximum redshift def = 0.08
 	min_filters = 2			# number of different filters needed def = 2
-	max_chisquare = 5	# max chisquare to retain only good fits def = 1.3
+	max_chisquare = 3	# max chisquare to retain only good fits def = 1.3
 	min_obs_per_filter = 2	# minimum of observations in each filter actually used def = 2
 	min_obs = 5			# number of observations needed def = 5
 	min_redshift_digits = 3 # minimum of sigificant digits of redshift def = 3
 	pull_cut_sne_to_inspect = 5
 	residual_cut_sne_to_inspect = 3
-	annotation_threshold = 4 # residual in mag above which object name will be plotted
+	annotation_threshold = 2 # residual in mag above which object name will be plotted
 	color_range = [-2,3]
 
 
 	fitresults = pd.read_csv(salt_path)
 	fitresults = fitresults.set_index('name')
-	print(fitresults)
 	sne_total = len(fitresults)
 
 	def prune_fitresults(self):
@@ -63,7 +62,7 @@ class Cosmology():
 
 		self.calculate_statistics()
 
-		self.fitresults.to_csv(os.path.join(self.ztfdata, 'cosmology.csv'))
+		self.fitresults.to_csv(os.path.join(self.cosmology, 'cosmology.csv'))
 
 	def calculate_statistics(self):
 		self.median_peakabsmag = np.median(self.fitresults.peak_abs_mag_corrected.values)
@@ -72,8 +71,8 @@ class Cosmology():
 		self.rms = np.sqrt(np.sum((self.fitresults.residual)**2)/len(self.fitresults.residual))
 		self.nmad = 1.4826 * np.median(np.abs(self.fitresults.residual - residuals_median))
 
-		print(self.rms)
-		print(self.nmad)
+		self.logger.info("RMS = {:.3f}".format(self.rms))
+		self.logger.info("nMAD = {:.3f}".format(self.nmad))
 
 
 	def create_overview(self):
@@ -104,12 +103,13 @@ class Cosmology():
 		for i, name in enumerate(names):
 			ax.annotate(name, (x[i], y[i]), size='xx-small')
 
-		ax.set_ylim([-20,20])
+		ax.set_ylim([-5,5])
 		ax.set_xlabel('redshift')
 		ax.set_ylabel('corrected abs mag residual [mag]')
 		fig.savefig(os.path.join(self.cosmology_dir, 'hubble.png'))
 
 	def create_pdf_overview(self):
+		self.logger.info("Creating pdf overviews")
 		if not hasattr(self, 'good_objects'):
 			self.get_annotations()
 
@@ -134,13 +134,13 @@ class Cosmology():
 			image = PIL.Image.open(image).convert("RGB")
 			good_rgbs.append(image)
 		savepath = os.path.join(self.cosmology_dir, "good_objects.pdf")
-		good_rgbs[0].save(savepath, save_all=True, append_images=good_rgbs[1:])
+		good_rgbs[0].save(savepath, save_all=True, append_images=good_rgbs[1:], quality=85)
 
 		for image in bad_images:
 			image = PIL.Image.open(image).convert("RGB")
 			bad_rgbs.append(image)
 		savepath = os.path.join(self.cosmology_dir, "bad_objects.pdf")
-		bad_rgbs[0].save(savepath, save_all=True, append_images=bad_rgbs[1:])
+		bad_rgbs[0].save(savepath, save_all=True, append_images=bad_rgbs[1:], quality=85)
 
 cosmology = Cosmology()
 cosmology.prune_fitresults()
