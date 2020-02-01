@@ -14,6 +14,12 @@ import pandas as pd
 # CREATE LOCAL FILE THAT STORES ZTF_NAME, RA/DEC + MWEBV
 # os.path.expanduser("~") is auch nice
 
+def is_ztf_string(string):
+	if string[:3] == "ZTF" and len(string) == 12 and (int(string[3]) == 1 or int(string[3]) == 2):
+		return True
+	else:
+		return False
+
 class ForcedPhotometryPipeline():
 
 	def __init__(self, file_or_name=None, daysago=None, snt=5.0):
@@ -51,15 +57,8 @@ class ForcedPhotometryPipeline():
 			print("\nMarshal not reachable at the moment (temporary outages are frequent)")
 			quit()
 
-	@staticmethod
-	def is_ztf_string(string):
-		if string[:3] == "ZTF" and len(string) == 12 and (int(string[3]) == 1 or int(string[3]) == 2):
-			return True
-		else:
-			return False
-
 	def use_if_ztf(self):
-		if self.is_ztf_string(self.file_or_name):
+		if is_ztf_string(self.file_or_name):
 			self.object_list = [self.file_or_name]
 		else:
 			self.object_list = []
@@ -89,10 +88,8 @@ class ForcedPhotometryPipeline():
 			ra_dec_table = pd.read_csv(ra_dec_path)
 			# ra_dec_table = ra_dec_table.set_index('ZTF_name')
 
-		for ztf_name in self.object_list:
+		# for ztf_name in self.object_list:
 			
-
-		
 		print('Connecting to Marshal')
 		import connectors
 		connector = connectors.MarshalInfo(self.object_list, nprocess=32)
