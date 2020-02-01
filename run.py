@@ -46,9 +46,6 @@ if do_plot:
 if do_saltfit:
 	pl.saltfit(quality_checks=True)
 
-		# except:
-			# print('{} ERROR while fitting and plotting'.format(ztf_name))
-
 endtime = time.time()
 duration = endtime - pl.startime
 print("\nThe script took {:.1f} minutes".format(duration/60))

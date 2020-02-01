@@ -7,6 +7,7 @@ from slack import RTMClient, WebClient
 from ztflc.io import LOCALDATA
 from pipeline import is_ztf_string
 
+from slackbot import bot_token, user_token
 
 
 # class SlackBot():
@@ -99,14 +100,12 @@ from pipeline import is_ztf_string
 botuser = "UTF38HMFZ"
 keywords = [f"<@{botuser}>", "FPS"]
 
-def run_on_event(data, ztf_name):
-	print(data)
-	print(ztf_name)
+def run_on_event(data):
 	ts = data['ts']
 	channel = data['channel']
 	sid = int(float(ts) * 1.e6)
 	# cmd = "bash {0} {1} {2} {3}".format(submit_file, sid, ts, channel)
-	cmd = "echo 'LOL'"
+	cmd = f"bash slackbot_spawn_screen_session.sh {channel} {ts}"
 	print(cmd)
 	os.system(cmd)
 
@@ -126,10 +125,14 @@ def say_hello(**payload):
 			if len(slacktext) == 12 or len(slacktext) == 3:
 
 
-				blocks = 	[{"type": "section", "text": {"type": "mrkdwn", "text": f"Hi <@{user}> This is a bot for forced photometry! Just type *@fpsbot ZTFaaaaaaaa* or *FPS ZTFaaaaaaaa* and the following commands:\n"},"fields": [
+				blocks = 	[{"type": "section", "text": {"type": "mrkdwn", "text": f"Hi <@{user}> This is a bot for forced photometry! Just type *@fpsbot ZTFName* or *FPS ZTFName*. This downloads images, fits them and plots the lightcurve. [Only giving a ZTF name as argument is equivalent to *FPS ZTFName -download -fit -plot --snt 5*] Optional arguments:\n"},"fields": [
 				{
 					"type": "mrkdwn",
-					"text": "*-generate*: Downloads images from IPAC, performs PSF fit and plots the lightcurve"
+					"text": "*-download*: Only downloads the images from IPAC."
+				},
+				{
+					"type": "mrkdwn",
+					"text": "*-fit*: Assumes images have already been downloaded, performs PSF fit"
 				},
 				{
 					"type": "mrkdwn",
@@ -137,7 +140,11 @@ def say_hello(**payload):
 				},
 				{
 					"type": "mrkdwn",
-					"text": "*--daysago*: Plots lightcurve from [daysago] to now; default is full ZTF timerange"
+					"text": "*--daysago*: Only data from [daysago] to now is considered. Default is full ZTF timerange"
+				},
+								{
+					"type": "mrkdwn",
+					"text": "*--snt*: Signal to noise threshold. Default is 5.0"
 				}
 			]}]
 
@@ -145,41 +152,21 @@ def say_hello(**payload):
 			
 			elif len(slacktext) > 12:
 
-
 				if is_ztf_string(slacktext[13:25]):
 					ztf_name = slacktext[13:25]		
 					blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": f"Hi <@{user}> You requested forced photometry for *{ztf_name}*. I'll get right to it. Depending on whether the image files need to be downloaded, this can take a few minutes."}}]
 					wc.chat_postMessage(channel=channel_id, text=f"You requested forced photometry for {ztf_name}", blocks=blocks, thread_ts=thread_ts)
-					run_on_event(data, ztf_name)
+					run_on_event(data)
 
 				elif is_ztf_string(slacktext[4:16]):
 					ztf_name = slacktext[4:16]
-					blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": f"Hi <@{user}> You requested forced photometry for *{ztf_name}*. I'll get right to it. Depending on whether the image files need to be downloaded, this can take a few minutes."}}]	
+					blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": f"Hi <@{user}> You requested forced photometry for *{ztf_name}*. I'll get right to it."}}]	
 					wc.chat_postMessage(channel=channel_id, text=f"You requested forced photometry for {ztf_name}", blocks=blocks, thread_ts=thread_ts)
-					run_on_event(data, ztf_name)
+					run_on_event(data)
 
 				else:
 					pass
 
-bot_token_file = ".slack_bot_access_token.txt"
-user_token_file = ".slack_access_token.txt"
-
-try:
-	with open(bot_token_file, "r") as f:
-		bot_token = f.read()
-except FileNotFoundError:
-		bot_token = getpass.getpass(prompt='Slack Bot Access Token: ', stream=None)
-with open(bot_token_file, "wb") as f:
-	f.write(bot_token.encode())
-
-try:
-	with open(user_token_file, "r") as f:
-		user_token = f.read()
-except FileNotFoundError:
-	user_token = getpass.getpass(prompt='Slack User Token: ', stream=None)
-with open(user_token_file, "wb") as f:
-	f.write(user_token.encode())
-
-
+print("Starting realtime Slackbot for forced photometry")
 rtm_client = RTMClient(token=bot_token)
 rtm_client.start()
