@@ -18,7 +18,7 @@ parser.add_argument('-saltfit', '-salt', '-sf', action="store_true", help="Do a 
 # operational args, defining how to run
 parser.add_argument('--nprocess', '-nprocess', type=int, default=4, help="Number of parallel threads. Default: 4")
 parser.add_argument('--snt', '-snt', type=float, default=5.0, help="What signal to noise ratio is desired? Default: 5")
-parser.add_argument('--daysago', '-daysago' type=int, default=None, help="Number of days in the past you want to download data for. Default is all the complete dataset")
+parser.add_argument('--daysago', '-daysago', type=int, default=None, help="Number of days in the past you want to download data for. Default is all the complete dataset")
 parser.add_argument('--daysuntil', '-daysuntil', type=int, default=None, help="Last day you want to include. Default is today.")
 parser.add_argument('--filecheck', '-filecheck', action="store_true", help="Runs a full filecheck on the ZTFDATA directory. Can take several hours")
 
