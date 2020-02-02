@@ -2,7 +2,7 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de); part of this code is by Robert Stein (robert.stein@desy.de)
 # License: BSD-3-Clause
 
-import os, getpass, io
+import os, io
 from slack import RTMClient, WebClient
 from ztflc.io import LOCALDATA
 from pipeline import is_ztf_string

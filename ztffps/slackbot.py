@@ -2,7 +2,7 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de); part of this code is by Robert Stein (robert.stein@desy.de)
 # License: BSD-3-Clause
 
-import time, os
+import time, os, getpass
 from slack import RTMClient, WebClient
 import pipeline
 
