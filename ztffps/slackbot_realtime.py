@@ -54,6 +54,10 @@ def say_hello(**payload):
 					"type": "mrkdwn",
 					"text": "*--daysago*: Only data from [daysago] to now is considered. Default is full ZTF timerange"
 				},
+{
+					"type": "mrkdwn",
+					"text": "*--daysuntil*: Only data till [daysuntil] is considered. Default is today"
+				},
 								{
 					"type": "mrkdwn",
 					"text": "*--snt*: Signal to noise threshold. Default is 5.0"
