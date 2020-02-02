@@ -20,7 +20,27 @@ except ImportError:
     _has_setuptools = False
 
 def check_dependencies():
-   install_requires = []
+    install_requires = []
+    try:
+        import ztfquery
+    except ImportError:
+        install_requires.append('ztfquery')
+
+    try:
+        import pandas
+    except ImportError:
+        install_requires.append('pandas')
+
+    try:
+        import ztflc
+    except ImportError:
+        install_requires.append('ztflc')
+
+    try:
+        import sqlalchemy
+    except ImportError:
+        install_requires.append('sqlalchemy')
+        
    return install_requires
 
 if __name__ == "__main__":
