@@ -52,7 +52,7 @@ def say_hello(**payload):
 				},
 				{
 					"type": "mrkdwn",
-					"text": "*--daysago*: Only data from [daysago] to now is considered. Default is full ZTF timerange"
+					"text": "*--daysago*: Only data from [daysago] to now is considered. Default is start of ZTF operations (April 2018)"
 				},
 {
 					"type": "mrkdwn",
@@ -61,6 +61,10 @@ def say_hello(**payload):
 								{
 					"type": "mrkdwn",
 					"text": "*--snt*: Signal to noise threshold. Default is 5.0"
+				},
+												{
+					"type": "mrkdwn",
+					"text": "*--magrange*: For plotting only; define range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag"
 				}
 			]}]
 

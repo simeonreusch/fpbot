@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, date
 
 
-def plot_lightcurve(ztf_name, snt=5.0, daysago=None, daysuntil=None, logger=None):
+def plot_lightcurve(ztf_name, snt=5.0, daysago=None, daysuntil=None, mag_range=None, logger=None):
 	if logger is None:
 		logging.basicConfig(level = logging.INFO)
 		logger = logging.getLogger()
@@ -109,7 +109,11 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, daysuntil=None, logger=None
 	ax.errorbar(r.obsmjd.values, r.mag.values, r.mag_err.values, color = 'red', fmt='.', label='ZTF r', mec="black", mew=0.5)
 	ax.errorbar(i.obsmjd.values, i.mag.values, i.mag_err.values, color = 'orange', fmt='.', label='ZTF i', mec="black", mew=0.5)
 	ax.axvline(x=now, color="grey", linewidth=0.5, linestyle='--')
-	ax.set_ylim([23,15])
+	print(mag_range)
+	if mag_range is None:
+		ax.set_ylim([23,15])
+	else:
+		ax.set_ylim([mag_range[1], mag_range[0]])
 	ax.legend(loc=0, framealpha=1, title="SNT={:.0f}".format(snt), fontsize='small', title_fontsize="small")
 	lc_plot_path = os.path.join(lc_plotdir, "{}_SNT_{}.png".format(ztf_name, snt))
 	fig.savefig(lc_plot_path, dpi=300, bbox_inches = "tight")

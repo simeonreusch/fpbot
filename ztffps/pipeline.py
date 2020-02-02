@@ -22,7 +22,7 @@ def is_ztf_string(string):
 
 class ForcedPhotometryPipeline():
 
-	def __init__(self, file_or_name=None, daysago=None, daysuntil=None, snt=5.0):
+	def __init__(self, file_or_name=None, daysago=None, daysuntil=None, snt=5.0, mag_range=None):
 		self.startime = time.time()
 		self.logger = logging.getLogger('pipeline')
 
@@ -40,6 +40,7 @@ class ForcedPhotometryPipeline():
 		self.daysago = daysago
 		self.daysuntil = daysuntil
 		self.snt = snt
+		self.mag_range = mag_range
 
 		if type(self.file_or_name) == str:
 		# TODO: 
@@ -162,10 +163,11 @@ class ForcedPhotometryPipeline():
 		snt_ = [self.snt]*object_count
 		daysago_ = [self.daysago]*object_count
 		daysuntil_ = [self.daysuntil]*object_count
+		mag_range_ = [self.mag_range]*object_count
 		from astropy.utils.console import ProgressBar
 		bar = ProgressBar(object_count)
 		with multiprocessing.Pool(nprocess) as p:
-			for j, result in enumerate(p.imap_unordered(self._plot_multiprocessing_, zip(self.object_list, snt_, daysago_, daysuntil_))):
+			for j, result in enumerate(p.imap_unordered(self._plot_multiprocessing_, zip(self.object_list, snt_, daysago_, daysuntil_, mag_range_))):
 				if bar is not None:
 					bar.update(j)
 			if bar is not None:
@@ -204,9 +206,9 @@ class ForcedPhotometryPipeline():
 
 	@staticmethod
 	def _plot_multiprocessing_(args):
-		ztf_name, snt, daysago, daysuntil = args
+		ztf_name, snt, daysago, daysuntil, mag_range = args
 		from plot import plot_lightcurve
-		plot_lightcurve(ztf_name, snt=snt, daysago=daysago, daysuntil=daysuntil)
+		plot_lightcurve(ztf_name, snt=snt, daysago=daysago, daysuntil=daysuntil, mag_range=mag_range)
 		print('\n{} plotted'.format(ztf_name))
 
 	# @staticmethod

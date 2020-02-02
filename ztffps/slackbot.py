@@ -52,18 +52,23 @@ def run_on_event(thread_id, channel_id):
 	daysago = None
 	daysuntil = None
 	snt = 5.0
+	mag_range = None
 
 	if "-plot" in split_message  or "--plot" in split_message:
 		do_plot = True
 
 	for i, parameter in enumerate(split_message):
 		if parameter == '-snt' or parameter == '--snt' or parameter == '–snt':
-			snt = float(split_message[i+1])
+			try:
+				snt = float(split_message[i+1])
+			except ValueError:
+				wc.chat_postMessage(channel=channel_id, text=f"Error: --snt has to be a float.", thread_ts=thread_id)
+				return
 
 	for i, parameter in enumerate(split_message):
 		if parameter == "-daysago" or parameter == "--daysago" or parameter == "—daysago":
 			try:
-				daysago = float(split_message[i+1])
+				daysago = int(split_message[i+1])
 			except ValueError:
 				wc.chat_postMessage(channel=channel_id, text=f"Error: --daysago has to be an integer.", thread_ts=thread_id)
 				return
@@ -71,10 +76,19 @@ def run_on_event(thread_id, channel_id):
 	for i, parameter in enumerate(split_message):
 		if parameter == "-daysuntil" or parameter == "--daysuntil" or parameter == "–daysuntil":
 			try:
-				daysuntil = float(split_message[i+1])
+				daysuntil = int(split_message[i+1])
 			except ValueError:
 				wc.chat_postMessage(channel=channel_id, text=f"Error: --daysuntil has to be an integer.", thread_ts=thread_id)
 				return
+
+	for i, parameter in enumerate(split_message):
+		if parameter == "-magrange" or parameter == "--magrange" or parameter == "–magrange":
+			try:
+				mag_range = [float(split_message[i+1]), float(split_message[i+2])]
+			except ValueError:
+				wc.chat_postMessage(channel=channel_id, text=f"Error: --magrange has to be two floats. E.g. --magrange 17.0 21.5.", thread_ts=thread_id)
+				return
+
 
 	if do_download == False and do_fit == False and do_plot == False:
 		do_download = True
@@ -82,7 +96,7 @@ def run_on_event(thread_id, channel_id):
 		do_fit = True
 
 	try:
-		pl = pipeline.ForcedPhotometryPipeline(file_or_name=ztf_name, daysago=daysago, daysuntil=daysuntil, snt=snt)
+		pl = pipeline.ForcedPhotometryPipeline(file_or_name=ztf_name, daysago=daysago, daysuntil=daysuntil, snt=snt, mag_range=mag_range)
 	except ValueError:
 		wc.chat_postMessage(channel=channel_id, text=f"The Marshal is not reachable at the moment. Unfortunately, this happens quite frequently.", thread_ts=thread_id)
 		return
