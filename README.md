@@ -1,12 +1,12 @@
 # ztffps
 
-Provides a forced photometry pipeline based on ztfquery and ztflc.
+Provides a forced photometry pipeline based on ztfquery and ztflc. Note: Requires python >= 3.7.
 
 ## Installation
 
 The majority of required packages can be installed by issuing:
 
-```pip install -r requirements.txt```
+```pip3 install -r requirements.txt```
 
 ## Usage
 
