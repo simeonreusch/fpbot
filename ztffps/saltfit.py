@@ -22,7 +22,7 @@ _BETA_JLA_ = 3.101
 # _BETA_JLA_UNC_ = 0.075
 
 _FIELD_REFERENCE_ = os.path.join(os.getcwd(), 'data', 'reference.csv')
-_SPECTROSCOPIC_REFERENCE_ = os.path.join(os.getcwd(), 'data', 'ztf_host_w_redshift_20190510.csv')
+_SPECTROSCOPIC_REFERENCE_ = os.path.join(os.getcwd(),'data', 'ztf_host_w_redshift_20190510.csv')
 _FILTER_TRANSLATION_ = {'p48r': 0, 'p48g': 1, 'p48i': 2}
 
 class SaltFit():
