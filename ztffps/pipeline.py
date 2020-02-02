@@ -22,7 +22,7 @@ def is_ztf_string(string):
 
 class ForcedPhotometryPipeline():
 
-	def __init__(self, file_or_name=None, daysago=None, snt=5.0):
+	def __init__(self, file_or_name=None, daysago=None, daysuntil=None, snt=5.0):
 		self.startime = time.time()
 		self.logger = logging.getLogger('pipeline')
 
@@ -38,6 +38,7 @@ class ForcedPhotometryPipeline():
 		self.logger.addHandler(hdlr) 
 		self.logger.setLevel(logging.INFO)
 		self.daysago = daysago
+		self.daysuntil = daysuntil
 		self.snt = snt
 
 		if type(self.file_or_name) == str:
@@ -101,10 +102,13 @@ class ForcedPhotometryPipeline():
 
 		for result in connector.queryresult:
 			if self.daysago is None:
-				_jdmin = 2457388
+				_jdmin = 2458209
 			else:
 				_jdmin = result[4] - self.daysago
-			_jdmax = result[4]
+			if self.daysuntil is None:
+				_jdmax = result[4]
+			else:
+				_jdmax = result[4] - self.daysuntil
 			_ra = result[1]
 			_dec = result[2]
 			self.ZTF_object_infos.loc["{}".format(result[0]), 'ra'] = _ra
@@ -157,10 +161,11 @@ class ForcedPhotometryPipeline():
 		object_count = len(self.object_list)
 		snt_ = [self.snt]*object_count
 		daysago_ = [self.daysago]*object_count
+		daysuntil_ = [self.daysuntil]*object_count
 		from astropy.utils.console import ProgressBar
 		bar = ProgressBar(object_count)
 		with multiprocessing.Pool(nprocess) as p:
-			for j, result in enumerate(p.imap_unordered(self._plot_multiprocessing_, zip(self.object_list, snt_, daysago_))):
+			for j, result in enumerate(p.imap_unordered(self._plot_multiprocessing_, zip(self.object_list, snt_, daysago_, daysuntil_))):
 				if bar is not None:
 					bar.update(j)
 			if bar is not None:
@@ -199,9 +204,9 @@ class ForcedPhotometryPipeline():
 
 	@staticmethod
 	def _plot_multiprocessing_(args):
-		ztf_name, snt, daysago = args
+		ztf_name, snt, daysago, daysuntil = args
 		from plot import plot_lightcurve
-		plot_lightcurve(ztf_name, snt=snt, daysago=daysago)
+		plot_lightcurve(ztf_name, snt=snt, daysago=daysago, daysuntil=daysuntil)
 		print('\n{} plotted'.format(ztf_name))
 
 	# @staticmethod

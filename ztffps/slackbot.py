@@ -50,6 +50,7 @@ def run_on_event(thread_id, channel_id):
 	do_fit = False
 	do_plot = False
 	daysago = None
+	daysuntil = None
 	snt = 5.0
 
 	if "-plot" in split_message  or "--plot" in split_message:
@@ -64,7 +65,15 @@ def run_on_event(thread_id, channel_id):
 			try:
 				daysago = float(split_message[i+1])
 			except ValueError:
-				wc.chat_postMessage(channel=channel_id, text=f"--daysago has to be an integer.", thread_ts=thread_id)
+				wc.chat_postMessage(channel=channel_id, text=f"Error: --daysago has to be an integer.", thread_ts=thread_id)
+				return
+
+	for i, parameter in enumerate(split_message):
+		if parameter == "-daysuntil" or parameter == "--daysuntil" or parameter == "–daysuntil":
+			try:
+				daysuntil = float(split_message[i+1])
+			except ValueError:
+				wc.chat_postMessage(channel=channel_id, text=f"Error: --daysuntil has to be an integer.", thread_ts=thread_id)
 				return
 
 	if do_download == False and do_fit == False and do_plot == False:
@@ -73,7 +82,7 @@ def run_on_event(thread_id, channel_id):
 		do_fit = True
 
 	try:
-		pl = pipeline.ForcedPhotometryPipeline(file_or_name=ztf_name, daysago=daysago, snt=snt)
+		pl = pipeline.ForcedPhotometryPipeline(file_or_name=ztf_name, daysago=daysago, daysuntil=daysuntil, snt=snt)
 	except ValueError:
 		wc.chat_postMessage(channel=channel_id, text=f"The Marshal is not reachable at the moment. Unfortunately, this happens quite frequently.", thread_ts=thread_id)
 		return
@@ -90,17 +99,17 @@ def run_on_event(thread_id, channel_id):
 			wc.chat_postMessage(channel=channel_id, text=f"Fitting PSF. This can take a moment.", thread_ts=thread_id)
 			pl.psffit()
 		except:
-			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into problem while performing the PSF fits.", thread_ts=thread_id)
+			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while performing the PSF fits.", thread_ts=thread_id)
 
 	if do_plot:
-		# try:
-		wc.chat_postMessage(channel=channel_id, text=f"Plotting lightcurve.", thread_ts=thread_id)
-		pl.plot()
-		imgpath = os.path.join(lc_plotdir, f"{ztf_name}_SNT_{snt}.png")
-		imgdata = open(imgpath, "rb")
-		wc.files_upload(file=imgdata, filename=imgpath, channels=channel_id, thread_ts =thread_id, text="And here is your lightcurve.")
-		# except:
-		# 	wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into problem while plotting the lightcurve.", thread_ts=thread_id)
+		try:
+			wc.chat_postMessage(channel=channel_id, text=f"Plotting lightcurve.", thread_ts=thread_id)
+			pl.plot()
+			imgpath = os.path.join(lc_plotdir, f"{ztf_name}_SNT_{snt}.png")
+			imgdata = open(imgpath, "rb")
+			wc.files_upload(file=imgdata, filename=imgpath, channels=channel_id, thread_ts =thread_id, text="And here is your lightcurve.")
+		except:
+			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while plotting the lightcurve.", thread_ts=thread_id)
 
 	endtime = time.time()
 	duration = endtime - pl.startime

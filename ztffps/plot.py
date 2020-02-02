@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, date
 
 
-def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
+def plot_lightcurve(ztf_name, snt=5.0, daysago=None, daysuntil=None, logger=None):
 	if logger is None:
 		logging.basicConfig(level = logging.INFO)
 		logger = logging.getLogger()
@@ -24,15 +24,16 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
 	#apply time-range cut:
 	now = Time(time.time(), format='unix', scale='utc').mjd
 
-	if daysago is not None:
-		mjdmin = now - daysago
+	mjdmin = now - daysago if daysago is not None else 58208.5
+	mjdmax = now - daysuntil if daysuntil is not None else now
+	if daysuntil is None and daysago is None:
 		axis_min = mjdmin
-		axis_max = now + 1
-	else:
-		mjdmin = 2458209 - 2400000.5
-		axis_min = np.min(lc.obsmjd.values) - 10
 		axis_max = now + 10
-	lc.query('obsmjd > @mjdmin', inplace = True)
+	else:
+		axis_min = mjdmin
+		axis_max = mjdmax + 1
+
+	lc.query('obsmjd >= @mjdmin and obsmjd <= @mjdmax', inplace = True)
 
 	# add magnitudes, upper limits, errors and times
 	mags = []
@@ -91,8 +92,7 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
 
 	# Actual plotting
 	
-	fig, ax = plt.subplots(1,1, figsize = [14,4.2])
-	# fig, ax = plt.subplots(1,1, figsize = [6,6])
+	fig, ax = plt.subplots(1,1, figsize = [10,4.2])
 	fig.subplots_adjust(top=0.8)
 	ax2 = ax.secondary_xaxis('top', functions=(t0_dist, t0_to_mjd))
 	ax2.set_xlabel("Days from {}".format(date.today()))
@@ -109,9 +109,7 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, logger=None):
 	ax.errorbar(r.obsmjd.values, r.mag.values, r.mag_err.values, color = 'red', fmt='.', label='ZTF r', mec="black", mew=0.5)
 	ax.errorbar(i.obsmjd.values, i.mag.values, i.mag_err.values, color = 'orange', fmt='.', label='ZTF i', mec="black", mew=0.5)
 	ax.axvline(x=now, color="grey", linewidth=0.5, linestyle='--')
-	# ax.set_ylim(ax.get_ylim()[::-1])
-	ax.set_ylim([22.5,15.5])
-	# ax.set_ylim([23,18.5])
+	ax.set_ylim([23,15])
 	ax.legend(loc=0, framealpha=1, title="SNT={:.0f}".format(snt), fontsize='small', title_fontsize="small")
 	lc_plot_path = os.path.join(lc_plotdir, "{}_SNT_{}.png".format(ztf_name, snt))
 	fig.savefig(lc_plot_path, dpi=300, bbox_inches = "tight")
