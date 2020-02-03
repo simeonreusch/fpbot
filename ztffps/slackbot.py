@@ -65,7 +65,7 @@ def run_on_event(thread_id, channel_id):
 			try:
 				snt = float(split_message[i+1])
 			except ValueError:
-				wc.chat_postMessage(channel=channel_id, text=f"Error: --snt has to be a float.", thread_ts=thread_id)
+				wc.chat_postMessage(channel=channel_id, text=f"Error: --snt has to be a float.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 				return
 
 	for i, parameter in enumerate(split_message):
@@ -73,7 +73,7 @@ def run_on_event(thread_id, channel_id):
 			try:
 				daysago = int(split_message[i+1])
 			except ValueError:
-				wc.chat_postMessage(channel=channel_id, text=f"Error: --daysago has to be an integer.", thread_ts=thread_id)
+				wc.chat_postMessage(channel=channel_id, text=f"Error: --daysago has to be an integer.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 				return
 
 	for i, parameter in enumerate(split_message):
@@ -81,7 +81,7 @@ def run_on_event(thread_id, channel_id):
 			try:
 				daysuntil = int(split_message[i+1])
 			except ValueError:
-				wc.chat_postMessage(channel=channel_id, text=f"Error: --daysuntil has to be an integer.", thread_ts=thread_id)
+				wc.chat_postMessage(channel=channel_id, text=f"Error: --daysuntil has to be an integer.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 				return
 
 	for i, parameter in enumerate(split_message):
@@ -90,7 +90,7 @@ def run_on_event(thread_id, channel_id):
 				mag_range_array = np.asarray([float(split_message[i+1]), float(split_message[i+2])])
 				mag_range = [np.min(mag_range_array), np.max(mag_range_array)]
 			except ValueError:
-				wc.chat_postMessage(channel=channel_id, text=f"Error: --magrange has to be two floats. E.g. --magrange 17.0 21.5.", thread_ts=thread_id)
+				wc.chat_postMessage(channel=channel_id, text=f"Error: --magrange has to be two floats. E.g. --magrange 17.0 21.5.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 				return
 	
 	for i, parameter in enumerate(split_message):
@@ -99,7 +99,7 @@ def run_on_event(thread_id, channel_id):
 				ra = np.float(split_message[i+1])
 				dec = np.float(split_message[i+2])
 			except ValueError:
-				wc.chat_postMessage(channel=channel_id, text=f"Error: --radec has to be followed by two floats. E.g. --radec 171.932 -38.477. NOTE: Do not use '+' to denote positive declination, Slack sometimes parses this a phone number!", thread_ts=thread_id)
+				wc.chat_postMessage(channel=channel_id, text=f"Error: --radec has to be followed by two floats. E.g. --radec 171.932 -38.477. NOTE: Do not use '+' to denote positive declination, Slack sometimes parses this a phone number!", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 				return
 
 
@@ -111,7 +111,7 @@ def run_on_event(thread_id, channel_id):
 	try:
 		pl = pipeline.ForcedPhotometryPipeline(file_or_name=name, daysago=daysago, daysuntil=daysuntil, snt=snt, mag_range=mag_range, ra=ra, dec=dec)
 	except ValueError:
-		wc.chat_postMessage(channel=channel_id, text=f"The Marshal is not reachable at the moment. Unfortunately, this happens quite frequently.", thread_ts=thread_id)
+		wc.chat_postMessage(channel=channel_id, text=f"The Marshal is not reachable at the moment. Unfortunately, this happens quite frequently.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 		return
 
 	if do_download:
@@ -119,24 +119,24 @@ def run_on_event(thread_id, channel_id):
 			wc.chat_postMessage(channel=channel_id, text=f"Checking if all files are present and downloading missing ones. This can take a few minutes.", thread_ts=thread_id)
 			pl.download()
 		except:
-			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while downloading the image files.", thread_ts=thread_id)
+			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while downloading the image files.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	if do_fit:
 		try:
-			wc.chat_postMessage(channel=channel_id, text=f"Fitting PSF. This can take a moment.", thread_ts=thread_id)
+			wc.chat_postMessage(channel=channel_id, text=f"Fitting PSF. This can take a moment.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 			pl.psffit()
 		except:
-			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while performing the PSF fits.", thread_ts=thread_id)
+			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while performing the PSF fits.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	if do_plot:
 		try:
-			wc.chat_postMessage(channel=channel_id, text=f"Plotting lightcurve.", thread_ts=thread_id)
+			wc.chat_postMessage(channel=channel_id, text=f"Plotting lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 			pl.plot()
 			imgpath = os.path.join(lc_plotdir, f"{name}_SNT_{snt}.png")
 			imgdata = open(imgpath, "rb")
-			wc.files_upload(file=imgdata, filename=imgpath, channels=channel_id, thread_ts =thread_id, text="And here is your lightcurve.")
+			wc.files_upload(file=imgdata, filename=imgpath, channels=channel_id, thread_ts =thread_id, text="And here is your lightcurve.", icon_emoji=':fp-emoji:')
 		except:
-			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while plotting the lightcurve.", thread_ts=thread_id)
+			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while plotting the lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	endtime = time.time()
 	duration = endtime - pl.startime
