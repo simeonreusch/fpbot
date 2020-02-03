@@ -10,7 +10,7 @@ from slackbot import bot_token, user_token
 
 
 botuser = "UTF38HMFZ"
-keywords = [f"<@{botuser}>", "FPS"]
+keywords = [f"<@{botuser}>", "FP"]
 
 def run_on_event(data):
 	ts = data['ts']
@@ -37,7 +37,7 @@ def say_hello(**payload):
 			if len(slacktext) == 12 or len(slacktext) == 3:
 
 
-				blocks = 	[{"type": "section", "text": {"type": "mrkdwn", "text": f"Hi <@{user}>. This is a bot for forced photometry! Just type *@fpsbot ZTFName* or *FPS ZTFName*. This downloads images, fits them and plots the lightcurve. [Only giving a ZTF name as argument is equivalent to *FPS ZTFName -download -fit -plot --snt 5*] Optional arguments:\n"},"fields": [
+				blocks = 	[{"type": "section", "text": {"type": "mrkdwn", "text": f"Hi <@{user}>. This is a bot for forced photometry! Just type *@fpbot ZTFName* or *FP ZTFName*. This downloads images, fits them and plots the lightcurve. [Only giving a ZTF name as argument is equivalent to *FP ZTFName -download -fit -plot --snt 5*] Optional arguments:\n"},"fields": [
 				{
 					"type": "mrkdwn",
 					"text": "*-download*: Only downloads the images from IPAC."
@@ -68,7 +68,7 @@ def say_hello(**payload):
 				}
 			]}]
 
-				wc.chat_postMessage(channel=channel_id, text=f"Hi <@{user}> This is a bot for forced photometry! Just type @fpsbot ZTFaaaaaaaa and the following commands:\n-generate: downloads images from IPAC, performs PSF fit and plots the lightcurve\n-plot: only plots the lightcurve\n-daysago: plots lightcurve from [daysago] to now; default is full ZTF timerange", blocks=blocks, thread_ts=thread_ts)
+				wc.chat_postMessage(channel=channel_id, text=f"Hi <@{user}> This is a bot for forced photometry! Just type @fpbot ZTFaaaaaaaa and the following commands:\n-generate: downloads images from IPAC, performs PSF fit and plots the lightcurve\n-plot: only plots the lightcurve\n-daysago: plots lightcurve from [daysago] to now; default is full ZTF timerange", blocks=blocks, thread_ts=thread_ts)
 			
 			elif len(slacktext) > 12:
 
