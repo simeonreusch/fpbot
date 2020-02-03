@@ -11,7 +11,7 @@ bot_token_file = ".slack_bot_access_token.txt"
 user_token_file = ".slack_access_token.txt"
 
 ztfdata = os.getenv("ZTFDATA")
-lc_dir = os.path.join(ztfdata, "forcephotometry")
+lc_dir = os.path.join(ztfdata, "forcephotometry") 
 
 
 try:
