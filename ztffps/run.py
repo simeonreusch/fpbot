@@ -35,14 +35,14 @@ do_saltfit = commandline_args.saltfit
 do_filecheck = commandline_args.filecheck
 
 
-pl = pipeline.ForcedPhotometryPipeline(file_or_name=name, daysago=daysago, daysuntil=daysuntil, snt=snt)
+pl = pipeline.ForcedPhotometryPipeline(file_or_name=name, daysago=daysago, daysuntil=daysuntil, snt=snt, nprocess=nprocess)
 
 if do_filecheck:
 	pl.global_filecheck()
 if do_download:
 	pl.download()
 if do_psffit:
-	pl.psffit(nprocess=nprocess)
+	pl.psffit()
 if do_plot:
 	pl.plot()
 if do_saltfit:

@@ -11,7 +11,7 @@ bot_token_file = ".slack_bot_access_token.txt"
 user_token_file = ".slack_access_token.txt"
 
 ztfdata = os.getenv("ZTFDATA")
-lc_dir = os.path.join(ztfdata, "forcephotometry") 
+lc_dir = os.path.join(ztfdata, "forcephotometry")
 
 
 try:
@@ -109,7 +109,7 @@ def run_on_event(thread_id, channel_id):
 		do_fit = True
 
 	try:
-		pl = pipeline.ForcedPhotometryPipeline(file_or_name=name, daysago=daysago, daysuntil=daysuntil, snt=snt, mag_range=mag_range, ra=ra, dec=dec)
+		pl = pipeline.ForcedPhotometryPipeline(file_or_name=name, daysago=daysago, daysuntil=daysuntil, snt=snt, mag_range=mag_range, ra=ra, dec=dec, nprocess=8)
 	except ValueError:
 		wc.chat_postMessage(channel=channel_id, text=f"The Marshal is not reachable at the moment. Unfortunately, this happens quite frequently.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 		return

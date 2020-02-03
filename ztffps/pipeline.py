@@ -23,7 +23,7 @@ def is_ztf_string(string):
 
 class ForcedPhotometryPipeline():
 
-	def __init__(self, file_or_name=None, daysago=None, daysuntil=None, snt=5.0, mag_range=None, ra=None, dec=None):
+	def __init__(self, file_or_name=None, daysago=None, daysuntil=None, snt=5.0, mag_range=None, ra=None, dec=None, nprocess=4):
 		self.startime = time.time()
 		self.logger = logging.getLogger('pipeline')
 
@@ -44,6 +44,8 @@ class ForcedPhotometryPipeline():
 		self.mag_range = mag_range
 		self.ra = ra
 		self.dec = dec
+
+		self.nprocess = nprocess
 
 		if self.ra is None or self.dec is None:
 			if type(self.file_or_name) == str:
@@ -158,22 +160,40 @@ class ForcedPhotometryPipeline():
 	def check_info_info_df_exists(self):
 		raise NotImplementedError
 
-	def psffit(self, nprocess=4):
+	def psffit(self, nprocess=None):
+		if nprocess is None:
+			nprocess = self.nprocess
 		object_count = len(self.object_list)
-		snt_ = [self.snt]*object_count
-		daysago_ = [self.daysago]*object_count
+
 		from astropy.utils.console import ProgressBar
-		bar = ProgressBar(object_count)
-		_ras = self.ZTF_object_infos['ra'].values
-		_decs = self.ZTF_object_infos['dec'].values
-		_jdmins = self.ZTF_object_infos['jdmin'].values
-		_jdmaxs = self.ZTF_object_infos['jdmax'].values
-		with multiprocessing.Pool(nprocess) as p:
-			for j, result in enumerate(p.imap_unordered(self._psffit_multiprocessing_, zip(self.object_list, snt_, daysago_, _ras, _decs, _jdmins, _jdmaxs))):
-				if bar is not None:
-					bar.update(j)
-			if bar is not None:
-				bar.update(object_count)
+
+		ras = self.ZTF_object_infos['ra'].values
+		decs = self.ZTF_object_infos['dec'].values
+		jdmins = self.ZTF_object_infos['jdmin'].values
+		jdmaxs = self.ZTF_object_infos['jdmax'].values
+
+		for i, name in enumerate(self.object_list):
+
+			
+			fp = forcephotometry.ForcePhotometry.from_coords(ra=ras[i], dec=decs[i], jdmin=jdmins[i], jdmax=jdmaxs[i], name=name)
+			fp.load_metadata()
+			fp.load_filepathes(filecheck=False)
+			print('\n{} Fitting PSF'.format(name))
+			import matplotlib.pyplot as plt
+			fp.run_forcefit(verbose=True, nprocess=nprocess, store=True)
+			fig = plt.figure(dpi = 300)
+			ax = fig.add_subplot(111)
+			fp.show_lc(ax=ax)
+			plotdir = os.getenv("ZTFDATA", "forcephotometry")
+			if not os.path.exists(plotdir):
+				os.makedirs(plotdir)
+			fig.savefig(os.path.join(plotdir, "{}_flux.png".format(name)))
+			fp.store()
+			print('\n{} Plotting lightcurve'.format(name))
+			from plot import plot_lightcurve
+			plot_lightcurve(name, snt=self.snt, daysago=self.daysago, daysuntil=self.daysuntil)
+			print('\n{} successfully fitted and plotted'.format(name))
+
 
 	def plot(self, nprocess=4):
 		object_count = len(self.object_list)
@@ -196,30 +216,6 @@ class ForcedPhotometryPipeline():
 		badfiles = ztfquery.io.run_full_filecheck(erasebad=True, nprocess=nprocess, redownload=True)
 		print("BADFILES:\n{}".format(badfiles))
 
-		# TODO:
-		# Verbosity-option
-	@staticmethod
-	def _psffit_multiprocessing_(args):
-		name, snt, daysago, ra, dec, jdmin, jdmax = args
-		import connectors
-		fp = forcephotometry.ForcePhotometry.from_coords(ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name)
-		fp.load_metadata()
-		fp.load_filepathes(filecheck=False)
-		print('{} Fitting PSF'.format(name))
-		import matplotlib.pyplot as plt
-		fp.run_forcefit(verbose=True)
-		fig = plt.figure(dpi = 300)
-		ax = fig.add_subplot(111)
-		fp.show_lc(ax=ax)
-		plotdir = os.getenv("ZTFDATA", "forcephotometry")
-		if not os.path.exists(plotdir):
-			os.makedirs(plotdir)
-		fig.savefig(os.path.join(plotdir, "{}_flux.png".format(name)))
-		fp.store()
-		print('{} Plotting lightcurve'.format(name))
-		from plot import plot_lightcurve
-		plot_lightcurve(name, snt=snt)
-		print('\n{} successfully fitted and plotted'.format(name))
 
 	@staticmethod
 	def _plot_multiprocessing_(args):
