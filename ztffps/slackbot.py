@@ -32,7 +32,7 @@ with open(user_token_file, "wb") as f:
 
 def run_on_event(thread_id, channel_id):
 
-	wc = WebClient(token=bot_token)
+	wc = WebClient(token=user_token)
 
 	payload = wc.conversations_history(channel=channel_id, oldest=str(float(thread_id) - 1), latest=str(float(thread_id) + 1))
 
