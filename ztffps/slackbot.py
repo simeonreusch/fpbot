@@ -132,6 +132,7 @@ def run_on_event(thread_id, channel_id):
 		try:
 			wc.chat_postMessage(channel=channel_id, text=f"Plotting lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 			pl.plot()
+			wc = WebClient(token=bot_token)
 			imgpath = os.path.join(lc_plotdir, f"{name}_SNT_{snt}.png")
 			imgdata = open(imgpath, "rb")
 			wc.files_upload(file=imgdata, filename=imgpath, channels=channel_id, thread_ts=thread_id, title="And here is your lightcurve.", icon_emoji=':fp-emoji:')
