@@ -84,7 +84,8 @@ def run_on_event(thread_id, channel_id):
 	for i, parameter in enumerate(split_message):
 		if parameter == "-magrange" or parameter == "--magrange" or parameter == "–magrange":
 			try:
-				mag_range = [float(split_message[i+1]), float(split_message[i+2])]
+				mag_range_array = np.asarray([float(split_message[i+1]), float(split_message[i+2])])
+				mag_range = [np.min(mag_range_array), np.max(mag_range_array)]
 			except ValueError:
 				wc.chat_postMessage(channel=channel_id, text=f"Error: --magrange has to be two floats. E.g. --magrange 17.0 21.5.", thread_ts=thread_id)
 				return

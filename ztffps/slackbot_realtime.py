@@ -9,7 +9,8 @@ from pipeline import is_ztf_string
 from slackbot import bot_token, user_token
 
 
-botuser = "UTF38HMFZ"
+# botuser = "UTF38HMFZ"
+botuser = "UT462HHRR"
 keywords = [f"<@{botuser}>", "FP"]
 
 def run_on_event(data):
@@ -64,11 +65,11 @@ def say_hello(**payload):
 				},
 												{
 					"type": "mrkdwn",
-					"text": "*--magrange*: For plotting only; define range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag"
+					"text": "*--magrange*: For plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag"
 				}
 			]}]
 
-				wc.chat_postMessage(channel=channel_id, text=f"Hi <@{user}> This is a bot for forced photometry! Just type @fpbot ZTFaaaaaaaa and the following commands:\n-generate: downloads images from IPAC, performs PSF fit and plots the lightcurve\n-plot: only plots the lightcurve\n-daysago: plots lightcurve from [daysago] to now; default is full ZTF timerange", blocks=blocks, thread_ts=thread_ts)
+				wc.chat_postMessage(channel=channel_id, text=f"Hi <@{user}> This is a bot for forced photometry! Just type @fpbot ZTFName and it will download images from IPAC, perform a PSF fit and plot the lightcurve. Optional arguments\n-downnload: only plots the lightcurve\n-fit: only does the fit\n-plot: only plots the lightcurve\n--daysago: only data from [daysago] to now is considered; default is start of ZTF operations (April 2018)\n--daysuntil: only data till [daysuntil] is considered; default is today\n--snt: signal to noise threshold; default is 5.0\n--magrange: for plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag", blocks=blocks, thread_ts=thread_ts)
 			
 			elif len(slacktext) > 12:
 
