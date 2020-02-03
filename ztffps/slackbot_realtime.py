@@ -29,12 +29,12 @@ def say_hello(**payload):
 
 	if 'text' in data.keys():
 		slacktext = data['text']
-		if slacktext[:12] in keywords or slacktext[:3] in keywords:
+		if slacktext[:12] in keywords or slacktext[:2] in keywords:
 			channel_id = data['channel']
 			thread_ts = data['ts']
 			user = data['user']
 
-			if len(slacktext) == 12 or len(slacktext) == 3:
+			if len(slacktext) == 12 or len(slacktext) == 2:
 
 
 				blocks = 	[{"type": "section", "text": {"type": "mrkdwn", "text": f"Hi <@{user}>. This is a bot for forced photometry! Just type *@fpbot ZTFName* or *FP ZTFName*. This downloads images, fits them and plots the lightcurve. [Only giving a ZTF name as argument is equivalent to *FP ZTFName -download -fit -plot --snt 5*] Optional arguments:\n"},"fields": [
@@ -78,8 +78,8 @@ def say_hello(**payload):
 					wc.chat_postMessage(channel=channel_id, text=f"You requested forced photometry for {ztf_name}", blocks=blocks, thread_ts=thread_ts)
 					run_on_event(data)
 
-				elif is_ztf_string(slacktext[4:16]):
-					ztf_name = slacktext[4:16]
+				elif is_ztf_string(slacktext[3:15]):
+					ztf_name = slacktext[3:15]
 					blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": f"You requested forced photometry for *{ztf_name}*. I'll get right to it. Depending on whether the image files need to be downloaded, this can take a few minutes."}}]	
 					wc.chat_postMessage(channel=channel_id, text=f"You requested forced photometry for {ztf_name}", blocks=blocks, thread_ts=thread_ts)
 					run_on_event(data)
