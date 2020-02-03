@@ -27,21 +27,21 @@ _FILTER_TRANSLATION_ = {'p48r': 0, 'p48g': 1, 'p48i': 2}
 
 class SaltFit():
 
-	def __init__(self, ztf_name, mwebv, logger=None, **kwargs):
+	def __init__(self, name, mwebv, logger=None, **kwargs):
 		if logger is None:
 			logging.basicConfig(level = logging.INFO)
 			self.logger = logging.getLogger()
 		else:
 			self.logger = logger
-		self.ztf_name = ztf_name
-		self.lightcurve = pd.read_csv(os.path.join(LOCALDATA, "{}.csv".format(self.ztf_name)))
-		self.ra = m.target_sources.query('name == "{}"'.format(ztf_name))['ra'].values[0]
-		self.dec = m.target_sources.query('name == "{}"'.format(ztf_name))['dec'].values[0]
-		self.z = m.target_sources.query('name == "{}"'.format(ztf_name))['redshift'].values[0]
-		self.rcid = m.target_sources.query('name == "{}"'.format(ztf_name))['rcid'].values[0]
-		self.fieldid = m.target_sources.query('name == "{}"'.format(ztf_name))['field'].values[0]
+		self.name = name
+		self.lightcurve = pd.read_csv(os.path.join(LOCALDATA, "{}.csv".format(self.name)))
+		self.ra = m.target_sources.query('name == "{}"'.format(name))['ra'].values[0]
+		self.dec = m.target_sources.query('name == "{}"'.format(name))['dec'].values[0]
+		self.z = m.target_sources.query('name == "{}"'.format(name))['redshift'].values[0]
+		self.rcid = m.target_sources.query('name == "{}"'.format(name))['rcid'].values[0]
+		self.fieldid = m.target_sources.query('name == "{}"'.format(name))['field'].values[0]
 		self.mwebv = mwebv
-		self.quality_info = {"name": self.ztf_name, "z_spectro": False, "z_precision": 0, "p48g": 0, "p48r": 0, "p48i": 0, "nr_filters": 0, "obs_total": 0}
+		self.quality_info = {"name": self.name, "z_spectro": False, "z_precision": 0, "p48g": 0, "p48r": 0, "p48i": 0, "nr_filters": 0, "obs_total": 0}
 		self.obs_count = {}
 		self.modify_columns()
 
@@ -75,7 +75,7 @@ class SaltFit():
 
 	# def check_for_reference(self):
 	# 	if self.field is None or self.rcid is None:
-	# 		self.logger.info("{} no field or readout channel given".format(self.ztf_name))
+	# 		self.logger.info("{} no field or readout channel given".format(self.name))
 	# 		self.additional_infos.update(reference="none")
 	# 	else:
 	# 		pass
@@ -95,9 +95,9 @@ class SaltFit():
 	# 	return
 	def check_redshift_precision(self):
 		spectroscopic_redshifts = pd.read_csv(_SPECTROSCOPIC_REFERENCE_)
-		reference_object = spectroscopic_redshifts.query('sn_name == "{}"'.format(self.ztf_name))
+		reference_object = spectroscopic_redshifts.query('sn_name == "{}"'.format(self.name))
 		if not reference_object.empty:
-			self.logger.info('{} Spectroscopic redshift found'.format(self.ztf_name))
+			self.logger.info('{} Spectroscopic redshift found'.format(self.name))
 			self.z = reference_object['sn_redshift'].values[0]
 			self.quality_info.update(z_spectro = True)
 		else:
@@ -167,31 +167,31 @@ class SaltFit():
 			peak_abs_mag_corrected = peak_abs_mag + _ALPHA_JLA_*self.fitresult['parameters'][3] - _BETA_JLA_*self.fitresult['parameters'][4]
 
 			import matplotlib.pyplot as plt
-			fig = sncosmo.plot_lc(lc_sncosmo, model=self.fitted_model, errors=self.fitresult.errors, figtext=str(self.ztf_name))
+			fig = sncosmo.plot_lc(lc_sncosmo, model=self.fitted_model, errors=self.fitresult.errors, figtext=str(self.name))
 			plotdir = os.path.join(LOCALDATA, 'SALT')
 			if not os.path.exists(plotdir):
 				os.makedirs(plotdir)
-			plt.savefig(os.path.join(os.path.join(plotdir, '{}_SALT.png'.format(self.ztf_name))))
+			plt.savefig(os.path.join(os.path.join(plotdir, '{}_SALT.png'.format(self.name))))
 			plt.close(fig)
-			self.logger.info("{} Plotted.".format(self.ztf_name))
+			self.logger.info("{} Plotted.".format(self.name))
 		except:
-			self.logger.info("{} Fit exited with error".format(self.ztf_name))
-			self.fitresult = sncosmo.utils.Result({'name': self.ztf_name, 'success': False})
+			self.logger.info("{} Fit exited with error".format(self.name))
+			self.fitresult = sncosmo.utils.Result({'name': self.name, 'success': False})
 			self.fitted_model = None
 			self.result = None
 			return
 
 		if 	self.fitresult.success is True:
-			self.logger.info("{} Fit succeeded!".format(self.ztf_name))
+			self.logger.info("{} Fit succeeded!".format(self.name))
 
 			chisq, ndof, z, t0, x0, x1, c, t0_err, x0_err, x1_err, c_err, z_spectro, z_precision, p48g, p48r, p48i, nr_filters, obs_total = self.fitresult['chisq'], self.fitresult['ndof'], self.fitresult['parameters'][0], self.fitresult['parameters'][1], self.fitresult['parameters'][2], self.fitresult['parameters'][3], self.fitresult['parameters'][4], self.fitresult['errors']['t0'], self.fitresult['errors']['x0'], self.fitresult['errors']['x1'], self.fitresult['errors']['c'], self.quality_info["z_spectro"], self.quality_info["z_precision"], self.quality_info["p48g"], self.quality_info["p48r"], self.quality_info["p48i"], self.quality_info["nr_filters"], self.quality_info["obs_total"]
-			self.result = [self.ztf_name, chisq, ndof, chisq/ndof if ndof > 0 else 999, z, t0, x0, x1, c, t0_err, x0_err, x1_err, c_err, peak_mag, peak_abs_mag, peak_abs_mag_for_comparison, peak_abs_mag_corrected, z_spectro, z_precision, p48g, p48r, p48i, nr_filters, obs_total]
+			self.result = [self.name, chisq, ndof, chisq/ndof if ndof > 0 else 999, z, t0, x0, x1, c, t0_err, x0_err, x1_err, c_err, peak_mag, peak_abs_mag, peak_abs_mag_for_comparison, peak_abs_mag_corrected, z_spectro, z_precision, p48g, p48r, p48i, nr_filters, obs_total]
 
 		else:
-			self.logger.info("{} Fit failed".format(self.ztf_name))
+			self.logger.info("{} Fit failed".format(self.name))
 			self.result = None
 
-def fit_salt(ztf_name, mwebv, snt, quality_checks=False, logger=None):
-	saltfit = SaltFit(ztf_name, mwebv = mwebv, plot=True, logger=logger)
+def fit_salt(name, mwebv, snt, quality_checks=False, logger=None):
+	saltfit = SaltFit(name, mwebv = mwebv, plot=True, logger=logger)
 	saltfit.fit(snt=snt, quality_checks=quality_checks)
 	return saltfit.result, saltfit.fitted_model

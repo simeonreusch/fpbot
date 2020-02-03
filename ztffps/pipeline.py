@@ -8,10 +8,11 @@ from ztflc.io import LOCALDATA
 import numpy as np
 import ztfquery
 import pandas as pd
+from astropy.time import Time
 
 # TODO
 # ra/dec option as run parameter
-# CREATE LOCAL FILE THAT STORES ZTF_NAME, RA/DEC + MWEBV
+# CREATE LOCAL FILE THAT STORES NAME, RA/DEC + MWEBV
 # os.path.expanduser("~") is auch nice
 
 def is_ztf_string(string):
@@ -22,7 +23,7 @@ def is_ztf_string(string):
 
 class ForcedPhotometryPipeline():
 
-	def __init__(self, file_or_name=None, daysago=None, daysuntil=None, snt=5.0, mag_range=None):
+	def __init__(self, file_or_name=None, daysago=None, daysuntil=None, snt=5.0, mag_range=None, ra=None, dec=None):
 		self.startime = time.time()
 		self.logger = logging.getLogger('pipeline')
 
@@ -41,23 +42,26 @@ class ForcedPhotometryPipeline():
 		self.daysuntil = daysuntil
 		self.snt = snt
 		self.mag_range = mag_range
+		self.ra = ra
+		self.dec = dec
 
-		if type(self.file_or_name) == str:
-		# TODO: 
-		# check if it is a ZTF object name. Or ZTF transient?
-			self.use_if_ztf()
-		# something like self.check_if_ZTF_object
-		if type(self.file_or_name) == list:
-		# TODO: 
-		# check if all of them are ZTF object names
-			self.object_list = self.file_or_name
-		self.create_info_dataframe()
-		try:
-			self.get_position_and_timerange()
-			# self.ZTF_object_infos.to_csv('ra_dec_table.csv')
-		except ValueError:
-			print("\nMarshal not reachable at the moment (temporary outages are frequent)")
-			quit()
+		if self.ra is None or self.dec is None:
+			if type(self.file_or_name) == str:
+				self.use_if_ztf()
+			# something like self.check_if_ZTF_object
+			if type(self.file_or_name) == list:
+				self.object_list = self.file_or_name
+			self.create_info_dataframe()
+			try:
+				self.get_position_and_timerange()
+				# self.ZTF_object_infos.to_csv('ra_dec_table.csv')
+			except ValueError:
+				print("\nMarshal not reachable at the moment (temporary outages are frequent)")
+				quit()
+		else:
+			if type(self.file_or_name) == str:
+				self.object_list = [self.file_or_name]
+				self.create_info_dataframe()
 
 	def use_if_ztf(self):
 		if is_ztf_string(self.file_or_name):
@@ -79,18 +83,31 @@ class ForcedPhotometryPipeline():
 		print("Logs are stored in forced_photometry.log")
 
 	def create_info_dataframe(self):
-		_data = {'ZTF_name': self.object_list, 'ra': None, 'dec': None, 'jdmin': None, 'jdmax': None, 'mwebv': None}
+		if self.ra is None or self.dec is None:
+			_jdmin = None
+			_jdmax = None
+		else:
+			now = Time(time.time(), format='unix', scale='utc').jd
+			if self.daysago is None:
+				_jdmin = 2458209
+			else:
+				_jdmin = now - self.daysago
+			if self.daysuntil is None:
+				_jdmax = now
+			else:
+				_jdmax = now - self.daysuntil
+		_data = {'name': self.object_list, 'ra': self.ra, 'dec': self.dec, 'jdmin': _jdmin, 'jdmax': _jdmax, 'mwebv': None}
 		ZTF_object_infos = pd.DataFrame.from_dict(_data)
-		self.ZTF_object_infos = ZTF_object_infos.set_index('ZTF_name')
+		self.ZTF_object_infos = ZTF_object_infos.set_index('name')
 
 	def get_position_and_timerange(self):
-		ra_dec_path = os.path.join(LOCALDATA, "ra_dec_table.csv")
+		# ra_dec_path = os.path.join(LOCALDATA, "ra_dec_table.csv")
 
-		if os.path.exists(ra_dec_path):
-			ra_dec_table = pd.read_csv(ra_dec_path)
-			# ra_dec_table = ra_dec_table.set_index('ZTF_name')
+		# if os.path.exists(ra_dec_path):
+		# 	ra_dec_table = pd.read_csv(ra_dec_path)
+			# ra_dec_table = ra_dec_table.set_index('name')
 
-		# for ztf_name in self.object_list:
+		# for name in self.object_list:
 			
 		print('Connecting to Marshal')
 		import connectors
@@ -118,23 +135,23 @@ class ForcedPhotometryPipeline():
 			self.ZTF_object_infos.loc["{}".format(result[0]), 'jdmax'] = _jdmax
 
 	def download(self):
-		for ztf_name in self.object_list:
-			self.logger.info("{} Starting download".format(ztf_name))
-			_ra = self.ZTF_object_infos.loc["{}".format(ztf_name), 'ra']
-			_dec = self.ZTF_object_infos.loc["{}".format(ztf_name), 'dec']
-			_jdmin = self.ZTF_object_infos.loc["{}".format(ztf_name), 'jdmin']
-			_jdmax = self.ZTF_object_infos.loc["{}".format(ztf_name), 'jdmax']
-			fp = forcephotometry.ForcePhotometry.from_coords(ra=_ra, dec=_dec, jdmin=_jdmin, jdmax=_jdmax, name=ztf_name)
-			self.logger.info('{} Downloading data'.format(ztf_name))
+		for name in self.object_list:
+			self.logger.info("{} Starting download".format(name))
+			_ra = self.ZTF_object_infos.loc["{}".format(name), 'ra']
+			_dec = self.ZTF_object_infos.loc["{}".format(name), 'dec']
+			_jdmin = self.ZTF_object_infos.loc["{}".format(name), 'jdmin']
+			_jdmax = self.ZTF_object_infos.loc["{}".format(name), 'jdmax']
+			fp = forcephotometry.ForcePhotometry.from_coords(ra=_ra, dec=_dec, jdmin=_jdmin, jdmax=_jdmax, name=name)
+			self.logger.info('{} Downloading data'.format(name))
 			fp.load_metadata()
 			fp.io.download_data(nprocess=32, overwrite=False, show_progress=True, verbose=False, ignore_warnings=True)
 
 	def check_if_psf_data_exists(self):
 		self.cleaned_list = []
-		for ztf_name in self.object_list:
+		for name in self.object_list:
 			try:
-				pd.read_csv(os.path.join(LOCALDATA, "{}.csv".format(ztf_name)))
-				self.cleaned_list.append(ztf_name)
+				pd.read_csv(os.path.join(LOCALDATA, "{}.csv".format(name)))
+				self.cleaned_list.append(name)
 			except FileNotFoundError:
 				pass
 
@@ -183,12 +200,12 @@ class ForcedPhotometryPipeline():
 		# Verbosity-option
 	@staticmethod
 	def _psffit_multiprocessing_(args):
-		ztf_name, snt, daysago, ra, dec, jdmin, jdmax = args
+		name, snt, daysago, ra, dec, jdmin, jdmax = args
 		import connectors
-		fp = forcephotometry.ForcePhotometry.from_coords(ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=ztf_name)
+		fp = forcephotometry.ForcePhotometry.from_coords(ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name)
 		fp.load_metadata()
 		fp.load_filepathes(filecheck=False)
-		print('{} Fitting PSF'.format(ztf_name))
+		print('{} Fitting PSF'.format(name))
 		import matplotlib.pyplot as plt
 		fp.run_forcefit(verbose=True)
 		fig = plt.figure(dpi = 300)
@@ -197,26 +214,26 @@ class ForcedPhotometryPipeline():
 		plotdir = os.getenv("ZTFDATA", "forcephotometry")
 		if not os.path.exists(plotdir):
 			os.makedirs(plotdir)
-		fig.savefig(os.path.join(plotdir, "{}_flux.png".format(ztf_name)))
+		fig.savefig(os.path.join(plotdir, "{}_flux.png".format(name)))
 		fp.store()
-		print('{} Plotting lightcurve'.format(ztf_name))
+		print('{} Plotting lightcurve'.format(name))
 		from plot import plot_lightcurve
-		plot_lightcurve(ztf_name, snt=snt)
-		print('\n{} successfully fitted and plotted'.format(ztf_name))
+		plot_lightcurve(name, snt=snt)
+		print('\n{} successfully fitted and plotted'.format(name))
 
 	@staticmethod
 	def _plot_multiprocessing_(args):
-		ztf_name, snt, daysago, daysuntil, mag_range = args
+		name, snt, daysago, daysuntil, mag_range = args
 		from plot import plot_lightcurve
-		plot_lightcurve(ztf_name, snt=snt, daysago=daysago, daysuntil=daysuntil, mag_range=mag_range)
-		print('\n{} plotted'.format(ztf_name))
+		plot_lightcurve(name, snt=snt, daysago=daysago, daysuntil=daysuntil, mag_range=mag_range)
+		print('\n{} plotted'.format(name))
 
 	# @staticmethod
 	# def _plot_nofit_multiprocessing_(args):
-	# 	ztf_name 
+	# 	name 
 	# 	from plot import plot_lightcurve
-	# 	plot_lightcurve(ztf_name, snt=5.0)
-	# 	print('{} successfully plotted'.format(ztf_name))
+	# 	plot_lightcurve(name, snt=5.0)
+	# 	print('{} successfully plotted'.format(name))
 
 	def saltfit(self, snt=5, quality_checks=False):
 		self.check_if_psf_data_exists()
@@ -225,9 +242,9 @@ class ForcedPhotometryPipeline():
 		from saltfit import fit_salt
 
 		dustmap = sfdmap.SFDMap()
-		for ztf_name in self.cleaned_list:
-			_mwebv = dustmap.ebv(self.ZTF_object_infos.loc["{}".format(ztf_name), 'ra'], self.ZTF_object_infos.loc["{}".format(ztf_name), 'dec'])
-			self.ZTF_object_infos.loc["{}".format(ztf_name), 'mwebv'] = _mwebv
+		for name in self.cleaned_list:
+			_mwebv = dustmap.ebv(self.ZTF_object_infos.loc["{}".format(name), 'ra'], self.ZTF_object_infos.loc["{}".format(name), 'dec'])
+			self.ZTF_object_infos.loc["{}".format(name), 'mwebv'] = _mwebv
 		object_count = len(self.cleaned_list)
 		
 		bar = ProgressBar(object_count)
@@ -236,9 +253,9 @@ class ForcedPhotometryPipeline():
 
 		fitresult_df = pd.DataFrame(columns=['name', 'chisquare', 'ndof', 'red_chisq', 'z', 't0', 't0_err', 'x0', 'x0_err', 'x1', 'x1_err', 'c', 'c_err', 'peak_mag', 'peak_abs_mag', 'peak_abs_mag_for_comparison', 'peak_abs_mag_corrected', 'z_spectro', 'z_precision', 'g_obs', 'r_obs', 'i_obs', 'nr_filters', 'obs_total'])
 
-		for index, ztf_name in enumerate(self.cleaned_list):
-			print("\n{} performing SALT fit".format(ztf_name))
-			fitresult, fitted_model = fit_salt(ztf_name=ztf_name, snt=snt, mwebv=self.ZTF_object_infos.loc["{}".format(ztf_name), 'mwebv'], quality_checks=quality_checks)
+		for index, name in enumerate(self.cleaned_list):
+			print("\n{} performing SALT fit".format(name))
+			fitresult, fitted_model = fit_salt(name=name, snt=snt, mwebv=self.ZTF_object_infos.loc["{}".format(name), 'mwebv'], quality_checks=quality_checks)
 			if bar is not None:
 				bar.update(index)
 			fitresults.append(fitresult)
@@ -259,9 +276,9 @@ class ForcedPhotometryPipeline():
 	@staticmethod
 	def _saltfit_multiprocessing_(args):
 		from saltfit import fit_salt
-		ztf_name, mwebv, snt = args
-		print("{} SALT fitting".format(ztf_name))
-		fitresult, fitted_model = fit_salt(ztf_name=ztf_name, mwebv=mwebv, snt=snt)
+		name, mwebv, snt = args
+		print("{} SALT fitting".format(name))
+		fitresult, fitted_model = fit_salt(name=name, mwebv=mwebv, snt=snt)
 		return fitresult, fitted_model
 
 

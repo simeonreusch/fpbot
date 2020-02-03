@@ -9,13 +9,13 @@ import matplotlib.pyplot as plt
 from datetime import datetime, date
 
 
-def plot_lightcurve(ztf_name, snt=5.0, daysago=None, daysuntil=None, mag_range=None, logger=None):
+def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None, logger=None):
 	if logger is None:
 		logging.basicConfig(level = logging.INFO)
 		logger = logging.getLogger()
 	ztfdata = os.getenv("ZTFDATA")
 	lc_dir = os.path.join(ztfdata, "forcephotometry")
-	lc_path = os.path.join(lc_dir, "{}.csv".format(ztf_name))
+	lc_path = os.path.join(lc_dir, "{}.csv".format(name))
 	lc_plotdir = os.path.join(lc_dir, "plots")
 	if not os.path.exists(lc_plotdir):
 		os.makedirs(lc_plotdir)
@@ -80,7 +80,7 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, daysuntil=None, mag_range=N
 	r_uplim = uplim[uplim['filter'].isin(filterlist[1])]
 	i_uplim = uplim[uplim['filter'].isin(filterlist[2])]
 
-	logger.info("{} {} of {} datapoints survived SNT cut of {}".format(ztf_name, len_after_sn_cut, len_before_sn_cut, snt))
+	logger.info("{} {} of {} datapoints survived SNT cut of {}".format(name, len_after_sn_cut, len_before_sn_cut, snt))
 
 	def t0_dist(obsmjd):
 		t0 = Time(time.time(), format='unix', scale='utc').mjd
@@ -96,7 +96,7 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, daysuntil=None, mag_range=N
 	fig.subplots_adjust(top=0.8)
 	ax2 = ax.secondary_xaxis('top', functions=(t0_dist, t0_to_mjd))
 	ax2.set_xlabel("Days from {}".format(date.today()))
-	fig.suptitle('{}'.format(ztf_name), fontweight="bold")
+	fig.suptitle('{}'.format(name), fontweight="bold")
 	ax.grid(b=True, axis='y')
 	ax.set_xlabel('MJD')
 	ax.set_ylabel('magnitude [AB]')
@@ -116,5 +116,5 @@ def plot_lightcurve(ztf_name, snt=5.0, daysago=None, daysuntil=None, mag_range=N
 		ax.set_ylim([mag_range[1], mag_range[0]])
 		
 	ax.legend(loc=0, framealpha=1, title="SNT={:.0f}".format(snt), fontsize='small', title_fontsize="small")
-	lc_plot_path = os.path.join(lc_plotdir, "{}_SNT_{}.png".format(ztf_name, snt))
+	lc_plot_path = os.path.join(lc_plotdir, "{}_SNT_{}.png".format(name, snt))
 	fig.savefig(lc_plot_path, dpi=300, bbox_inches = "tight")

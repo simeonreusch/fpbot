@@ -5,6 +5,7 @@
 import time, os, getpass
 from slack import RTMClient, WebClient
 import pipeline
+import numpy as np
 
 bot_token_file = ".slack_bot_access_token.txt"
 user_token_file = ".slack_access_token.txt"
@@ -42,8 +43,8 @@ def run_on_event(thread_id, channel_id):
 
 	split_message = data['text'].split(" ")
 	
-	ztf_name = split_message[1]
-	lc_path = os.path.join(lc_dir, "{}.csv".format(ztf_name))
+	name = split_message[1]
+	lc_path = os.path.join(lc_dir, "{}.csv".format(name))
 	lc_plotdir = os.path.join(lc_dir, "plots")
 	
 	do_download = False
@@ -53,6 +54,8 @@ def run_on_event(thread_id, channel_id):
 	daysuntil = None
 	snt = 5.0
 	mag_range = None
+	ra = None
+	dec = None
 
 	if "-plot" in split_message  or "--plot" in split_message:
 		do_plot = True
@@ -89,6 +92,15 @@ def run_on_event(thread_id, channel_id):
 			except ValueError:
 				wc.chat_postMessage(channel=channel_id, text=f"Error: --magrange has to be two floats. E.g. --magrange 17.0 21.5.", thread_ts=thread_id)
 				return
+	
+	for i, parameter in enumerate(split_message):
+		if parameter == "-radec" or parameter == "--radec":
+			try:
+				ra = np.float(split_message[i+1])
+				dec = np.float(split_message[i+2])
+			except ValueError:
+				wc.chat_postMessage(channel=channel_id, text=f"Error: --radec has to be followed by two floats. E.g. --radec 171.932 -38.477. NOTE: Do not use '+' to denote positive declination, Slack sometimes parses this a phone number!", thread_ts=thread_id)
+				return
 
 
 	if do_download == False and do_fit == False and do_plot == False:
@@ -97,7 +109,7 @@ def run_on_event(thread_id, channel_id):
 		do_fit = True
 
 	try:
-		pl = pipeline.ForcedPhotometryPipeline(file_or_name=ztf_name, daysago=daysago, daysuntil=daysuntil, snt=snt, mag_range=mag_range)
+		pl = pipeline.ForcedPhotometryPipeline(file_or_name=name, daysago=daysago, daysuntil=daysuntil, snt=snt, mag_range=mag_range, ra=ra, dec=dec)
 	except ValueError:
 		wc.chat_postMessage(channel=channel_id, text=f"The Marshal is not reachable at the moment. Unfortunately, this happens quite frequently.", thread_ts=thread_id)
 		return
@@ -120,7 +132,7 @@ def run_on_event(thread_id, channel_id):
 		try:
 			wc.chat_postMessage(channel=channel_id, text=f"Plotting lightcurve.", thread_ts=thread_id)
 			pl.plot()
-			imgpath = os.path.join(lc_plotdir, f"{ztf_name}_SNT_{snt}.png")
+			imgpath = os.path.join(lc_plotdir, f"{name}_SNT_{snt}.png")
 			imgdata = open(imgpath, "rb")
 			wc.files_upload(file=imgdata, filename=imgpath, channels=channel_id, thread_ts =thread_id, text="And here is your lightcurve.")
 		except:
