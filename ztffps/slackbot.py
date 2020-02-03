@@ -116,14 +116,14 @@ def run_on_event(thread_id, channel_id):
 
 	if do_download:
 		try:
-			wc.chat_postMessage(channel=channel_id, text=f"Checking if all files are present and downloading missing ones. This can take a few minutes.", thread_ts=thread_id)
+			wc.chat_postMessage(channel=channel_id, text=f"Checking if all files are present and downloading missing ones. This might take a few minutes.", thread_ts=thread_id)
 			pl.download()
 		except:
 			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while downloading the image files.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	if do_fit:
 		try:
-			wc.chat_postMessage(channel=channel_id, text=f"Fitting PSF. This can take a moment.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+			wc.chat_postMessage(channel=channel_id, text=f"Fitting PSF. This won't take long.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 			pl.psffit()
 		except:
 			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while performing the PSF fits.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
