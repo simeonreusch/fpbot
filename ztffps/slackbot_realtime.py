@@ -67,10 +67,14 @@ def say_hello(**payload):
 												{
 					"type": "mrkdwn",
 					"text": "*--magrange*: For plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag"
+				},
+												{
+					"type": "mrkdwn",
+					"text": "*--quiet*: The bot gets less talkative"
 				}
 			]}]
 
-				wc.chat_postMessage(channel=channel_id, text=f"Hi <@{user}> This is a bot for forced photometry! Just type @fpbot ZTFName and it will download images from IPAC, perform a PSF fit and plot the lightcurve. Optional arguments\n-downnload: only plots the lightcurve\n-fit: only does the fit\n-plot: only plots the lightcurve\n--daysago: only data from [daysago] to now is considered; default is start of ZTF operations (April 2018)\n--daysuntil: only data till [daysuntil] is considered; default is today\n--snt: signal to noise threshold; default is 5.0\n--magrange: for plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag", blocks=blocks, thread_ts=thread_ts, icon_emoji=':fp-emoji:')
+				wc.chat_postMessage(channel=channel_id, text=f"Hi <@{user}> This is a bot for forced photometry! Just type @fpbot ZTFName and it will download images from IPAC, perform a PSF fit and plot the lightcurve. Optional arguments\n-downnload: only plots the lightcurve\n-fit: only does the fit\n-plot: only plots the lightcurve\n--daysago: only data from [daysago] to now is considered; default is start of ZTF operations (April 2018)\n--daysuntil: only data till [daysuntil] is considered; default is today\n--snt: signal to noise threshold; default is 5.0\n--magrange: for plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag\n--quiet: makes the bot less talkative", blocks=blocks, thread_ts=thread_ts, icon_emoji=':fp-emoji:')
 			
 			else: 
 				if is_ztf_string(split_message[1]):
@@ -93,3 +97,7 @@ def say_hello(**payload):
 print("Starting realtime Slackbot for forced photometry")
 rtm_client = RTMClient(token=bot_token)
 rtm_client.start()
+
+# todo
+# -email myemail 
+# -quiet

@@ -48,6 +48,7 @@ def run_on_event(thread_id, channel_id):
 	lc_plotdir = os.path.join(lc_dir, "plots")
 	
 	do_download = False
+	verbose = True
 	do_fit = False
 	do_plot = False
 	daysago = None
@@ -59,6 +60,9 @@ def run_on_event(thread_id, channel_id):
 
 	if "-plot" in split_message  or "--plot" in split_message:
 		do_plot = True
+
+	if "-quit" in split_message or "--quiet" in split_message:
+		verbose = False
 
 	for i, parameter in enumerate(split_message):
 		if parameter == '-snt' or parameter == '--snt' or parameter == '–snt':
@@ -111,33 +115,36 @@ def run_on_event(thread_id, channel_id):
 	try:
 		pl = pipeline.ForcedPhotometryPipeline(file_or_name=name, daysago=daysago, daysuntil=daysuntil, snt=snt, mag_range=mag_range, ra=ra, dec=dec, nprocess=8)
 	except ValueError:
-		wc.chat_postMessage(channel=channel_id, text=f"The Marshal is not reachable at the moment. Unfortunately, this happens quite frequently.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+		wc.chat_postMessage(channel=channel_id, text=f"Error: The Marshal is not reachable at the moment. Unfortunately, this happens quite frequently.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 		return
 
 	if do_download:
-		try:
+		if verbose:
 			wc.chat_postMessage(channel=channel_id, text=f"Checking if all files are present and downloading missing ones. This might take a few minutes.", thread_ts=thread_id)
+		try:
 			pl.download()
 		except:
-			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while downloading the image files.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while downloading the image files.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	if do_fit:
-		try:
+		if verbose:
 			wc.chat_postMessage(channel=channel_id, text=f"Fitting PSF. This won't take long.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+		try:
 			pl.psffit()
 		except:
-			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while performing the PSF fits.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while performing the PSF fits.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	if do_plot:
-		try:
+		if verbose:
 			wc.chat_postMessage(channel=channel_id, text=f"Plotting lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+		try:
 			pl.plot()
 			wc = WebClient(token=bot_token)
 			imgpath = os.path.join(lc_plotdir, f"{name}_SNT_{snt}.png")
 			imgdata = open(imgpath, "rb")
 			wc.files_upload(file=imgdata, filename=imgpath, channels=channel_id, thread_ts=thread_id, title="And here is your lightcurve.", icon_emoji=':fp-emoji:')
 		except:
-			wc.chat_postMessage(channel=channel_id, text=f"Sorry, I have run into a problem while plotting the lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+			wc.chat_postMessage(channel=channel_id, text=f"Error: :Sorry, I have run into a problem while plotting the lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	endtime = time.time()
 	duration = endtime - pl.startime
