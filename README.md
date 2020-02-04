@@ -10,7 +10,9 @@ The majority of required packages can be installed by issuing:
 
 ## Usage
 
-The basic file is run.py, which can be run using different flags. A ZTF name always has to be provided (or a textfile containing one ZTF name in each line)
+The basic file is run.py, which can be run using different flags. A (ZTF) name always has to be provided (or a textfile containing one ZTF name in each line).
+
+`-radec`	If this is given, the name can be arbitrary (but a name must be provided). Radec must be given as two floats, e.g. '-radec 161.3434 -31.32123'.
 
 `-dl`        Downloads the images used for forced photometry from IPAC. Needs a valid IPAC account.
 
