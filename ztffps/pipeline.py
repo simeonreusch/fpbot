@@ -28,7 +28,7 @@ class ForcedPhotometryPipeline():
 		self.logger = logging.getLogger('pipeline')
 
 		if file_or_name is None:
-			print("You have to initialize this class with at least one name of a ZTF object for which to perform forced photometry.")
+			print("You have to initialize this class with at least one name of a ZTF object for which to perform forced photometry (or an arbitrary name if the -radec option is chosen.")
 		else:
 			self.file_or_name=file_or_name
 
