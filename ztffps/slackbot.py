@@ -51,6 +51,7 @@ def run_on_event(thread_id, channel_id):
 	verbose = True
 	do_fit = False
 	do_plot = False
+	upload_dataframe = False
 	daysago = None
 	daysuntil = None
 	snt = 5.0
@@ -63,6 +64,9 @@ def run_on_event(thread_id, channel_id):
 
 	if "-quit" in split_message or "--quiet" in split_message:
 		verbose = False
+
+	if "-df" in split_message or "--dataframe" in split_message or "-csv" in split_message or "--csv" in split_message:
+		upload_dataframe = True
 
 	for i, parameter in enumerate(split_message):
 		if parameter == '-snt' or parameter == '--snt' or parameter == '–snt':
@@ -135,7 +139,7 @@ def run_on_event(thread_id, channel_id):
 			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while performing the PSF fits.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	if do_plot:
-		if verbose:
+		if verbose and not upload_dataframe:
 			wc.chat_postMessage(channel=channel_id, text=f"Plotting lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 		try:
 			pl.plot()
@@ -143,6 +147,10 @@ def run_on_event(thread_id, channel_id):
 			imgpath = os.path.join(lc_plotdir, f"{name}_SNT_{snt}.png")
 			imgdata = open(imgpath, "rb")
 			wc.files_upload(file=imgdata, filename=imgpath, channels=channel_id, thread_ts=thread_id, title="And here is your lightcurve.", icon_emoji=':fp-emoji:')
+			if upload_dataframe:
+				dfpath = os.path.join(lc_dir, f"{name}.csv")
+				df = open(dfpath, "rb")
+				wc.files_upload(file=df, filename=dfpath, channels=channel_id, thread_ts=thread_id, title="Accompanied by a dataframe.", icon_emoji=':fp-emoji:')
 		except:
 			wc.chat_postMessage(channel=channel_id, text=f"Error: :Sorry, I have run into a problem while plotting the lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
