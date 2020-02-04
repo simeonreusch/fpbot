@@ -144,7 +144,6 @@ class ForcedPhotometryPipeline():
 			_jdmin = self.ZTF_object_infos.loc["{}".format(name), 'jdmin']
 			_jdmax = self.ZTF_object_infos.loc["{}".format(name), 'jdmax']
 			fp = forcephotometry.ForcePhotometry.from_coords(ra=_ra, dec=_dec, jdmin=_jdmin, jdmax=_jdmax, name=name)
-			self.logger.info('{} Downloading data'.format(name))
 			fp.load_metadata()
 			fp.io.download_data(nprocess=32, overwrite=False, show_progress=True, verbose=False, ignore_warnings=True)
 
