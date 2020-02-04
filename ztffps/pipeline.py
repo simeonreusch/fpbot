@@ -210,10 +210,9 @@ class ForcedPhotometryPipeline():
 			if bar is not None:
 				bar.update(object_count)
 
-	@staticmethod
-	def global_filecheck():
+	def global_filecheck(self):
 		print("Running filecheck. This can take several hours.")
-		badfiles = ztfquery.io.run_full_filecheck(erasebad=True, nprocess=nprocess, redownload=True)
+		badfiles = ztfquery.io.run_full_filecheck(erasebad=True, nprocess=self.nprocess, redownload=True)
 		print("BADFILES:\n{}".format(badfiles))
 
 
@@ -276,29 +275,3 @@ class ForcedPhotometryPipeline():
 		print("{} SALT fitting".format(name))
 		fitresult, fitted_model = fit_salt(name=name, mwebv=mwebv, snt=snt)
 		return fitresult, fitted_model
-
-
-# if do_saltfit:
-# 	from saltfit import fit_salt
-# 	with multiprocessing.Pool(nprocess) as pool:
-# 		pool.map(saltfit_multiprocessing, sne_list)
-# 		sne_before_cleanup = len(sne_list)
-# 		sne_list = check_if_psf_data_is_there(sne_list)
-# 		sne_after_cleanup = len(sne_list)
-# 		if sne_after_cleanup < sne_before_cleanup:
-# 			print("{} of {} SNe have lightcurves available. The objects are either missing from IPAC or you have to download them first (-dl parameter)".format(len(sne_list), sne_before_cleanup))
-# 		result = pool.map(saltfit_multiprocessing, sne_list)
-# 	fitresult_df = pd.DataFrame(columns=['name', 'chisquare', 'ndof', 'red_chisq', 'z', 't0', 't0_err', 'x0', 'x0_err', 'x1', 'x1_err', 'c', 'c_err', 'peak_mag', 'peak_abs_mag', 'peak_abs_mag_for_comparison', 'peak_abs_mag_corrected'])
-
-# 	for fitresult in result:
-# 		if fitresult[0]['success'] is True:
-# 			name, chisquare, ndof, z, t0, x0, x1, c, t0_err, x0_err, x1_err, c_err, peak_mag, peak_abs_mag, peak_abs_mag_for_comparison, peak_abs_mag_corrected = fitresult[0]['name'], fitresult[0]['chisq'], fitresult[0]['ndof'], fitresult[0]['parameters'][0], fitresult[0]['parameters'][1], fitresult[0]['parameters'][2], fitresult[0]['parameters'][3], fitresult[0]['parameters'][4], fitresult[0]['errors']['t0'], fitresult[0]['errors']['x0'], fitresult[0]['errors']['x1'], fitresult[0]['errors']['c'], fitresult[0]['peak_mag'], fitresult[0]['peak_abs_mag'], fitresult[0]['peak_abs_mag_for_comparison'], fitresult[0]['peak_abs_mag_corrected']
-# 			results = pd.Series([name, chisquare, ndof, chisquare/ndof if ndof > 0 else 999, z, t0, t0_err, x0, x0_err, x1, x1_err, c, c_err, peak_mag, peak_abs_mag, peak_abs_mag_for_comparison, peak_abs_mag_corrected], index=fitresult_df.columns)
-# 			fitresult_df = fitresult_df.append(results, ignore_index=True)
-
-# 	savepath = os.path.join(LOCALDATA, 'SALT', 'SALT_FIT.csv')
-# 	fitresult_df.to_csv(savepath)
-
-# 	print("{} of {} fits were successful\n".format(len(fitresult_df), len(sne_list)))
-
-
