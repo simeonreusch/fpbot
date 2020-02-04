@@ -39,6 +39,9 @@ do_filecheck = commandline_args.filecheck
 if radec:
 	ra = radec[0]
 	dec = radec[1]
+else:
+	ra = None
+	dec = None
 
 pl = pipeline.ForcedPhotometryPipeline(file_or_name=name, daysago=daysago, daysuntil=daysuntil, snt=snt, nprocess=nprocess, ra=ra, dec=dec)
 
@@ -55,4 +58,4 @@ if do_saltfit:
 
 endtime = time.time()
 duration = endtime - pl.startime
-print("\nThe script took {:.1f} minutes".format(duration/60))
+print("\nThe script took {:.2f} minutes".format(duration/60))
