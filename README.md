@@ -34,6 +34,8 @@ The basic file is run.py, which can be run using different flags. A (ZTF) name a
 
 `./forced_photometry.py supernovae.txt -plot --filecheck` Plots all lightcurves for ZTF transients found in supernovae.txt and additionally performs a full filecheck on all images downloaded by ztfquery (not only the ones in the textfile).
 
+`./forced_photometry.py this_look_interesting -radec 143.3123 66.42342 -dl -fit -plot` Downloads all images containing the location given in ra and dec, does PSF-fits and plots the lightcurve.
+
 ## Requirements
 
 - [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC. 
