@@ -173,6 +173,7 @@ class ForcedPhotometryPipeline():
 		jdmaxs = self.ZTF_object_infos['jdmax'].values
 
 		for i, name in enumerate(self.object_list):
+			self.logger.info("{} Starting PSF fit".format(name))
 
 			
 			fp = forcephotometry.ForcePhotometry.from_coords(ra=ras[i], dec=decs[i], jdmin=jdmins[i], jdmax=jdmaxs[i], name=name)
@@ -219,6 +220,7 @@ class ForcedPhotometryPipeline():
 	@staticmethod
 	def _plot_multiprocessing_(args):
 		name, snt, daysago, daysuntil, mag_range = args
+		self.logger.info("{} Plotting".format(name))
 		from plot import plot_lightcurve
 		plot_lightcurve(name, snt=snt, daysago=daysago, daysuntil=daysuntil, mag_range=mag_range)
 		print('\n{} plotted'.format(name))
@@ -273,5 +275,6 @@ class ForcedPhotometryPipeline():
 		from saltfit import fit_salt
 		name, mwebv, snt = args
 		print("{} SALT fitting".format(name))
+		self.logger.info("{} Starting SALT fit".format(name))
 		fitresult, fitted_model = fit_salt(name=name, mwebv=mwebv, snt=snt)
 		return fitresult, fitted_model
