@@ -69,7 +69,7 @@ def run_on_event(thread_id, channel_id):
 		upload_dataframe = True
 
 	for i, parameter in enumerate(split_message):
-		if parameter == '-snt' or parameter == '--snt' or parameter == '–snt' or parameter = 'snt':
+		if parameter == '-snt' or parameter == '--snt' or parameter == '–snt' or parameter == 'snt':
 			try:
 				snt = float(split_message[i+1])
 			except ValueError:
@@ -102,7 +102,7 @@ def run_on_event(thread_id, channel_id):
 				return
 	
 	for i, parameter in enumerate(split_message):
-		if parameter == "-radec" or parameter == "--radec" or parameter = "–radec" or parameter = "radec":
+		if parameter == "-radec" or parameter == "--radec" or parameter == "–radec" or parameter == "radec":
 			try:
 				ra = np.float(split_message[i+1])
 				dec = np.float(split_message[i+2])
