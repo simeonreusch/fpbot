@@ -196,6 +196,7 @@ class ForcedPhotometryPipeline():
 
 
 	def plot(self, nprocess=4):
+		self.logger.info("Plotting")
 		object_count = len(self.object_list)
 		snt_ = [self.snt]*object_count
 		daysago_ = [self.daysago]*object_count
@@ -219,7 +220,6 @@ class ForcedPhotometryPipeline():
 	@staticmethod
 	def _plot_multiprocessing_(args):
 		name, snt, daysago, daysuntil, mag_range = args
-		self.logger.info("{} Plotting".format(name))
 		from plot import plot_lightcurve
 		plot_lightcurve(name, snt=snt, daysago=daysago, daysuntil=daysuntil, mag_range=mag_range)
 		print('\n{} plotted'.format(name))
