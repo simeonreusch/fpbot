@@ -37,3 +37,8 @@ The basic file is run.py, which can be run using different flags. A ZTF name alw
 - [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC. 
 - [ztflc](https://github.com/mickaelrigault/ztflc) is used for PSF-fitting.
 - Either Marshal credentials or a connection to AMPEL are neccessary for determining object ra and dec.
+
+## Slackbot
+There is a bot for Slack included, based on the SlackRTM-API. To use it, create a legacy bot in slack (with the legacy privilege system, the new system depends on the EventApi, which itself needs a webserver). Change the bot-username in slackbot_realtime.py and it should basically work (first start requires you to enter the bot- and bot-user credentials).
+
+
