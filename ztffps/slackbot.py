@@ -59,17 +59,17 @@ def run_on_event(thread_id, channel_id):
 	ra = None
 	dec = None
 
-	if "-plot" in split_message  or "--plot" in split_message:
+	if "-plot" in split_message  or "--plot" in split_message or "plot" in split_message:
 		do_plot = True
 
-	if "-quit" in split_message or "--quiet" in split_message:
+	if "-quit" in split_message or "--quiet" in split_message or "quiet" in split_message:
 		verbose = False
 
-	if "-df" in split_message or "--dataframe" in split_message or "-csv" in split_message or "--csv" in split_message:
+	if "-df" in split_message or "--dataframe" in split_message or "-csv" in split_message or "--csv" in split_message or "daysago" in split_message or "csv" in split_message:
 		upload_dataframe = True
 
 	for i, parameter in enumerate(split_message):
-		if parameter == '-snt' or parameter == '--snt' or parameter == '–snt':
+		if parameter == '-snt' or parameter == '--snt' or parameter == '–snt' or parameter = 'snt':
 			try:
 				snt = float(split_message[i+1])
 			except ValueError:
@@ -77,7 +77,7 @@ def run_on_event(thread_id, channel_id):
 				return
 
 	for i, parameter in enumerate(split_message):
-		if parameter == "-daysago" or parameter == "--daysago" or parameter == "—daysago":
+		if parameter == "-daysago" or parameter == "--daysago" or parameter == "—daysago" or parameter == "daysago":
 			try:
 				daysago = int(split_message[i+1])
 			except ValueError:
@@ -85,7 +85,7 @@ def run_on_event(thread_id, channel_id):
 				return
 
 	for i, parameter in enumerate(split_message):
-		if parameter == "-daysuntil" or parameter == "--daysuntil" or parameter == "–daysuntil":
+		if parameter == "-daysuntil" or parameter == "--daysuntil" or parameter == "–daysuntil" or parameter == "daysuntil":
 			try:
 				daysuntil = int(split_message[i+1])
 			except ValueError:
@@ -93,7 +93,7 @@ def run_on_event(thread_id, channel_id):
 				return
 
 	for i, parameter in enumerate(split_message):
-		if parameter == "-magrange" or parameter == "--magrange" or parameter == "–magrange":
+		if parameter == "-magrange" or parameter == "--magrange" or parameter == "–magrange" or parameter == "magrange":
 			try:
 				mag_range_array = np.asarray([float(split_message[i+1]), float(split_message[i+2])])
 				mag_range = [np.min(mag_range_array), np.max(mag_range_array)]
@@ -102,7 +102,7 @@ def run_on_event(thread_id, channel_id):
 				return
 	
 	for i, parameter in enumerate(split_message):
-		if parameter == "-radec" or parameter == "--radec":
+		if parameter == "-radec" or parameter == "--radec" or parameter = "–radec" or parameter = "radec":
 			try:
 				ra = np.float(split_message[i+1])
 				dec = np.float(split_message[i+2])
@@ -139,7 +139,7 @@ def run_on_event(thread_id, channel_id):
 			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while performing the PSF fits.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	if do_plot:
-		if verbose and not upload_dataframe:
+		if verbose:
 			wc.chat_postMessage(channel=channel_id, text=f"Plotting lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 		try:
 			pl.plot()
@@ -147,12 +147,17 @@ def run_on_event(thread_id, channel_id):
 			imgpath = os.path.join(lc_plotdir, f"{name}_SNT_{snt}.png")
 			imgdata = open(imgpath, "rb")
 			wc.files_upload(file=imgdata, filename=imgpath, channels=channel_id, thread_ts=thread_id, title="And here is your lightcurve.", icon_emoji=':fp-emoji:')
-			if upload_dataframe:
-				dfpath = os.path.join(lc_dir, f"{name}.csv")
-				df = open(dfpath, "rb")
-				wc.files_upload(file=df, filename=dfpath, channels=channel_id, thread_ts=thread_id, title="Accompanied by a dataframe.", icon_emoji=':fp-emoji:')
 		except:
-			wc.chat_postMessage(channel=channel_id, text=f"Error: :Sorry, I have run into a problem while plotting the lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while plotting the lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+
+	# if upload_dataframe:
+	# 	try:
+	# 		wc = WebClient(token=bot_token)
+	# 		dfpath = os.path.join(lc_dir, f"{name}.csv")
+	# 		df = open(dfpath, "rb")
+	# 		wc.files_upload(file=df, filename=dfpath, channels=channel_id, thread_ts=thread_id, title="The dataframe. NOTE: THIS IS THE DATAFRAME AS CREATED BY THE LAST FIT COMMAND WITH THE TIMERANGE THEN SET. Als, no signal to noise threshold is applied.", icon_emoji=':fp-emoji:')
+	# 	except:
+	# 		wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while uploading the dataframe of your lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	endtime = time.time()
 	duration = endtime - pl.startime

@@ -9,7 +9,8 @@ import matplotlib.pyplot as plt
 from datetime import datetime, date
 
 
-def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None, logger=None):
+def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None, logger=None, save_df=False):
+	
 	if logger is None:
 		logging.basicConfig(level = logging.INFO)
 		logger = logging.getLogger()
