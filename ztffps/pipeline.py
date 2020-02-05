@@ -280,12 +280,22 @@ class ForcedPhotometryPipeline():
 		return fitresult, fitted_model
 
 	def sendmail(self, send_to, files=None):
-		import smtplib
+		import smtplib, getpass
 		from os.path import basename
 		from email.mime.application import MIMEApplication
 		from email.mime.multipart import MIMEMultipart
 		from email.mime.text import MIMEText
 		from email.utils import formatdate
+
+		_smtp_pass_file = ".smtp_pass.txt"
+
+		try:
+			with open(_smtp_pass_file, "r") as f:
+				_smtp_pass = f.read()
+		except FileNotFoundError:
+			_smtp_pass = getpass.getpass(prompt='Password for SMTP-Server: ', stream=None)
+			with open(_smtp_pass_file, "wb") as f:
+				f.write(_smtp_pass.encode())
 
 		send_from = "simeon.reusch@desy.de"
 		objectnumber = len(self.object_list)
@@ -299,7 +309,6 @@ class ForcedPhotometryPipeline():
 		port = 587
 
 		assert isinstance(send_to, str)
-		
 
 		msg = MIMEMultipart()
 		msg['From'] = send_from
@@ -309,20 +318,27 @@ class ForcedPhotometryPipeline():
 
 		msg.attach(MIMEText(text))
 
+		# attach plots
 		for name in self.object_list or []:
 			filepath_plot = os.path.join(os.getenv("ZTFDATA"), "forcephotometry", "plots", f"{name}_SNT_{self.snt}.png")
 			if os.path.exists(filepath_plot): 
 				with open(filepath_plot, "rb") as plot:
 					part = MIMEApplication(plot.read(), Name=f"Plot_{name}")
-			part['Content-Disposition'] = f'attachment; filename="{name}_SNT_{self.snt}"'
+			part['Content-Disposition'] = f'attachment; filename="{name}_SNT_{self.snt}.png"'
 			msg.attach(part)
-		# for name in self.object_list or []:
-			# filepath_csv = 
 
+		# attach dataframes
+		for name in self.object_list or []:
+			filepath_csv = os.path.join(os.getenv("ZTFDATA"), "forcephotometry", "plots", "lightcurves", f"{name}_SNT_{self.snt}.csv")
+			if os.path.exists(filepath_csv): 
+				with open(filepath_csv, "rb") as csv:
+					part = MIMEApplication(csv.read(), Name=f"Dataframe_{name}")
+			part['Content-Disposition'] = f'attachment; filename="{name}_SNT_{self.snt}.csv"'
+			msg.attach(part)
 
 		smtp = smtplib.SMTP(server, port)
 		smtp.starttls()
 		smtp.ehlo()
-		smtp.login(send_from, "")
+		smtp.login(send_from, _smtp_pass)
 		smtp.sendmail(send_from, send_to, msg.as_string())
 		smtp.close()

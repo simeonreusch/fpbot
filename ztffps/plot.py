@@ -20,8 +20,10 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 	lc_dir = os.path.join(ztfdata, "forcephotometry")
 	lc_path = os.path.join(lc_dir, "{}.csv".format(name))
 	lc_plotdir = os.path.join(lc_dir, "plots")
-	if not os.path.exists(lc_plotdir):
-		os.makedirs(lc_plotdir)
+	lc_plotted_dir = os.path.join(lc_plotdir, "lightcurves")
+	if not os.path.exists(lc_plotted_dir):
+		os.makedirs(lc_plotted_dir)
+	
 	lc = pd.read_csv(lc_path)
 
 	#apply time-range cut:
@@ -71,7 +73,7 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 	lc["mag_err"] = mags_unc
 
 	# save this version of the dataframe for later analysis (and to be sent by mail)
-	print(lc)
+	lc.to_csv(os.path.join(lc_plotted_dir, f"{name}_SNT_{snt}.csv"))
 
 	len_before_sn_cut = len(lc)
 	t0_dist = np.asarray(lc.obsmjd.values - now)
@@ -102,7 +104,7 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 	fig, ax = plt.subplots(1,1, figsize = [10,4.2])
 	fig.subplots_adjust(top=0.8)
 	ax2 = ax.secondary_xaxis('top', functions=(t0_dist, t0_to_mjd))
-	ax2.set_xlabel("Days from {}".format(date.today()))
+	ax2.set_xlabel(f"Days from {date.today()}")
 	fig.suptitle('{}'.format(name), fontweight="bold")
 	ax.grid(b=True, axis='y')
 	ax.set_xlabel('MJD')
@@ -123,5 +125,5 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 		ax.set_ylim([mag_range[1], mag_range[0]])
 		
 	ax.legend(loc=0, framealpha=1, title="SNT={:.0f}".format(snt), fontsize='small', title_fontsize="small")
-	lc_plot_path = os.path.join(lc_plotdir, "{}_SNT_{}.png".format(name, snt))
+	lc_plot_path = os.path.join(lc_plotdir, f"{name}_SNT_{snt}.png")
 	fig.savefig(lc_plot_path, dpi=300, bbox_inches = "tight")

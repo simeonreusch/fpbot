@@ -30,15 +30,15 @@ class AmpelInfo():
                 self.username = f.read()
         except FileNotFoundError:
             self.username = getpass.getpass(prompt='Username: ', stream=None)
-        with open(_ampel_user, "wb") as f:
-            f.write(self.username.encode())
+            with open(_ampel_user, "wb") as f:
+                f.write(self.username.encode())
         try:
             with open(_ampel_pass, "r") as f:
                 self.password = f.read()
         except FileNotFoundError:
             self.password = getpass.getpass(prompt='Password: ', stream=None)
-        with open(_ampel_pass, "wb") as f:
-            f.write(self.password.encode())
+            with open(_ampel_pass, "wb") as f:
+                f.write(self.password.encode())
 
         if socket.gethostname() == "wgs33.zeuthen.desy.de":
             self.port = 5433
