@@ -53,6 +53,7 @@ def run_on_event(thread_id, channel_id):
 	do_plot = False
 	upload_dataframe = False
 	target_address = None
+	do_mail = False
 	daysago = None
 	daysuntil = None
 	snt = 5.0
@@ -60,22 +61,27 @@ def run_on_event(thread_id, channel_id):
 	ra = None
 	dec = None
 
-	def check_for_parameter(param_name):
-		for i, param in enumerate(split_message):
-			if param == f"{param_name}" or param == f"-{param_name}" or param == f"--{param_name}" or param == f"–{param_name}":
-				return True
+	def fuzzy_parameters(param_list):
+		fuzzy_parameters = []
+		for param in param_list:
+			fuzzy_parameters.append(f"{param}")
+			fuzzy_parameters.append(f"-{param}")
+			fuzzy_parameters.append(f"--{param}")
+			fuzzy_parameters.append(f"–{param}")
+		return fuzzy_parameters
 
-	if "-plot" in split_message  or "--plot" in split_message or "plot" in split_message:
-		do_plot = True
-
-	if "-quit" in split_message or "--quiet" in split_message or "quiet" in split_message:
-		verbose = False
-
-	if "-df" in split_message or "--dataframe" in split_message or "-csv" in split_message or "--csv" in split_message or "daysago" in split_message or "csv" in split_message:
-		upload_dataframe = True
+	for item in split_message:
+		if item in fuzzy_parameters(["plot", "PLOT", "do_plot"]):
+			do_plot = True
+		if item in fuzzy_parameters(["quiet"]):
+			verbose = False
+		if item in fuzzy_parameters(["df", "dataframe", "csv"]):
+			upload_dataframe = True
+		if item in fuzzy_parameters(["sendmail", "mail", "sendemail", "send_mail", "email"]):
+			do_mail = True
 
 	for i, parameter in enumerate(split_message):
-		if parameter == '-snt' or parameter == '--snt' or parameter == '–snt' or parameter == 'snt':
+		if parameter in fuzzy_parameters(["snt", "signaltonoise", "signal-to-noise", "SNT", "SN", "sn"]):
 			try:
 				snt = float(split_message[i+1])
 			except ValueError:
@@ -83,7 +89,7 @@ def run_on_event(thread_id, channel_id):
 				return
 
 	for i, parameter in enumerate(split_message):
-		if parameter == "-daysago" or parameter == "--daysago" or parameter == "—daysago" or parameter == "daysago":
+		if parameter in fuzzy_parameters(["daysago"]):
 			try:
 				daysago = int(split_message[i+1])
 			except ValueError:
@@ -91,7 +97,7 @@ def run_on_event(thread_id, channel_id):
 				return
 
 	for i, parameter in enumerate(split_message):
-		if parameter == "-daysuntil" or parameter == "--daysuntil" or parameter == "–daysuntil" or parameter == "daysuntil":
+		if parameter in fuzzy_parameters(["daysuntil"]):
 			try:
 				daysuntil = int(split_message[i+1])
 			except ValueError:
@@ -99,7 +105,7 @@ def run_on_event(thread_id, channel_id):
 				return
 
 	for i, parameter in enumerate(split_message):
-		if parameter == "-magrange" or parameter == "--magrange" or parameter == "–magrange" or parameter == "magrange":
+		if parameter in fuzzy_parameters(["magrange", "mag_range", "magnitude_range"]):
 			try:
 				mag_range_array = np.asarray([float(split_message[i+1]), float(split_message[i+2])])
 				mag_range = [np.min(mag_range_array), np.max(mag_range_array)]
@@ -108,20 +114,12 @@ def run_on_event(thread_id, channel_id):
 				return
 	
 	for i, parameter in enumerate(split_message):
-		if parameter == "-radec" or parameter == "--radec" or parameter == "–radec" or parameter == "radec":
+		if parameter in fuzzy_parameters(["radec", "ra_dec", "RADEC", "RA_DEC"]):
 			try:
 				ra = np.float(split_message[i+1])
 				dec = np.float(split_message[i+2])
 			except ValueError:
 				wc.chat_postMessage(channel=channel_id, text=f"Error: --radec has to be followed by two floats. E.g. --radec 171.932 -38.477. NOTE: Do not use '+' to denote positive declination, Slack sometimes parses this a phone number!", thread_ts=thread_id, icon_emoji=':fp-emoji:')
-				return
-
-	for i, parameter in enumerate(split_message):
-		if parameter == '-sendmail' or parameter == '--sendmail' or parameter == '–sendmail' or parameter == 'sendmail':
-			try: 
-				target_address = str(split_message[i+1]).split("|")[1][:-1]
-			except (ValueError, IndexError):
-				wc.chat_postMessage(channel=channel_id, text=f"Error: --sendmail has to be followed by an email address.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 				return
 
 	if do_download == False and do_fit == False and do_plot == False:
@@ -163,11 +161,13 @@ def run_on_event(thread_id, channel_id):
 		except:
 			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while plotting the lightcurve. Please contact <@UAQTC7L73>.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
-	if target_address:
+	if do_mail:
 		if verbose:
 			wc.chat_postMessage(channel=channel_id, text=f"Sending mail.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 		try:
-			pl.sendmail(target_address)
+			user_info = wc.users_info(user=user).get("user")
+			mail_address = user_info["profile"]["email"]
+			pl.sendmail(mail_address)
 		except:
 			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while sending your email. Please contact <@UAQTC7L73>.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 

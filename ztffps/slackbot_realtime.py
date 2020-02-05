@@ -73,7 +73,7 @@ def say_hello(**payload):
 				},
 				{
 					"type": "mrkdwn",
-					"text": "*--sendmail*: Send the output to the mailadress provided. This will include the lightcurve-plot and the dataframe as csv."
+					"text": "*--sendmail*: Send the output to the mail address known to Slack."
 				},
 				{
 					"type": "mrkdwn",
