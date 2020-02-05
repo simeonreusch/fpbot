@@ -69,6 +69,10 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 	lc["upper_limit"] = upper_limits
 	lc["mag"] = mags
 	lc["mag_err"] = mags_unc
+
+	# save this version of the dataframe for later analysis (and to be sent by mail)
+	print(lc)
+
 	len_before_sn_cut = len(lc)
 	t0_dist = np.asarray(lc.obsmjd.values - now)
 	lc.insert(2, "t0_dist",  t0_dist)

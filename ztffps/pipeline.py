@@ -316,13 +316,13 @@ class ForcedPhotometryPipeline():
 					part = MIMEApplication(plot.read(), Name=f"Plot_{name}")
 			part['Content-Disposition'] = f'attachment; filename="{name}_SNT_{self.snt}"'
 			msg.attach(part)
-		for name in self.object_list or []:
+		# for name in self.object_list or []:
 			# filepath_csv = 
 
 
 		smtp = smtplib.SMTP(server, port)
 		smtp.starttls()
 		smtp.ehlo()
-		smtp.login(send_from, "Cp9prh??")
+		smtp.login(send_from, "")
 		smtp.sendmail(send_from, send_to, msg.as_string())
 		smtp.close()
