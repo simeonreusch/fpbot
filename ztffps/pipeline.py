@@ -40,7 +40,6 @@ class ForcedPhotometryPipeline():
 		self.mag_range = mag_range
 		self.ra = ra
 		self.dec = dec
-
 		self.nprocess = nprocess
 
 		if self.ra is None or self.dec is None:
