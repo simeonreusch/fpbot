@@ -21,6 +21,7 @@ parser.add_argument('--nprocess', '-nprocess', type=int, default=4, help="Number
 parser.add_argument('--snt', '-snt', type=float, default=5.0, help="What signal to noise ratio is desired? Default: 5")
 parser.add_argument('--daysago', '-daysago', type=int, default=None, help="Number of days in the past you want to download data for. Default is all the complete dataset")
 parser.add_argument('--daysuntil', '-daysuntil', type=int, default=None, help="Last day you want to include. Default is today.")
+parser.add_argument('--sendmail', '-sendmail', type=str, default=None, help="Sends the results per mail. A single recipient mail address must be provided")
 parser.add_argument('--filecheck', '-filecheck', action="store_true", help="Runs a full filecheck on the ZTFDATA directory. Can take several hours")
 
 commandline_args = parser.parse_args()
@@ -35,6 +36,7 @@ do_download = commandline_args.dl
 do_psffit = commandline_args.fit
 do_saltfit = commandline_args.saltfit
 do_filecheck = commandline_args.filecheck
+targetmail = commandline_args.sendmail
 
 if radec:
 	ra = radec[0]
@@ -55,6 +57,8 @@ if do_plot:
 	pl.plot()
 if do_saltfit:
 	pl.saltfit(quality_checks=True)
+if targetmail:
+	pl.sendmail(targetmail)
 
 endtime = time.time()
 duration = endtime - pl.startime

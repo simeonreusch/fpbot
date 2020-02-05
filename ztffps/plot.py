@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Author: Simeon Reusch (simeon.reusch@desy.de)
+# License: BSD-3-Clause
+
 import os, time, sys, logging
 import numpy as np
 import pandas as pd
@@ -10,7 +13,6 @@ from datetime import datetime, date
 
 
 def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None, logger=None, save_df=False):
-	
 	if logger is None:
 		logging.basicConfig(level = logging.INFO)
 		logger = logging.getLogger()

@@ -15,11 +15,7 @@ from astropy.time import Time
 # CREATE LOCAL FILE THAT STORES NAME, RA/DEC + MWEBV
 # os.path.expanduser("~") is auch nice
 
-def is_ztf_string(string):
-	if string[:3] == "ZTF" and len(string) == 12 and (int(string[3]) == 1 or int(string[3]) == 2):
-		return True
-	else:
-		return False
+
 
 class ForcedPhotometryPipeline():
 
@@ -65,8 +61,14 @@ class ForcedPhotometryPipeline():
 				self.object_list = [self.file_or_name]
 				self.create_info_dataframe()
 
+	def is_ztf_string(self, string):
+		if string[:3] == "ZTF" and len(string) == 12 and (int(string[3]) == 1 or int(string[3]) == 2):
+			return True
+		else:
+			return False
+
 	def use_if_ztf(self):
-		if is_ztf_string(self.file_or_name):
+		if self.is_ztf_string(self.file_or_name):
 			self.object_list = [self.file_or_name]
 		else:
 			self.object_list = []
@@ -144,15 +146,16 @@ class ForcedPhotometryPipeline():
 			_jdmin = self.ZTF_object_infos.loc["{}".format(name), 'jdmin']
 			_jdmax = self.ZTF_object_infos.loc["{}".format(name), 'jdmax']
 			fp = forcephotometry.ForcePhotometry.from_coords(ra=_ra, dec=_dec, jdmin=_jdmin, jdmax=_jdmax, name=name)
+			self.logger.info('{} Downloading data'.format(name))
 			fp.load_metadata()
 			fp.io.download_data(nprocess=32, overwrite=False, show_progress=True, verbose=False, ignore_warnings=True)
 
 	def check_if_psf_data_exists(self):
-		self.cleaned_list = []
+		self.cleaned_object_list = []
 		for name in self.object_list:
 			try:
 				pd.read_csv(os.path.join(LOCALDATA, "{}.csv".format(name)))
-				self.cleaned_list.append(name)
+				self.cleaned_object_list.append(name)
 			except FileNotFoundError:
 				pass
 
@@ -172,7 +175,6 @@ class ForcedPhotometryPipeline():
 		jdmaxs = self.ZTF_object_infos['jdmax'].values
 
 		for i, name in enumerate(self.object_list):
-			self.logger.info("{} Starting PSF fit".format(name))
 
 			
 			fp = forcephotometry.ForcePhotometry.from_coords(ra=ras[i], dec=decs[i], jdmin=jdmins[i], jdmax=jdmaxs[i], name=name)
@@ -238,10 +240,10 @@ class ForcedPhotometryPipeline():
 		from saltfit import fit_salt
 
 		dustmap = sfdmap.SFDMap()
-		for name in self.cleaned_list:
+		for name in self.cleaned_object_list:
 			_mwebv = dustmap.ebv(self.ZTF_object_infos.loc["{}".format(name), 'ra'], self.ZTF_object_infos.loc["{}".format(name), 'dec'])
 			self.ZTF_object_infos.loc["{}".format(name), 'mwebv'] = _mwebv
-		object_count = len(self.cleaned_list)
+		object_count = len(self.cleaned_object_list)
 		
 		bar = ProgressBar(object_count)
 		fitresults = []
@@ -249,7 +251,7 @@ class ForcedPhotometryPipeline():
 
 		fitresult_df = pd.DataFrame(columns=['name', 'chisquare', 'ndof', 'red_chisq', 'z', 't0', 't0_err', 'x0', 'x0_err', 'x1', 'x1_err', 'c', 'c_err', 'peak_mag', 'peak_abs_mag', 'peak_abs_mag_for_comparison', 'peak_abs_mag_corrected', 'z_spectro', 'z_precision', 'g_obs', 'r_obs', 'i_obs', 'nr_filters', 'obs_total'])
 
-		for index, name in enumerate(self.cleaned_list):
+		for index, name in enumerate(self.cleaned_object_list):
 			print("\n{} performing SALT fit".format(name))
 			fitresult, fitted_model = fit_salt(name=name, snt=snt, mwebv=self.ZTF_object_infos.loc["{}".format(name), 'mwebv'], quality_checks=quality_checks)
 			if bar is not None:
@@ -274,6 +276,53 @@ class ForcedPhotometryPipeline():
 		from saltfit import fit_salt
 		name, mwebv, snt = args
 		print("{} SALT fitting".format(name))
-		self.logger.info("{} Starting SALT fit".format(name))
 		fitresult, fitted_model = fit_salt(name=name, mwebv=mwebv, snt=snt)
 		return fitresult, fitted_model
+
+	def sendmail(self, send_to, files=None):
+		import smtplib
+		from os.path import basename
+		from email.mime.application import MIMEApplication
+		from email.mime.multipart import MIMEMultipart
+		from email.mime.text import MIMEText
+		from email.utils import formatdate
+
+		send_from = "simeon.reusch@desy.de"
+		objectnumber = len(self.object_list)
+		if objectnumber == 1:
+			subject = "Forced Photometry for {}".format(*self.object_list)
+		else:
+			subject = f"Forced Photometry for {objectnumber} objects"
+		text = f"Here is your forced photometry output for {objectnumber} objects."
+		# text = f"Here is the forced photometry for {*self.object_list}"
+		server = "smtp-auth.desy.de"
+		port = 587
+
+		assert isinstance(send_to, str)
+		
+
+		msg = MIMEMultipart()
+		msg['From'] = send_from
+		msg['To'] = send_to
+		msg['Date'] = formatdate(localtime=True)
+		msg['Subject'] = subject
+
+		msg.attach(MIMEText(text))
+
+		for name in self.object_list or []:
+			filepath_plot = os.path.join(os.getenv("ZTFDATA"), "forcephotometry", "plots", f"{name}_SNT_{self.snt}.png")
+			if os.path.exists(filepath_plot): 
+				with open(filepath_plot, "rb") as plot:
+					part = MIMEApplication(plot.read(), Name=f"Plot_{name}")
+			part['Content-Disposition'] = f'attachment; filename="{name}_SNT_{self.snt}"'
+			msg.attach(part)
+		for name in self.object_list or []:
+			# filepath_csv = 
+
+
+		smtp = smtplib.SMTP(server, port)
+		smtp.starttls()
+		smtp.ehlo()
+		smtp.login(send_from, "Cp9prh??")
+		smtp.sendmail(send_from, send_to, msg.as_string())
+		smtp.close()
