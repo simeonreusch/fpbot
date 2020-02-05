@@ -2,26 +2,41 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de); part of this code is by Robert Stein (robert.stein@desy.de)
 # License: BSD-3-Clause
 
-import os, io
+import os, io, argparse
 from slack import RTMClient, WebClient
 from ztflc.io import LOCALDATA
-from pipeline import is_ztf_string
 from slackbot import bot_token, user_token
 
+parser = argparse.ArgumentParser(description='This is a realtime slackbot')
+parser.add_argument('-debug', action='store_true', help="Debug mode")
+parser.add_argument('-debugdesy', action='store_true', help="Debug mode for DESY")
+commandline_args = parser.parse_args()
+_DEBUG_ = commandline_args.debug
+_DEBUGDESY_ = commandline_args.debugdesy
 
-# botuser = "UTF38HMFZ"
-botuser = "UT462HHRR"
-keywords = [f"<@{botuser}>", "FP"]
+if _DEBUG_:
+	botuser = "UTF38HMFZ"
+else:
+	botuser = "UT462HHRR"
+
+keywords = [f"<@{botuser}>", "FP", ":fp-emoji:"]
 
 def run_on_event(data):
 	ts = data['ts']
 	channel = data['channel']
 	sid = int(float(ts) * 1.e6)
-	# cmd = "bash {0} {1} {2} {3}".format(submit_file, sid, ts, channel)
-	cmd = f"bash slackbot_spawn_screen_session.sh {channel} {ts}"
+	if _DEBUG_ or _DEBUGDESY_:
+		cmd = f"bash slackbot_spawn_screen_session_debug.sh {channel} {ts}"
+	else:
+		cmd = f"bash slackbot_spawn_screen_session.sh {channel} {ts}"
 	print(cmd)
 	os.system(cmd)
 
+def is_ztf_string(string):
+	if string[:3] == "ZTF" and len(string) == 12 and (int(string[3]) == 1 or int(string[3]) == 2):
+		return True
+	else:
+		return False
 
 @RTMClient.run_on(event="message")
 def say_hello(**payload):
@@ -56,7 +71,11 @@ def say_hello(**payload):
 					"type": "mrkdwn",
 					"text": "*--daysago*: Only data from [daysago] to now is considered. Default is start of ZTF operations (April 2018)"
 				},
-{
+				{
+					"type": "mrkdwn",
+					"text": "*--sendmail*: Send the output to the mailadress provided. This will include the lightcurve-plot and the dataframe as csv."
+				},
+				{
 					"type": "mrkdwn",
 					"text": "*--daysuntil*: Only data till [daysuntil] is considered. Default is today"
 				},
@@ -74,7 +93,7 @@ def say_hello(**payload):
 				}
 			]}]
 
-				wc.chat_postMessage(channel=channel_id, text=f"Hi <@{user}> This is a bot for forced photometry! Just type @fpbot ZTFName and it will download images from IPAC, perform a PSF fit and plot the lightcurve.\n[Only giving a ZTF name as argument is equivalent to *FP ZTFName -download -fit -plot --snt 5*]\nIf you have no ZTFname, but a RA and DEC, please provide an arbitrary name, followed by '-radec RA DEC'\nOptional arguments\n-downnload: only plots the lightcurve\n-fit: only does the fit\n-plot: only plots the lightcurve\n--daysago: only data from [daysago] to now is considered; default is start of ZTF operations (April 2018)\n--daysuntil: only data till [daysuntil] is considered; default is today\n--snt: signal to noise threshold; default is 5.0\n--magrange: for plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag\n--quiet: makes the bot less talkative", blocks=blocks, thread_ts=thread_ts, icon_emoji=':fp-emoji:')
+				wc.chat_postMessage(channel=channel_id, text=f"Hi <@{user}> This is a bot for forced photometry! Just type @fpbot ZTFName and it will download images from IPAC, perform a PSF fit and plot the lightcurve.\n[Only giving a ZTF name as argument is equivalent to *FP ZTFName -download -fit -plot --snt 5*]\nIf you have no ZTFname, but a RA and DEC, please provide an arbitrary name, followed by '-radec RA DEC'\nOptional arguments\n-downnload: only plots the lightcurve\n-fit: only does the fit\n-plot: only plots the lightcurve\n--sendmail: send the output to the mailadress provided. This will include the lightcurve-plot and the dataframe as csv\n--daysago: only data from [daysago] to now is considered; default is start of ZTF operations (April 2018)\n--daysuntil: only data till [daysuntil] is considered; default is today\n--snt: signal to noise threshold; default is 5.0\n--magrange: for plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag\n--quiet: makes the bot less talkative", blocks=blocks, thread_ts=thread_ts, icon_emoji=':fp-emoji:')
 			
 			else: 
 				if is_ztf_string(split_message[1]):

@@ -300,12 +300,14 @@ class ForcedPhotometryPipeline():
 
 		send_from = "simeon.reusch@desy.de"
 		objectnumber = len(self.object_list)
+		
 		if objectnumber == 1:
 			subject = "Forced Photometry for {}".format(*self.object_list)
+			text = "Here is the forced photometry for {}.".format(*self.object_list)
 		else:
 			subject = f"Forced Photometry for {objectnumber} objects"
-		text = f"Here is your forced photometry output for {objectnumber} objects."
-		# text = f"Here is the forced photometry for {*self.object_list}"
+			text = f"Here is your forced photometry output for {objectnumber} objects."
+
 		server = "smtp-auth.desy.de"
 		port = 587
 

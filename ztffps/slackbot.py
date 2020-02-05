@@ -52,12 +52,18 @@ def run_on_event(thread_id, channel_id):
 	do_fit = False
 	do_plot = False
 	upload_dataframe = False
+	target_address = None
 	daysago = None
 	daysuntil = None
 	snt = 5.0
 	mag_range = None
 	ra = None
 	dec = None
+
+	def check_for_parameter(param_name):
+		for i, param in enumerate(split_message):
+			if param == f"{param_name}" or param == f"-{param_name}" or param == f"--{param_name}" or param == f"–{param_name}":
+				return True
 
 	if "-plot" in split_message  or "--plot" in split_message or "plot" in split_message:
 		do_plot = True
@@ -110,6 +116,13 @@ def run_on_event(thread_id, channel_id):
 				wc.chat_postMessage(channel=channel_id, text=f"Error: --radec has to be followed by two floats. E.g. --radec 171.932 -38.477. NOTE: Do not use '+' to denote positive declination, Slack sometimes parses this a phone number!", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 				return
 
+	for i, parameter in enumerate(split_message):
+		if parameter == '-sendmail' or parameter == '--sendmail' or parameter == '–sendmail' or parameter == 'sendmail':
+			try: 
+				target_address = str(split_message[i+1]).split("|")[1][:-1]
+			except (ValueError, IndexError):
+				wc.chat_postMessage(channel=channel_id, text=f"Error: --sendmail has to be followed by an email address.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+				return
 
 	if do_download == False and do_fit == False and do_plot == False:
 		do_download = True
@@ -128,7 +141,7 @@ def run_on_event(thread_id, channel_id):
 		try:
 			pl.download()
 		except:
-			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while downloading the image files.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while downloading the image files. Please contact <@UAQTC7L73>.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	if do_fit:
 		if verbose:
@@ -136,7 +149,7 @@ def run_on_event(thread_id, channel_id):
 		try:
 			pl.psffit()
 		except:
-			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while performing the PSF fits.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while performing the PSF fits. Please contact <@UAQTC7L73>.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	if do_plot:
 		if verbose:
@@ -148,7 +161,15 @@ def run_on_event(thread_id, channel_id):
 			imgdata = open(imgpath, "rb")
 			wc.files_upload(file=imgdata, filename=imgpath, channels=channel_id, thread_ts=thread_id, title="And here is your lightcurve.", icon_emoji=':fp-emoji:')
 		except:
-			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while plotting the lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while plotting the lightcurve. Please contact <@UAQTC7L73>.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+
+	if target_address:
+		if verbose:
+			wc.chat_postMessage(channel=channel_id, text=f"Sending mail.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+		try:
+			pl.sendmail(target_address)
+		except:
+			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while sending your email. Please contact <@UAQTC7L73>.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	# if upload_dataframe:
 	# 	try:
