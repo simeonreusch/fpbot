@@ -12,10 +12,12 @@ import matplotlib.pyplot as plt
 from datetime import datetime, date
 
 
-def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None, logger=None, save_df=False):
+def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None, logger=None):
 	if logger is None:
 		logging.basicConfig(level = logging.INFO)
 		logger = logging.getLogger()
+
+	### define directories
 	ztfdata = os.getenv("ZTFDATA")
 	lc_dir = os.path.join(ztfdata, "forcephotometry")
 	lc_path = os.path.join(lc_dir, "{}.csv".format(name))
@@ -26,7 +28,7 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 	
 	lc = pd.read_csv(lc_path)
 
-	#apply time-range cut:
+	### apply time-range cut:
 	now = Time(time.time(), format='unix', scale='utc').mjd
 
 	mjdmin = now - daysago if daysago is not None else 58208.5
@@ -38,9 +40,13 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 		axis_min = mjdmin
 		axis_max = mjdmax + 1
 
-	lc.query('obsmjd >= @mjdmin and obsmjd <= @mjdmax', inplace = True)
+	### remove rows outside the timerange and with bad chisq-values, reset index
+	lc.query('obsmjd >= @mjdmin and obsmjd <= @mjdmax', inplace=True)
+	lc.query('chi2 > 0', inplace=True)
+	lc = lc.reset_index()
+	del lc['index']
 
-	# add magnitudes, upper limits, errors and times
+	### add magnitudes, upper limits, errors and times
 	mags = []
 	mags_unc = []
 	lc["F0"] = 10**(lc.magzp/2.5)
@@ -67,14 +73,14 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 		upper_limits.append(upper_limit)
 		mags.append(mag)
 		mags_unc.append(mag_unc)
-
 	lc["upper_limit"] = upper_limits
 	lc["mag"] = mags
 	lc["mag_err"] = mags_unc
 
-	# save this version of the dataframe for later analysis (and to be sent by mail)
+	### save this version of the dataframe for later analysis (and to be sent by mail)
 	lc.to_csv(os.path.join(lc_plotted_dir, f"{name}_SNT_{snt}.csv"))
 
+	### create filterspecific dataframes
 	len_before_sn_cut = len(lc)
 	t0_dist = np.asarray(lc.obsmjd.values - now)
 	lc.insert(2, "t0_dist",  t0_dist)
@@ -91,6 +97,7 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 
 	logger.info("{} {} of {} datapoints survived SNT cut of {}".format(name, len_after_sn_cut, len_before_sn_cut, snt))
 
+	### define functions for secondary axis (conversion from jd --> distance to today)
 	def t0_dist(obsmjd):
 		t0 = Time(time.time(), format='unix', scale='utc').mjd
 		return obsmjd - t0
@@ -99,8 +106,7 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 		t0 = Time(time.time(), format='unix', scale='utc').mjd
 		return t0 + dist_to_t0
 
-	# Actual plotting
-	
+	### actual plotting
 	fig, ax = plt.subplots(1,1, figsize = [10,4.2])
 	fig.subplots_adjust(top=0.8)
 	ax2 = ax.secondary_xaxis('top', functions=(t0_dist, t0_to_mjd))

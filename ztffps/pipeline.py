@@ -186,10 +186,10 @@ class ForcedPhotometryPipeline():
 			fig = plt.figure(dpi = 300)
 			ax = fig.add_subplot(111)
 			fp.show_lc(ax=ax)
-			plotdir = os.getenv("ZTFDATA", "forcephotometry")
-			if not os.path.exists(plotdir):
-				os.makedirs(plotdir)
-			fig.savefig(os.path.join(plotdir, "{}_flux.png".format(name)))
+			# plotdir = os.getenv("ZTFDATA", "forcephotometry")
+			# if not os.path.exists(plotdir):
+			# 	os.makedirs(plotdir)
+			# fig.savefig(os.path.join(plotdir, "{}_flux.png".format(name)))
 			fp.store()
 			print('\n{} Plotting lightcurve'.format(name))
 			from plot import plot_lightcurve
@@ -275,11 +275,12 @@ class ForcedPhotometryPipeline():
 	def _saltfit_multiprocessing_(args):
 		from saltfit import fit_salt
 		name, mwebv, snt = args
-		print("{} SALT fitting".format(name))
+		print("\n{} SALT fitting".format(name))
 		fitresult, fitted_model = fit_salt(name=name, mwebv=mwebv, snt=snt)
 		return fitresult, fitted_model
 
 	def sendmail(self, send_to, files=None):
+		print("\nSending mail")
 		import smtplib, getpass
 		from os.path import basename
 		from email.mime.application import MIMEApplication
