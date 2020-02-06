@@ -39,11 +39,7 @@ class ForcedPhotometryPipeline():
 		self.mag_range = mag_range
 		self.ra = ra
 		self.dec = dec
-<<<<<<< HEAD
 		self.reprocess = reprocess
-
-=======
->>>>>>> 09af4a1d4f03561d1f6d03b73ae0cd3e7bf47179
 		self.nprocess = nprocess
 
 		if self.ra is None or self.dec is None:
@@ -88,7 +84,6 @@ class ForcedPhotometryPipeline():
 				for line in self.lines:
 					if self.is_ztf_name(line):
 						self.object_list.append(line)
-
 			except FileNotFoundError as e:
 				print("\nYou have to provide either a ZTF name or a file containing ZTF names (1 per line) or an arbitrary name if using the radec option.\n")
 				raise e
@@ -143,12 +138,12 @@ class ForcedPhotometryPipeline():
 				jdmax = result[4] - self.daysuntil
 			ra = result[1]
 			dec = result[2]
-			last_obs = result[5]
+			# last_obs = 
 			self.ZTF_object_infos.loc["{}".format(result[0]), 'ra'] = ra
 			self.ZTF_object_infos.loc["{}".format(result[0]), 'dec'] = dec
 			self.ZTF_object_infos.loc["{}".format(result[0]), 'jdmin'] = jdmin
 			self.ZTF_object_infos.loc["{}".format(result[0]), 'jdmax'] = jdmax
-			self.ZTF_object_infos.loc[f"{result[0]}", 'last_obs'] = last_obs
+			# self.ZTF_object_infos.loc[f"{result[0]}", 'last_obs'] = last_obs
 
 	def download(self):
 		for name in self.object_list:
