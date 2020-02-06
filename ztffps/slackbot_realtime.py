@@ -22,6 +22,7 @@ else:
 keywords = [f"<@{botuser}>", "FP", ":fp-emoji:"]
 
 def run_on_event(data):
+	""" """
 	ts = data['ts']
 	channel = data['channel']
 	sid = int(float(ts) * 1.e6)
@@ -33,6 +34,7 @@ def run_on_event(data):
 	os.system(cmd)
 
 def is_ztf_string(string):
+	""" """
 	if string[:3] == "ZTF" and len(string) == 12 and (int(string[3]) == 1 or int(string[3]) == 2):
 		return True
 	else:
@@ -40,6 +42,7 @@ def is_ztf_string(string):
 
 @RTMClient.run_on(event="message")
 def say_hello(**payload):
+	""" """
 	data = payload['data']
 	wc = payload['web_client']
 

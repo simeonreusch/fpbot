@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 class Cosmology():
+	""" """
 	def __init__(self, logger=None):
 		if logger is None:
 			logging.basicConfig(level = logging.INFO)
@@ -15,12 +16,11 @@ class Cosmology():
 		else:
 			self.logger = logger
 	
-	ztfdata = os.getenv("ZTFDATA")
-	salt_dir = os.path.join(ztfdata, "forcephotometry", "SALT")
+	salt_dir = io.SALTDATA
 	salt_path = os.path.join(salt_dir, "SALT_FIT_JLA.csv")
-	cosmology_dir = os.path.join(ztfdata, "cosmology")
-	if not os.path.exists(cosmology_dir):
-		os.makedirs(cosmology_dir)
+	cosmology_dir = io.COSMODATA
+	if not os.path.exists(io.COSMODATA):
+		os.makedirs(io.COSMODATA)
 
 	# custom parameters
 	max_redshift = 0.08 # maximum redshift def = 0.08
@@ -40,6 +40,7 @@ class Cosmology():
 	sne_total = len(fitresults)
 
 	def prune_fitresults(self):
+		""" """
 		self.fitresults.query('z <= @self.max_redshift', inplace = True)
 		self.logger.info('surviving redshift range cut: {} ({:2.2f} %)'.format(len(self.fitresults), self.survival_percent(len(self.fitresults))))
 		self.fitresults.query('g_obs >= @self.min_obs_per_filter or g_obs == 0', inplace = True)
@@ -62,9 +63,10 @@ class Cosmology():
 
 		self.calculate_statistics()
 
-		self.fitresults.to_csv(os.path.join(self.cosmology, 'cosmology.csv'))
+		self.fitresults.to_csv(os.path.join(self.cosmology_dir, 'cosmology.csv'))
 
 	def calculate_statistics(self):
+		""" """
 		self.median_peakabsmag = np.median(self.fitresults.peak_abs_mag_corrected.values)
 		self.fitresults["residual"] = self.fitresults.peak_abs_mag_corrected.values - self.median_peakabsmag
 		residuals_median = np.median(self.fitresults.residual)
@@ -76,12 +78,15 @@ class Cosmology():
 
 
 	def create_overview(self):
+		""" """
 		return
 
 	def survival_percent(self, number):
+		""" """
 		return 100/self.sne_total * number
 
 	def get_annotations(self):
+		""" """
 		names = []
 		x = []
 		y= []
@@ -96,7 +101,7 @@ class Cosmology():
 		return names, x, y
 
 	def plot_hubble(self):
-		
+		""" """
 		fig, ax = plt.subplots(1,1, figsize = [6,5], dpi=300)
 		ax.scatter(self.fitresults.z, self.fitresults.residual, marker='.', color='green')
 		names, x, y = self.get_annotations()
@@ -109,6 +114,7 @@ class Cosmology():
 		fig.savefig(os.path.join(self.cosmology_dir, 'hubble.png'))
 
 	def create_pdf_overview(self):
+		""" """
 		self.logger.info("Creating pdf overviews")
 		if not hasattr(self, 'good_objects'):
 			self.get_annotations()

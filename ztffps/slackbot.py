@@ -6,12 +6,12 @@ import time, os, getpass
 from slack import RTMClient, WebClient
 import pipeline
 import numpy as np
+from pipeline import FORCEPHOTODATA
 
 bot_token_file = ".slack_bot_access_token.txt"
 user_token_file = ".slack_access_token.txt"
 
-ztfdata = os.getenv("ZTFDATA")
-lc_dir = os.path.join(ztfdata, "forcephotometry")
+lc_dir = FORCEPHOTODATA
 
 
 try:
@@ -32,7 +32,7 @@ with open(user_token_file, "wb") as f:
 
 
 def run_on_event(thread_id, channel_id):
-
+	""" """
 	wc = WebClient(token=user_token)
 
 	payload = wc.conversations_history(channel=channel_id, oldest=str(float(thread_id) - 1), latest=str(float(thread_id) + 1))
@@ -62,6 +62,7 @@ def run_on_event(thread_id, channel_id):
 	dec = None
 
 	def fuzzy_parameters(param_list):
+		""" """
 		fuzzy_parameters = []
 		for param in param_list:
 			fuzzy_parameters.append(f"{param}")

@@ -26,7 +26,7 @@ _SPECTROSCOPIC_REFERENCE_ = os.path.join(os.getcwd(),'data', 'ztf_host_w_redshif
 _FILTER_TRANSLATION_ = {'p48r': 0, 'p48g': 1, 'p48i': 2}
 
 class SaltFit():
-
+	""" """
 	def __init__(self, name, mwebv, logger=None, **kwargs):
 		if logger is None:
 			logging.basicConfig(level = logging.INFO)
@@ -46,6 +46,7 @@ class SaltFit():
 		self.modify_columns()
 
 	def modify_columns(self):
+		""" """
 		self.lightcurve.replace(['ZTF_r', 'ZTF_g', 'ZTF_i'], ['p48r', 'p48g', 'p48i'], inplace=True)
 		self.lightcurve.replace(['ZTF r', 'ZTF g', 'ZTF i'], ['p48r', 'p48g', 'p48i'], inplace=True)
 		self.lightcurve['flux_err'] = self.lightcurve['ampl.err']
@@ -61,6 +62,7 @@ class SaltFit():
 
 	@staticmethod
 	def load_ztf_filters():
+		""" """
 		bands = {'p48r': 'data/ztfr_eff.dat', 'p48g': 'data/ztfg_eff.dat', 'p48i': 'data/ztfi_eff.dat'}
 		for bandname in bands.keys():
 			fname = bands[bandname]
@@ -70,6 +72,7 @@ class SaltFit():
 
 	@staticmethod
 	def get_digit_count(value_str):
+		""" """
 		value_str = value_str.replace('.','').lstrip('0')
 		return len(value_str)
 
@@ -94,6 +97,7 @@ class SaltFit():
 
 	# 	return
 	def check_redshift_precision(self):
+		""" """
 		spectroscopic_redshifts = pd.read_csv(_SPECTROSCOPIC_REFERENCE_)
 		reference_object = spectroscopic_redshifts.query('sn_name == "{}"'.format(self.name))
 		if not reference_object.empty:
@@ -110,6 +114,7 @@ class SaltFit():
 			self.quality_info.update(z_precision = _digits)
 
 	def count_observations(self):
+		""" """
 		unique_obs, counts = np.unique(self.lightcurve['filter'], return_counts = True)
 		obs_count = dict(zip(unique_obs, counts))
 		nr_filters = len(obs_count.keys())
@@ -140,6 +145,7 @@ class SaltFit():
 
 
 	def fit(self, snt=5, quality_checks=False, **kwargs):
+		""" """
 		from astropy.table import Table
 		from astropy.cosmology import Planck15 as cosmo 
 		self.snt = snt
@@ -192,6 +198,7 @@ class SaltFit():
 			self.result = None
 
 def fit_salt(name, mwebv, snt, quality_checks=False, logger=None):
+	""" """
 	saltfit = SaltFit(name, mwebv = mwebv, plot=True, logger=logger)
 	saltfit.fit(snt=snt, quality_checks=quality_checks)
 	return saltfit.result, saltfit.fitted_model

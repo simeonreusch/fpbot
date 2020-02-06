@@ -12,6 +12,7 @@ import ztfquery
 MARSHAL_BASEURL = "http://skipper.caltech.edu:8080/cgi-bin/growth/view_avro.cgi?name="
 
 class AmpelInfo():
+    """ """
     def __init__(self, ztf_names, nprocess=16, logger=None):
         if logger is None:
             logging.basicConfig(level = logging.INFO)
@@ -62,6 +63,7 @@ class AmpelInfo():
         self.queryresult = self.get_info()
 
     def get_info(self):
+        """ """
         object_count = len(self.ztf_names)
         print("\nObtaining ra/decs from AMPEL")
         from astropy.utils.console import ProgressBar
@@ -88,6 +90,7 @@ class AmpelInfo():
         return queryresult
 
 class MarshalInfo():
+    """ """
     def __init__(self, ztf_names, nprocess=16, logger=None):
         import requests
         import pandas as pd
@@ -110,6 +113,7 @@ class MarshalInfo():
 
     @staticmethod
     def _get_info_multiprocessor_(args):
+        """ """
         import requests
         import pandas as pd
         ztf_name, url, auth = args

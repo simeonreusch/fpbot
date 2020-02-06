@@ -14,10 +14,17 @@ from astropy.time import Time
 # CREATE LOCAL FILE THAT STORES NAME, RA/DEC + MWEBV
 # os.path.expanduser("~") is auch nice
 
+ZTFDATA = os.getenv("ZTFDATA")
+FORCEPHOTODATA = os.path.join(ZTFDATA, "forcephotometry")
+COSMODATA = os.path.join(ZTFDATA, "cosmology")
+MARSHALDATA = os.path.join(ZTFDATA, "marshal")
+SALTDATA = os.path.join(FORCEPHOTODATA, "SALT")
+PLOTDATA = os.path.join(FORCEPHOTODATA, "plots")
+PLOT_DATAFRAMES = os.path.join(PLOTDATA, "dataframes")
 
 
 class ForcedPhotometryPipeline():
-
+	""" """
 	def __init__(self, file_or_name=None, daysago=None, daysuntil=None, snt=5.0, mag_range=None, ra=None, dec=None, nprocess=4, reprocess=False):
 		self.startime = time.time()
 		self.logger = logging.getLogger('pipeline')
@@ -61,6 +68,7 @@ class ForcedPhotometryPipeline():
 				self.create_info_dataframe()
 
 	def is_ztf_name(self, name):
+		""" """
 		if name[:3] == "ZTF" and len(name) == 12 and (int(name[3]) == 1 or int(name[3]) == 2):
 			letters = []
 			for c in name[3:12]:
@@ -74,6 +82,7 @@ class ForcedPhotometryPipeline():
 			return False
 
 	def use_if_ztf(self):
+		""" """
 		if self.is_ztf_name(self.file_or_name):
 			self.object_list = [self.file_or_name]
 		else:
@@ -92,6 +101,7 @@ class ForcedPhotometryPipeline():
 		print("Logs are stored in forced_photometry.log")
 
 	def create_info_dataframe(self):
+		""" """
 		if self.ra is None or self.dec is None:
 			jdmin = None
 			jdmax = None
@@ -110,6 +120,7 @@ class ForcedPhotometryPipeline():
 		self.ZTF_object_infos = ZTF_object_infos.set_index('name')
 
 	def get_position_and_timerange(self):
+		""" """
 		# objects_meta_table_path = os.path.join(LOCALDATA, "objects_meta_table.csv")
 
 		# if os.path.exists(ra_dec_path):
@@ -146,6 +157,7 @@ class ForcedPhotometryPipeline():
 			# self.ZTF_object_infos.loc[f"{result[0]}", 'last_obs'] = last_obs
 
 	def download(self):
+		""" """
 		for name in self.object_list:
 			self.logger.info("{} Starting download".format(name))
 			_ra = self.ZTF_object_infos.loc["{}".format(name), 'ra']
@@ -158,6 +170,7 @@ class ForcedPhotometryPipeline():
 			fp.io.download_data(nprocess=32, overwrite=False, show_progress=True, verbose=False, ignore_warnings=True)
 
 	def check_if_psf_data_exists(self):
+		""" """
 		self.cleaned_object_list = []
 		for name in self.object_list:
 			try:
@@ -167,9 +180,11 @@ class ForcedPhotometryPipeline():
 				pass
 
 	def check_info_info_df_exists(self):
+		""" """
 		raise NotImplementedError
 
 	def psffit(self, nprocess=None):
+		""" """
 		if nprocess is None:
 			nprocess = self.nprocess
 		object_count = len(self.object_list)
@@ -205,6 +220,7 @@ class ForcedPhotometryPipeline():
 
 
 	def plot(self, nprocess=4):
+		""" """
 		self.logger.info("Plotting")
 		object_count = len(self.object_list)
 		snt_ = [self.snt]*object_count
@@ -221,6 +237,7 @@ class ForcedPhotometryPipeline():
 				bar.update(object_count)
 
 	def global_filecheck(self):
+		""" """
 		print("Running filecheck. This can take several hours.")
 		badfiles = ztfquery.io.run_full_filecheck(erasebad=True, nprocess=self.nprocess, redownload=True)
 		print("BADFILES:\n{}".format(badfiles))
@@ -228,12 +245,14 @@ class ForcedPhotometryPipeline():
 
 	@staticmethod
 	def _plot_multiprocessing_(args):
+		""" """
 		name, snt, daysago, daysuntil, mag_range = args
 		from plot import plot_lightcurve
 		plot_lightcurve(name, snt=snt, daysago=daysago, daysuntil=daysuntil, mag_range=mag_range)
 		print('\n{} plotted'.format(name))
 
 	def saltfit(self, snt=5, quality_checks=False):
+		""" """
 		self.check_if_psf_data_exists()
 		import sfdmap
 		from astropy.utils.console import ProgressBar
@@ -273,6 +292,7 @@ class ForcedPhotometryPipeline():
 
 	@staticmethod
 	def _saltfit_multiprocessing_(args):
+		""" """
 		from saltfit import fit_salt
 		name, mwebv, snt = args
 		print("\n{} SALT fitting".format(name))
@@ -280,6 +300,7 @@ class ForcedPhotometryPipeline():
 		return fitresult, fitted_model
 
 	def sendmail(self, send_to, files=None):
+		""" """
 		print("\nSending mail")
 		import smtplib, getpass
 		from os.path import basename

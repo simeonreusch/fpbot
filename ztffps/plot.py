@@ -10,19 +10,21 @@ from astropy.io import fits
 from astropy.time import Time
 import matplotlib.pyplot as plt
 from datetime import datetime, date
+import pipeline
 
+print(__name__)
 
 def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None, logger=None):
+	""" """
 	if logger is None:
 		logging.basicConfig(level = logging.INFO)
 		logger = logging.getLogger()
 
 	### define directories
-	ztfdata = os.getenv("ZTFDATA")
-	lc_dir = os.path.join(ztfdata, "forcephotometry")
+	lc_dir = pipeline.FORCEPHOTODATA
 	lc_path = os.path.join(lc_dir, "{}.csv".format(name))
-	lc_plotdir = os.path.join(lc_dir, "plots")
-	lc_plotted_dir = os.path.join(lc_plotdir, "lightcurves")
+	lc_plotdir = pipeline.PLOTDATA
+	lc_plotted_dir = pipeline.PLOT_DATAFRAMES
 	if not os.path.exists(lc_plotted_dir):
 		os.makedirs(lc_plotted_dir)
 	
@@ -99,10 +101,12 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 
 	### define functions for secondary axis (conversion from jd --> distance to today)
 	def t0_dist(obsmjd):
+		""" """
 		t0 = Time(time.time(), format='unix', scale='utc').mjd
 		return obsmjd - t0
 
 	def t0_to_mjd(dist_to_t0):
+		""" """
 		t0 = Time(time.time(), format='unix', scale='utc').mjd
 		return t0 + dist_to_t0
 
