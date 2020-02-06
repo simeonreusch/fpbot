@@ -11,7 +11,6 @@ import pandas as pd
 from astropy.time import Time
 
 # TODO
-# ra/dec option as run parameter
 # CREATE LOCAL FILE THAT STORES NAME, RA/DEC + MWEBV
 # os.path.expanduser("~") is auch nice
 
@@ -19,12 +18,12 @@ from astropy.time import Time
 
 class ForcedPhotometryPipeline():
 
-	def __init__(self, file_or_name=None, daysago=None, daysuntil=None, snt=5.0, mag_range=None, ra=None, dec=None, nprocess=4):
+	def __init__(self, file_or_name=None, daysago=None, daysuntil=None, snt=5.0, mag_range=None, ra=None, dec=None, nprocess=4, reprocess=False):
 		self.startime = time.time()
 		self.logger = logging.getLogger('pipeline')
 
 		if file_or_name is None:
-			print("You have to initialize this class with at least one name of a ZTF object for which to perform forced photometry (or an arbitrary name if the -radec option is chosen.")
+			print("You have to initialize this class with at least one name of a ZTF object for which to perform forced photometry a textfile containing one ZTF name per line or an arbitrary name if the -radec option is chosen.")
 		else:
 			self.file_or_name=file_or_name
 
@@ -40,6 +39,11 @@ class ForcedPhotometryPipeline():
 		self.mag_range = mag_range
 		self.ra = ra
 		self.dec = dec
+<<<<<<< HEAD
+		self.reprocess = reprocess
+
+=======
+>>>>>>> 09af4a1d4f03561d1f6d03b73ae0cd3e7bf47179
 		self.nprocess = nprocess
 
 		if self.ra is None or self.dec is None:
@@ -60,14 +64,21 @@ class ForcedPhotometryPipeline():
 				self.object_list = [self.file_or_name]
 				self.create_info_dataframe()
 
-	def is_ztf_string(self, string):
-		if string[:3] == "ZTF" and len(string) == 12 and (int(string[3]) == 1 or int(string[3]) == 2):
-			return True
+	def is_ztf_name(self, name):
+		if name[:3] == "ZTF" and len(name) == 12 and (int(name[3]) == 1 or int(name[3]) == 2):
+			letters = []
+			for c in name[3:12]:
+				if c.isalpha():
+					letters.append(c)
+			if len(letters) == 7:
+				return True
+			else:
+				return False
 		else:
 			return False
 
 	def use_if_ztf(self):
-		if self.is_ztf_string(self.file_or_name):
+		if self.is_ztf_name(self.file_or_name):
 			self.object_list = [self.file_or_name]
 		else:
 			self.object_list = []
@@ -75,11 +86,11 @@ class ForcedPhotometryPipeline():
 				file = open("{}".format(self.file_or_name), "r")
 				self.lines = file.read().splitlines()
 				for line in self.lines:
-					if self.is_ztf_string(line):
+					if self.is_ztf_name(line):
 						self.object_list.append(line)
 
 			except FileNotFoundError as e:
-				print("\nYou have to provide either a ZTF name or a file containing ZTF names (1 per line)\n")
+				print("\nYou have to provide either a ZTF name or a file containing ZTF names (1 per line) or an arbitrary name if using the radec option.\n")
 				raise e
 			assert self.object_list[0][:3] == "ZTF" and len(self.object_list[0]) == 12, "You have to provide either a ZTF name or a file containing ZTF names (1 per line)"
 		print("Doing forced photometry for {} SNe".format(len(self.object_list)))
@@ -87,28 +98,28 @@ class ForcedPhotometryPipeline():
 
 	def create_info_dataframe(self):
 		if self.ra is None or self.dec is None:
-			_jdmin = None
-			_jdmax = None
+			jdmin = None
+			jdmax = None
 		else:
 			now = Time(time.time(), format='unix', scale='utc').jd
 			if self.daysago is None:
-				_jdmin = 2458209
+				jdmin = 2458209
 			else:
-				_jdmin = now - self.daysago
+				jdmin = now - self.daysago
 			if self.daysuntil is None:
-				_jdmax = now
+				jdmax = now
 			else:
-				_jdmax = now - self.daysuntil
-		_data = {'name': self.object_list, 'ra': self.ra, 'dec': self.dec, 'jdmin': _jdmin, 'jdmax': _jdmax, 'mwebv': None}
-		ZTF_object_infos = pd.DataFrame.from_dict(_data)
+				jdmax = now - self.daysuntil
+		data = {'name': self.object_list, 'ra': self.ra, 'dec': self.dec, 'jdmin': jdmin, 'jdmax': jdmax, 'mwebv': None, 'last_obs': None}
+		ZTF_object_infos = pd.DataFrame.from_dict(data)
 		self.ZTF_object_infos = ZTF_object_infos.set_index('name')
 
 	def get_position_and_timerange(self):
-		# ra_dec_path = os.path.join(LOCALDATA, "ra_dec_table.csv")
+		# objects_meta_table_path = os.path.join(LOCALDATA, "objects_meta_table.csv")
 
 		# if os.path.exists(ra_dec_path):
-		# 	ra_dec_table = pd.read_csv(ra_dec_path)
-			# ra_dec_table = ra_dec_table.set_index('name')
+		# 	objects_meta_table = pd.read_csv(objects_meta_table_path)
+			# objects_meta_table = objects_meta_table.set_index('name')
 
 		# for name in self.object_list:
 			
@@ -123,19 +134,21 @@ class ForcedPhotometryPipeline():
 
 		for result in connector.queryresult:
 			if self.daysago is None:
-				_jdmin = 2458209
+				jdmin = 2458209
 			else:
-				_jdmin = result[4] - self.daysago
+				jdmin = result[4] - self.daysago
 			if self.daysuntil is None:
-				_jdmax = result[4]
+				jdmax = result[4]
 			else:
-				_jdmax = result[4] - self.daysuntil
-			_ra = result[1]
-			_dec = result[2]
-			self.ZTF_object_infos.loc["{}".format(result[0]), 'ra'] = _ra
-			self.ZTF_object_infos.loc["{}".format(result[0]), 'dec'] = _dec
-			self.ZTF_object_infos.loc["{}".format(result[0]), 'jdmin'] = _jdmin
-			self.ZTF_object_infos.loc["{}".format(result[0]), 'jdmax'] = _jdmax
+				jdmax = result[4] - self.daysuntil
+			ra = result[1]
+			dec = result[2]
+			last_obs = result[5]
+			self.ZTF_object_infos.loc["{}".format(result[0]), 'ra'] = ra
+			self.ZTF_object_infos.loc["{}".format(result[0]), 'dec'] = dec
+			self.ZTF_object_infos.loc["{}".format(result[0]), 'jdmin'] = jdmin
+			self.ZTF_object_infos.loc["{}".format(result[0]), 'jdmax'] = jdmax
+			self.ZTF_object_infos.loc[f"{result[0]}", 'last_obs'] = last_obs
 
 	def download(self):
 		for name in self.object_list:
@@ -224,13 +237,6 @@ class ForcedPhotometryPipeline():
 		from plot import plot_lightcurve
 		plot_lightcurve(name, snt=snt, daysago=daysago, daysuntil=daysuntil, mag_range=mag_range)
 		print('\n{} plotted'.format(name))
-
-	# @staticmethod
-	# def _plot_nofit_multiprocessing_(args):
-	# 	name 
-	# 	from plot import plot_lightcurve
-	# 	plot_lightcurve(name, snt=5.0)
-	# 	print('{} successfully plotted'.format(name))
 
 	def saltfit(self, snt=5, quality_checks=False):
 		self.check_if_psf_data_exists()
