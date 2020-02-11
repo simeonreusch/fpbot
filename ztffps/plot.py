@@ -78,7 +78,9 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 	lc["upper_limit"] = upper_limits
 	lc["mag"] = mags
 	lc["mag_err"] = mags_unc
-
+	# lc["moonness"] = np.sin(np.radians(lc["moonalt"].values)) * np.power(np.abs(lc["moonillf"].values), 2.5)
+	# lc_copy = lc
+	
 	### save this version of the dataframe for later analysis (and to be sent by mail)
 	lc.to_csv(os.path.join(lc_plotted_dir, f"{name}_SNT_{snt}.csv"))
 
@@ -121,6 +123,8 @@ def plot_lightcurve(name, snt=5.0, daysago=None, daysuntil=None, mag_range=None,
 	ax.set_ylabel('magnitude [AB]')
 	ax.set_xlim([axis_min, axis_max])
 	ax2.set_xlim([ax.get_xlim()[0] - now, ax.get_xlim()[1] - now ])
+	# ax3 = ax.twinx() 
+	# ax3.scatter(lc_copy.obsmjd.values, lc_copy.moonness.values, color = "black", marker=".", s=1, alpha=1)
 	ax.scatter(g_uplim.obsmjd.values, g_uplim.upper_limit.values, color ='green', marker="v", s=1.3, alpha=0.5)
 	ax.scatter(r_uplim.obsmjd.values, r_uplim.upper_limit.values, color = 'red', marker="v", s=1.3, alpha=0.5)
 	ax.scatter(i_uplim.obsmjd.values, i_uplim.upper_limit.values, color = 'orange', marker="v", s=1.3, alpha=0.5)
