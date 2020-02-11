@@ -8,8 +8,8 @@ import pipeline
 import numpy as np
 from pipeline import FORCEPHOTODATA
 
-bot_token_file = ".slack_bot_access_token.txt"
-user_token_file = ".slack_access_token.txt"
+bot_token_file = f"{os.path.dirname(os.path.realpath(__file__))}/.slack_bot_access_token.txt"
+user_token_file = f"{os.path.dirname(os.path.realpath(__file__))}/.slack_access_token.txt"
 
 lc_dir = FORCEPHOTODATA
 

@@ -309,7 +309,7 @@ class ForcedPhotometryPipeline():
 		from email.mime.text import MIMEText
 		from email.utils import formatdate
 
-		_smtp_pass_file = ".smtp_pass.txt"
+		_smtp_pass_file = f"{os.path.dirname(os.path.realpath(__file__))}/.smtp_pass.txt"
 
 		try:
 			with open(_smtp_pass_file, "r") as f:

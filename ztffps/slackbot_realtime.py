@@ -27,9 +27,9 @@ def run_on_event(data):
 	channel = data['channel']
 	sid = int(float(ts) * 1.e6)
 	if _DEBUG_ or _DEBUGDESY_:
-		cmd = f"bash slackbot_spawn_screen_session_debug.sh {channel} {ts}"
+		cmd = f"bash {os.path.dirname(os.path.realpath(__file__))}/slackbot_spawn_screen_session_debug.sh {channel} {ts}"
 	else:
-		cmd = f"bash slackbot_spawn_screen_session.sh {channel} {ts}"
+		cmd = f"bash {os.path.dirname(os.path.realpath(__file__))}/slackbot_spawn_screen_session.sh {channel} {ts}"
 	print(cmd)
 	os.system(cmd)
 
