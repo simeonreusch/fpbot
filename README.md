@@ -10,7 +10,7 @@ The majority of required packages can be installed by issuing:
 
 ## Usage
 
-The basic file is run.py, which can be run using different flags. A (ZTF) name always has to be provided (or a textfile containing one ZTF name in each line).
+The basic file is run.py, which can be run using different flags. A (ZTF) name always has to be provided (or a textfile containing one ZTF name in each line). Alternatively, the pipeline class can be imported from pipeline.py.
 
 `-radec`	If this is given, the name can be arbitrary (but a name must be provided). Radec must be given as two floats, e.g. '-radec 161.3434 -31.32123'.
 
@@ -26,6 +26,8 @@ The basic file is run.py, which can be run using different flags. A (ZTF) name a
 
 `--daysago`  Determines how old the datapoints used should be. Default uses all datapoints available.
 
+`--daysuntil`  Determines how new the datapoints used should be. Default uses all datapoints available.
+
 `--filecheck` Checks all images downloaded for data integrity and redownloads corrupt images.
 
 **Examples**:
@@ -34,15 +36,16 @@ The basic file is run.py, which can be run using different flags. A (ZTF) name a
 
 `./run.py supernovae.txt -plot --filecheck` Plots all lightcurves for ZTF transients found in supernovae.txt and additionally performs a full filecheck on all images downloaded by ztfquery (not only the ones in the textfile).
 
-`./run.py this_look_interesting -radec 143.3123 66.42342 -dl -fit -plot` Downloads all images containing the location given in ra and dec, does PSF-fits and plots the lightcurve.
+`./run.py this_looks_interesting -radec 143.3123 66.42342 -dl -fit -plot --daysago 10` Downloads all images of the last ten days of the location given in ra and dec, does PSF-fits and plots the lightcurve.
 
 ## Requirements
 
 - [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC. 
 - [ztflc](https://github.com/mickaelrigault/ztflc) is used for PSF-fitting.
-- Either Marshal credentials or a connection to AMPEL are neccessary for determining object ra and dec.
+- Marshal credentials are neccessary for determining object ra and dec.
 
 ## Slackbot
 There is a bot for Slack included, based on the SlackRTM-API. To use it, create a legacy bot in slack (with the legacy privilege system, the new system depends on the EventApi, which itself needs a webserver). Change the bot-username in slackbot_realtime.py and it should basically work (first start requires you to enter the bot- and bot-user credentials).
 
-
+## Saltfit module
+Still experimental! Performs saltfits on the generated lightcurves.
