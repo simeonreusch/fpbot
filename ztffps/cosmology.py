@@ -18,7 +18,7 @@ class Cosmology():
 			self.logger = logger
 	
 	salt_dir = pipeline.SALTDATA
-	salt_path = os.path.join(salt_dir, "SALT_FIT_GRIDSEARCH.csv")
+	salt_path = os.path.join(salt_dir, "SALT_FIT.csv")
 	cosmology_dir = pipeline.COSMODATA
 	if not os.path.exists(pipeline.COSMODATA):
 		os.makedirs(pipeline.COSMODATA)
@@ -26,7 +26,7 @@ class Cosmology():
 	# custom parameters
 	max_redshift = 0.08 # maximum redshift def = 0.08
 	min_filters = 2			# number of different filters needed def = 2
-	max_chisquare = 3	# max chisquare to retain only good fits def = 1.3
+	max_chisquare = 2.6	# max chisquare to retain only good fits def = 1.3
 	min_obs_per_filter = 2	# minimum of observations in each filter actually used def = 2
 	min_obs = 5			# number of observations needed def = 5
 	min_redshift_digits = 3 # minimum of sigificant digits of redshift def = 3
@@ -104,12 +104,12 @@ class Cosmology():
 	def plot_hubble(self):
 		""" """
 		fig, ax = plt.subplots(1,1, figsize = [6,5], dpi=300)
-		ax.scatter(self.fitresults.z, self.fitresults.residual, marker='.', color='green')
+		ax.errorbar(self.fitresults.z, self.fitresults.residual, self.fitresults.peak_abs_mag_corrected_error, fmt='.', ecolor = 'red', elinewidth = 0.5)
 		names, x, y = self.get_annotations()
 		for i, name in enumerate(names):
 			ax.annotate(name, (x[i], y[i]), size='xx-small')
 		ax.grid(axis="y", which="both", linewidth=0.5)
-		ax.set_ylim([-3,3])
+		ax.set_ylim([-1,1])
 		ax.set_xlabel('redshift')
 		ax.set_ylabel('corrected abs mag residual [mag]')
 		fig.savefig(os.path.join(self.cosmology_dir, 'hubble.png'))

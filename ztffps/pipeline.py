@@ -268,7 +268,7 @@ class ForcedPhotometryPipeline():
 		fitresults = []
 		fitted_models = []
 
-		fitresult_df = pd.DataFrame(columns=['name', 'chisquare', 'ndof', 'red_chisq', 'z', 't0', 't0_err', 'x0', 'x0_err', 'x1', 'x1_err', 'c', 'c_err', 'peak_mag', 'peak_abs_mag', 'peak_abs_mag_for_comparison', 'peak_abs_mag_corrected', 'z_spectro', 'z_precision', 'g_obs', 'r_obs', 'i_obs', 'nr_filters', 'obs_total'])
+		fitresult_df = pd.DataFrame(columns=['name', 'chisquare', 'ndof', 'red_chisq', 'z', 't0', 't0_err', 'x0', 'x0_err', 'x1', 'x1_err', 'c', 'c_err', 'peak_mag', 'peak_abs_mag', 'peak_abs_mag_for_comparison', 'peak_abs_mag_corrected', 'peak_abs_mag_corrected_error', 'z_spectro', 'z_precision', 'g_obs', 'r_obs', 'i_obs', 'nr_filters', 'obs_total'])
 
 		for index, name in enumerate(self.cleaned_object_list):
 			print("\n{} performing SALT fit".format(name))

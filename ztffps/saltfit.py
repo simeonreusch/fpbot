@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import sncosmo
 import logging
+from astropy import time
 
 # TODO: 
 # we have to talk about this
@@ -16,16 +17,16 @@ m = marshal.MarshalAccess()
 # m.load_target_sources("Cosmology")
 m = m.load_local("Cosmology")
 
-_ALPHA_JLA_ = 0.141
-# _ALPHA_JLA_UNC_ = 0.006
-_BETA_JLA_ = 3.101
-# _BETA_JLA_UNC_ = 0.075
-_ALPHA_GRID_ = 0.165
-_BETA_GRID_ = 2.7
+ALPHA_JLA = 0.141
+ALPHA_JLA_UNC = 0.006
+BETA_JLA = 3.101
+BETA_JLA_UNC = 0.075
+ALPHA_GRID = 0.165
+BETA_GRID = 2.7
 
-_FIELD_REFERENCE_ = os.path.join(os.getcwd(), 'data', 'reference.csv')
-_SPECTROSCOPIC_REFERENCE_ = os.path.join(os.getcwd(),'data', 'ztf_host_w_redshift_20190510.csv')
-_FILTER_TRANSLATION_ = {'p48r': 0, 'p48g': 1, 'p48i': 2}
+FIELD_REFERENCE = os.path.join(os.getcwd(), 'data', 'reference.csv')
+SPECTROSCOPIC_REFERENCE = os.path.join(os.getcwd(),'data', 'ztf_host_w_redshift_20190510.csv')
+FILTER_TRANSLATION = {'p48r': 0, 'p48g': 1, 'p48i': 2}
 
 class SaltFit():
 	""" """
@@ -46,6 +47,20 @@ class SaltFit():
 		self.quality_info = {"name": self.name, "z_spectro": False, "z_precision": 0, "p48g": 0, "p48r": 0, "p48i": 0, "nr_filters": 0, "obs_total": 0}
 		self.obs_count = {}
 		self.modify_columns()
+		self.obtain_marshal_lightcurve()
+
+	def obtain_marshal_lightcurve(self):
+		""" 
+		This obtains the marshal lightcurve for upper and lower bounds on t0 for SALT
+		"""
+		marshal.download_lightcurve(self.name)
+		marshal_lc_df = marshal.get_local_lightcurves(self.name)
+		mags = marshal_lc_df['mag'].values
+		lowest_mag = np.min(mags) 
+		marshal_t0_jd = marshal_lc_df.query("mag == @lowest_mag")['jdobs'].values[0]
+		t = time.Time(marshal_t0_jd, format="jd", scale="utc")
+		self.marshal_t0 = t.mjd
+
 
 	def modify_columns(self):
 		""" """
@@ -90,9 +105,9 @@ class SaltFit():
 	# 			_first_obs_in_filter[fid] = np.min(self.lightcurve['mjd'][self.lightcurve['filter'] == fid].values)
 	# 		except KeyError:
 	# 			pass
-	# 		_query = 'field  == {} and rcid == {} and fid == {}'.format(self.fieldid, self.rcid, _FILTER_TRANSLATION_[fid])
+	# 		_query = 'field  == {} and rcid == {} and fid == {}'.format(self.fieldid, self.rcid, FILTER_TRANSLATION[fid])
 	# 		try:
-	# 			_reference_date = pd.read_csv(_FIELD_REFERENCE_).query(_query)["endobsdate"].values
+	# 			_reference_date = pd.read_csv(FIELD_REFERENCE).query(_query)["endobsdate"].values
 	# 			if _reference_date.size == 0:
 	# 				logger.info("{} No reference data fro field/rcid/filter.")
 	# 				self.additional_infos.update(reference="no_match")
@@ -100,7 +115,7 @@ class SaltFit():
 	# 	return
 	def check_redshift_precision(self):
 		""" """
-		spectroscopic_redshifts = pd.read_csv(_SPECTROSCOPIC_REFERENCE_)
+		spectroscopic_redshifts = pd.read_csv(SPECTROSCOPIC_REFERENCE)
 		reference_object = spectroscopic_redshifts.query('sn_name == "{}"'.format(self.name))
 		if not reference_object.empty:
 			self.logger.info('{} Spectroscopic redshift found'.format(self.name))
@@ -165,17 +180,36 @@ class SaltFit():
 		self.load_ztf_filters()
 
 		try:
-			self.fitresult, self.fitted_model = sncosmo.fit_lc(lc_sncosmo, salt_model, ['t0', 'x0', 'x1', 'c'], phase_range=(-30., 50.), minsnr=self.snt)
+			self.fitresult, self.fitted_model = sncosmo.fit_lc(lc_sncosmo, salt_model, ['t0', 'x0', 'x1', 'c'], phase_range=(-30., 50.), minsnr=self.snt, bounds={'t0': [self.marshal_t0-10, self.marshal_t0+10]})
+
+			# Get fit parameters
+
+			# Values
+			t0, x0, x1, c = self.fitresult['parameters'][1], self.fitresult['parameters'][2], self.fitresult['parameters'][3], self.fitresult['parameters'][4]
+
+			# Errors
+			t0_err, x0_err, x1_err, c_err = self.fitresult['errors']['t0'], self.fitresult['errors']['x0'], self.fitresult['errors']['x1'], self.fitresult['errors']['c']
+
+			# Crosscorrelation terms
+			cov_x0_x1 = self.fitresult['covariance'][1][2]
+			cov_x0_c = self.fitresult['covariance'][1][3]
+			cov_x1_c = self.fitresult['covariance'][2][3]
+
+			#  Calculate corrected peak absolute magnitude
 			ab = sncosmo.get_magsystem('ab')
 			flux_zp = ab.zpbandflux('p48g')
-			bandflux = self.fitted_model.bandflux(band = 'p48g', time = self.fitresult['parameters'][1], zpsys = 'ab')
+			bandflux = self.fitted_model.bandflux(band = 'p48g', time = t0, zpsys = 'ab')
 			peak_mag = ab.band_flux_to_mag(bandflux, 'p48g')
 			peak_abs_mag_for_comparison = self.fitted_model.source_peakabsmag(band = 'p48g', magsys = 'ab')
 			peak_abs_mag = peak_mag - cosmo.distmod(self.z).value
-			peak_abs_mag_corrected = peak_abs_mag + _ALPHA_GRID_*self.fitresult['parameters'][3] - _BETA_GRID_*self.fitresult['parameters'][4]
+			peak_abs_mag_corrected = peak_abs_mag + ALPHA_JLA*x1 - BETA_JLA*c
 
+			# Calculate error for corrected peak absolute magnitude
+			peak_abs_mag_corrected_err = np.sqrt(((1.17882*x0_err**2)/x0**2) + (ALPHA_JLA**2 * x1_err**2) + (BETA_JLA**2 * c_err**2) - (2*ALPHA_JLA*BETA_JLA*cov_x1_c) + ((2.17147*BETA_JLA*cov_x0_c)/x0) - ((2.17147*ALPHA_JLA*cov_x0_x1)/x0)  )
+
+			# Plot
 			import matplotlib.pyplot as plt
-			fig = sncosmo.plot_lc(lc_sncosmo, model=self.fitted_model, errors=self.fitresult.errors, figtext=str(self.name))
+			fig = sncosmo.plot_lc(lc_sncosmo, model=self.fitted_model, errors=self.fitresult.errors, figtext=f"{self.name}\n{self.fitresult['chisq']/self.fitresult['ndof'] if self.fitresult['ndof'] > 0 else 999}")
 			plotdir = os.path.join(LOCALDATA, 'SALT')
 			if not os.path.exists(plotdir):
 				os.makedirs(plotdir)
@@ -192,8 +226,8 @@ class SaltFit():
 		if 	self.fitresult.success is True:
 			self.logger.info("{} Fit succeeded!".format(self.name))
 
-			chisq, ndof, z, t0, x0, x1, c, t0_err, x0_err, x1_err, c_err, z_spectro, z_precision, p48g, p48r, p48i, nr_filters, obs_total = self.fitresult['chisq'], self.fitresult['ndof'], self.fitresult['parameters'][0], self.fitresult['parameters'][1], self.fitresult['parameters'][2], self.fitresult['parameters'][3], self.fitresult['parameters'][4], self.fitresult['errors']['t0'], self.fitresult['errors']['x0'], self.fitresult['errors']['x1'], self.fitresult['errors']['c'], self.quality_info["z_spectro"], self.quality_info["z_precision"], self.quality_info["p48g"], self.quality_info["p48r"], self.quality_info["p48i"], self.quality_info["nr_filters"], self.quality_info["obs_total"]
-			self.result = [self.name, chisq, ndof, chisq/ndof if ndof > 0 else 999, z, t0, x0, x1, c, t0_err, x0_err, x1_err, c_err, peak_mag, peak_abs_mag, peak_abs_mag_for_comparison, peak_abs_mag_corrected, z_spectro, z_precision, p48g, p48r, p48i, nr_filters, obs_total]
+			chisq, ndof, z, z_spectro, z_precision, p48g, p48r, p48i, nr_filters, obs_total = self.fitresult['chisq'], self.fitresult['ndof'], self.fitresult['parameters'][0], self.quality_info["z_spectro"], self.quality_info["z_precision"], self.quality_info["p48g"], self.quality_info["p48r"], self.quality_info["p48i"], self.quality_info["nr_filters"], self.quality_info["obs_total"]
+			self.result = [self.name, chisq, ndof, chisq/ndof if ndof > 0 else 999, z, t0, x0, x1, c, t0_err, x0_err, x1_err, c_err, peak_mag, peak_abs_mag, peak_abs_mag_for_comparison, peak_abs_mag_corrected, peak_abs_mag_corrected_err, z_spectro, z_precision, p48g, p48r, p48i, nr_filters, obs_total]
 
 		else:
 			self.logger.info("{} Fit failed".format(self.name))
