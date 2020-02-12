@@ -76,7 +76,7 @@ def run_on_event(thread_id, channel_id):
 			do_plot = True
 		if item in fuzzy_parameters(["quiet"]):
 			verbose = False
-		if item in fuzzy_parameters(["df", "dataframe", "csv"]):
+		if item in fuzzy_parameters(["df", "dataframe", "csv", "file"]):
 			upload_dataframe = True
 		if item in fuzzy_parameters(["sendmail", "mail", "sendemail", "send_mail", "email"]):
 			do_mail = True
@@ -172,14 +172,14 @@ def run_on_event(thread_id, channel_id):
 		except:
 			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while sending your email. Please contact <@UAQTC7L73>.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
-	# if upload_dataframe:
-	# 	try:
-	# 		wc = WebClient(token=bot_token)
-	# 		dfpath = os.path.join(lc_dir, f"{name}.csv")
-	# 		df = open(dfpath, "rb")
-	# 		wc.files_upload(file=df, filename=dfpath, channels=channel_id, thread_ts=thread_id, title="The dataframe. NOTE: THIS IS THE DATAFRAME AS CREATED BY THE LAST FIT COMMAND WITH THE TIMERANGE THEN SET. Als, no signal to noise threshold is applied.", icon_emoji=':fp-emoji:')
-	# 	except:
-	# 		wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while uploading the dataframe of your lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+	if upload_dataframe:
+		try:
+			wc = WebClient(token=bot_token)
+			dfpath = os.path.join(lc_dir, f"{name}.csv")
+			df = open(dfpath, "rb")
+			wc.files_upload(file=df, filename=dfpath, channels=channel_id, thread_ts=thread_id, title="The dataframe. NOTE: THIS IS THE DATAFRAME AS CREATED BY THE LAST FIT COMMAND WITH THE TIMERANGE THEN SET. If you want the full dataset, issue 'FP ZTFname --df'", icon_emoji=':fp-emoji:')
+		except:
+			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while uploading the dataframe of your lightcurve.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	endtime = time.time()
 	duration = endtime - pl.startime
