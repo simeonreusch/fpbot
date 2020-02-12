@@ -2,10 +2,11 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import logging, os
+import logging, os, time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import pipeline
 
 class Cosmology():
 	""" """
@@ -16,11 +17,11 @@ class Cosmology():
 		else:
 			self.logger = logger
 	
-	salt_dir = io.SALTDATA
-	salt_path = os.path.join(salt_dir, "SALT_FIT_JLA.csv")
-	cosmology_dir = io.COSMODATA
-	if not os.path.exists(io.COSMODATA):
-		os.makedirs(io.COSMODATA)
+	salt_dir = pipeline.SALTDATA
+	salt_path = os.path.join(salt_dir, "SALT_FIT_GRIDSEARCH.csv")
+	cosmology_dir = pipeline.COSMODATA
+	if not os.path.exists(pipeline.COSMODATA):
+		os.makedirs(pipeline.COSMODATA)
 
 	# custom parameters
 	max_redshift = 0.08 # maximum redshift def = 0.08
@@ -107,8 +108,8 @@ class Cosmology():
 		names, x, y = self.get_annotations()
 		for i, name in enumerate(names):
 			ax.annotate(name, (x[i], y[i]), size='xx-small')
-
-		ax.set_ylim([-5,5])
+		ax.grid(axis="y", which="both", linewidth=0.5)
+		ax.set_ylim([-3,3])
 		ax.set_xlabel('redshift')
 		ax.set_ylabel('corrected abs mag residual [mag]')
 		fig.savefig(os.path.join(self.cosmology_dir, 'hubble.png'))
@@ -148,7 +149,12 @@ class Cosmology():
 		savepath = os.path.join(self.cosmology_dir, "bad_objects.pdf")
 		bad_rgbs[0].save(savepath, save_all=True, append_images=bad_rgbs[1:], quality=85)
 
-cosmology = Cosmology()
-cosmology.prune_fitresults()
-cosmology.plot_hubble()
-cosmology.create_pdf_overview()
+if __name__ == "__main__":
+	""" """
+	startime = time.time()
+	logger = logging.getLogger('cosmology')
+
+	cosmology = Cosmology()
+	cosmology.prune_fitresults()
+	cosmology.plot_hubble()
+	cosmology.create_pdf_overview()

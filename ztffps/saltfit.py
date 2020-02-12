@@ -20,6 +20,8 @@ _ALPHA_JLA_ = 0.141
 # _ALPHA_JLA_UNC_ = 0.006
 _BETA_JLA_ = 3.101
 # _BETA_JLA_UNC_ = 0.075
+_ALPHA_GRID_ = 0.165
+_BETA_GRID_ = 2.7
 
 _FIELD_REFERENCE_ = os.path.join(os.getcwd(), 'data', 'reference.csv')
 _SPECTROSCOPIC_REFERENCE_ = os.path.join(os.getcwd(),'data', 'ztf_host_w_redshift_20190510.csv')
@@ -170,7 +172,7 @@ class SaltFit():
 			peak_mag = ab.band_flux_to_mag(bandflux, 'p48g')
 			peak_abs_mag_for_comparison = self.fitted_model.source_peakabsmag(band = 'p48g', magsys = 'ab')
 			peak_abs_mag = peak_mag - cosmo.distmod(self.z).value
-			peak_abs_mag_corrected = peak_abs_mag + _ALPHA_JLA_*self.fitresult['parameters'][3] - _BETA_JLA_*self.fitresult['parameters'][4]
+			peak_abs_mag_corrected = peak_abs_mag + _ALPHA_GRID_*self.fitresult['parameters'][3] - _BETA_GRID_*self.fitresult['parameters'][4]
 
 			import matplotlib.pyplot as plt
 			fig = sncosmo.plot_lc(lc_sncosmo, model=self.fitted_model, errors=self.fitresult.errors, figtext=str(self.name))
