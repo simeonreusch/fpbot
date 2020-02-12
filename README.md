@@ -12,7 +12,8 @@ The majority of required packages can be installed by issuing:
 
 The basic file is run.py, which can be run using different flags. A (ZTF) name always has to be provided (or a textfile containing one ZTF name in each line). Alternatively, the pipeline class can be imported from pipeline.py.
 
-`-radec`	If this is given, the name can be arbitrary (but a name must be provided). Radec must be given as two floats, e.g. '-radec 161.3434 -31.32123'.
+`-radec`	If this is given, the name can be arbitrary (but a name must be provided). Radec must be given in a format that can be parse by astropy; e.g. -radec 218.487548 +40.243758 or -radec 14:33:57.01 +40:14:37.5 or -radec 14h33m57.01 +40d14m37.5.
+	.
 
 `-dl`        Downloads the images used for forced photometry from IPAC. Needs a valid IPAC account.
 
