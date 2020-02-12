@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description='Used to obtain forced photometry f
 parser.add_argument('name', type=str, help='Provide a ZTF name (e.g. "ZTF19aaelulu") or a .txt-file containing a list of ZTF names')
 
 # optional args, defining WHAT to run
-parser.add_argument('-radec', '-rd', type=float, nargs=2, default=None, help="If this is entered, you have to provide ra and dec as float; e.g. '-radec 161.2 -35.4'. This loosens the requirement on the name provided, it can be arbitrary, not only a ZTF name -- but one must be provided.")
+parser.add_argument('-radec', '-rd', type=str, nargs=2, default=None, help="If this is entered, you have to provide ra and dec; e.g. '-radec 161.2 -35.4' or '-radec 14:33:57.01 +40:14:37.5'. This loosens the requirement on the name provided, it can be arbitrary, not only a ZTF name -- but one must be provided.")
 parser.add_argument('-dl', action='store_true', help="Download the files from IPAC")
 parser.add_argument('-fit', '-f', action='store_true', help="Do PSF fit and plot the lightcurve")
 parser.add_argument('-plot', '-p', action='store_true', help="Plot the lightcurve. Note: '-fit' always also plots.")

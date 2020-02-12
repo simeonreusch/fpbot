@@ -116,12 +116,16 @@ def run_on_event(thread_id, channel_id):
 	
 	for i, parameter in enumerate(split_message):
 		if parameter in fuzzy_parameters(["radec", "ra_dec", "RADEC", "RA_DEC"]):
-			try:
-				ra = np.float(split_message[i+1])
-				dec = np.float(split_message[i+2])
-			except ValueError:
-				wc.chat_postMessage(channel=channel_id, text=f"Error: --radec has to be followed by two floats. E.g. --radec 171.932 -38.477. NOTE: Do not use '+' to denote positive declination, Slack sometimes parses this a phone number!", thread_ts=thread_id, icon_emoji=':fp-emoji:')
-				return
+			if (split_message[i+1][2] == "h" and split_message[i+1][5] == "m" and split_message[i+1][8] == ".") or (split_message[i+1][2] == ":" and split_message[i+1][5] == ":" and split_message[i+1][8] == "."):
+				ra = split_message[i+1]
+				dec = split_message[i+2]
+			else:
+				try:
+					ra = np.float(split_message[i+1])
+					dec = np.float(split_message[i+2])
+				except ValueError:
+					wc.chat_postMessage(channel=channel_id, text=f"Error: --radec has to be followed either by two floats, e.g. --radec 171.932 -38.477 or by two other value pairs that can be parsed by astropy, e.g. --radec 14h33m57.01 +40d14m37.5. NOTE: Do not use '+' to denote positive declination, Slack sometimes parses this a phone number!", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+					return
 
 	if do_download == False and do_fit == False and do_plot == False:
 		do_download = True
@@ -131,7 +135,7 @@ def run_on_event(thread_id, channel_id):
 	try:
 		pl = pipeline.ForcedPhotometryPipeline(file_or_name=name, daysago=daysago, daysuntil=daysuntil, snt=snt, mag_range=mag_range, ra=ra, dec=dec, nprocess=8)
 	except ValueError:
-		wc.chat_postMessage(channel=channel_id, text=f"Error: The Marshal is not reachable at the moment. Unfortunately, this happens quite frequently.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+		wc.chat_postMessage(channel=channel_id, text=f"Error: Either the Marshal is not reachable at the moment, which unfortunately happens quite frequently -- or your name is not a ZTFname or the --radec values are malformed.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 		return
 
 	if do_download:

@@ -9,10 +9,11 @@ import numpy as np
 import ztfquery
 import pandas as pd
 from astropy.time import Time
+from astropy.coordinates import SkyCoord
+from astropy import units as u
 
 # TODO
 # CREATE LOCAL FILE THAT STORES NAME, RA/DEC + MWEBV
-# os.path.expanduser("~") is auch nice
 
 ZTFDATA = os.getenv("ZTFDATA")
 FORCEPHOTODATA = os.path.join(ZTFDATA, "forcephotometry")
@@ -44,10 +45,16 @@ class ForcedPhotometryPipeline():
 		self.daysuntil = daysuntil
 		self.snt = snt
 		self.mag_range = mag_range
-		self.ra = ra
-		self.dec = dec
 		self.reprocess = reprocess
 		self.nprocess = nprocess
+
+		# parse different formats of ra and dec
+		if str(ra)[2] == ":" or str(ra)[2] == "h":
+			c = SkyCoord(f"{ra} {dec}", unit=(u.hourangle, u.deg))
+		else:
+			c = SkyCoord(f"{ra} {dec}", unit=u.deg)
+		self.ra = np.float(c.ra.to_string(decimal=True, unit=u.deg, precision=8))
+		self.dec = np.float(c.dec.to_string(decimal=True, unit=u.deg, precision=8))
 
 		if self.ra is None or self.dec is None:
 			if type(self.file_or_name) == str:
