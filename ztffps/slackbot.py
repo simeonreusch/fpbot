@@ -115,7 +115,7 @@ def run_on_event(thread_id, channel_id):
 				return
 	
 	for i, parameter in enumerate(split_message):
-		if parameter in fuzzy_parameters(["radec", "ra_dec", "RADEC", "RA_DEC"]):
+		if parameter.lstrip(" ").rstrip(" ") in fuzzy_parameters(["radec", "ra_dec", "RADEC", "RA_DEC"]):
 			if (split_message[i+1][2] == "h" and split_message[i+1][5] == "m" and split_message[i+1][8] == ".") or (split_message[i+1][2] == ":" and split_message[i+1][5] == ":" and split_message[i+1][8] == "."):
 				ra = split_message[i+1]
 				dec = split_message[i+2]

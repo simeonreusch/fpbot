@@ -38,6 +38,7 @@ do_saltfit = commandline_args.saltfit
 do_filecheck = commandline_args.filecheck
 targetmail = commandline_args.sendmail
 
+# WARNING: This parsing is bullshit
 if radec:
 	ra = radec[0]
 	dec = radec[1]
