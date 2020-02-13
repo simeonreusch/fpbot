@@ -19,8 +19,6 @@ if _DEBUG_:
 else:
 	botuser = "UT462HHRR"
 
-keywords = [f"<@{botuser}>", "FP", ":fp-emoji:"]
-
 def run_on_event(data):
 	""" """
 	ts = data['ts']
@@ -49,7 +47,7 @@ def say_hello(**payload):
 	if 'text' in data.keys():
 		slacktext = data['text']
 		split_message = slacktext.split(" ")
-		if split_message[0] in keywords:
+		if split_message[0] in [f"<@{botuser}>", "FP", ":fp-emoji:"]:
 			channel_id = data['channel']
 			thread_ts = data['ts']
 			user = data['user']
@@ -112,6 +110,9 @@ def say_hello(**payload):
 				else:
 					if len(split_message) < 3:
 						wc.chat_postMessage(channel=channel_id, text=f"You either need to provide a ZTFName (ZTF[YEAR YEAR][7 LETTERS] or an arbitrary name followed by '-radec'", thread_ts=thread_ts, icon_emoji=':fp-emoji:')
+
+					# TODO: Make more general
+
 					elif split_message[2] == "-radec" or split_message[2] == "--radec":
 						name = split_message[1]
 						blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": f"You requested forced photometry for *{name}* based on RA and DEC. I'll get right to it. Depending on whether the image files need to be downloaded, this can take a few minutes."}}]	
