@@ -56,28 +56,26 @@ class ForcedPhotometryPipeline():
 				c = SkyCoord(f"{ra} {dec}", unit=u.deg)
 			self.ra = np.float(c.ra.to_string(decimal=True, unit=u.deg, precision=8))
 			self.dec = np.float(c.dec.to_string(decimal=True, unit=u.deg, precision=8))
+			self.object_list = [self.file_or_name]
+			self.create_info_dataframe()
+
 		elif ((ra is None and dec is not None) or (ra is not None and dec is None)):
 			self.logger.info("Either both set ra and dec or none.")
 			raise ValueError
+
 		else:
 			self.ra = None
 			self.dec = None
 			if type(self.file_or_name) == str:
 				self.use_if_ztf()
-			# something like self.check_if_ZTF_object
 			if type(self.file_or_name) == list:
 				self.object_list = self.file_or_name
 			self.create_info_dataframe()
 			try:
 				self.get_position_and_timerange()
-				# self.ZTF_object_infos.to_csv('ra_dec_table.csv')
 			except ValueError:
 				self.logger.info("\nMarshal not reachable at the moment (temporary outages are frequent)")
 				raise ConnectionError
-		# else:
-		# 	if type(self.file_or_name) == str:
-		# 		self.object_list = [self.file_or_name]
-		# 		self.create_info_dataframe()
 
 	def is_ztf_name(self, name):
 		""" """

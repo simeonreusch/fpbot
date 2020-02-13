@@ -133,19 +133,19 @@ def run_on_event(thread_id, channel_id):
 		do_plot = True
 		do_fit = True
 
-	try:
-		pl = pipeline.ForcedPhotometryPipeline(file_or_name=name, daysago=daysago, daysuntil=daysuntil, snt=snt, mag_range=mag_range, ra=ra, dec=dec, nprocess=8)
-	except ValueError:
-		wc.chat_postMessage(channel=channel_id, text=f"Error: Either the Marshal is not reachable at the moment, which unfortunately happens quite frequently -- or your name is not a ZTFname or the --radec values are malformed.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
-		return
+	# try:
+	pl = pipeline.ForcedPhotometryPipeline(file_or_name=name, daysago=daysago, daysuntil=daysuntil, snt=snt, mag_range=mag_range, ra=ra, dec=dec, nprocess=8)
+	# except ValueError:
+	# 	wc.chat_postMessage(channel=channel_id, text=f"Error: Either the Marshal is not reachable at the moment, which unfortunately happens quite frequently -- or your name is not a ZTFname or the --radec values are malformed.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+		# return
 
 	if do_download:
 		if verbose:
 			wc.chat_postMessage(channel=channel_id, text=f"Checking if all files are present and downloading missing ones. This might take a few minutes.", thread_ts=thread_id)
-		try:
-			pl.download()
-		except:
-			wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while downloading the image files. Please contact <@UAQTC7L73>.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+		# try:
+		pl.download()
+		# except:
+		# 	wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while downloading the image files. Please contact <@UAQTC7L73>.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
 
 	if do_fit:
 		if verbose:
