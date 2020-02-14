@@ -179,49 +179,49 @@ class SaltFit():
 		salt_model.set(mwebv = self.mwebv)
 		self.load_ztf_filters()
 
-		try:
-			self.fitresult, self.fitted_model = sncosmo.fit_lc(lc_sncosmo, salt_model, ['t0', 'x0', 'x1', 'c'], phase_range=(-30., 50.), minsnr=self.snt, bounds={'t0': [self.marshal_t0-10, self.marshal_t0+10]})
+		# try:
+		self.fitresult, self.fitted_model = sncosmo.fit_lc(lc_sncosmo, salt_model, ['t0', 'x0', 'x1', 'c'], phase_range=(-30, 50), minsnr=self.snt, bounds={'t0': [self.marshal_t0-10, self.marshal_t0+10]})
 
-			# Get fit parameters
+		# Get fit parameters
 
-			# Values
-			t0, x0, x1, c = self.fitresult['parameters'][1], self.fitresult['parameters'][2], self.fitresult['parameters'][3], self.fitresult['parameters'][4]
+		# Values
+		t0, x0, x1, c = self.fitresult['parameters'][1], self.fitresult['parameters'][2], self.fitresult['parameters'][3], self.fitresult['parameters'][4]
 
-			# Errors
-			t0_err, x0_err, x1_err, c_err = self.fitresult['errors']['t0'], self.fitresult['errors']['x0'], self.fitresult['errors']['x1'], self.fitresult['errors']['c']
+		# Errors
+		t0_err, x0_err, x1_err, c_err = self.fitresult['errors']['t0'], self.fitresult['errors']['x0'], self.fitresult['errors']['x1'], self.fitresult['errors']['c']
 
-			# Crosscorrelation terms
-			cov_x0_x1 = self.fitresult['covariance'][1][2]
-			cov_x0_c = self.fitresult['covariance'][1][3]
-			cov_x1_c = self.fitresult['covariance'][2][3]
+		# Crosscorrelation terms
+		cov_x0_x1 = self.fitresult['covariance'][1][2]
+		cov_x0_c = self.fitresult['covariance'][1][3]
+		cov_x1_c = self.fitresult['covariance'][2][3]
 
-			#  Calculate corrected peak absolute magnitude
-			ab = sncosmo.get_magsystem('ab')
-			flux_zp = ab.zpbandflux('p48g')
-			bandflux = self.fitted_model.bandflux(band = 'p48g', time = t0, zpsys = 'ab')
-			peak_mag = ab.band_flux_to_mag(bandflux, 'p48g')
-			peak_abs_mag_for_comparison = self.fitted_model.source_peakabsmag(band = 'p48g', magsys = 'ab')
-			peak_abs_mag = peak_mag - cosmo.distmod(self.z).value
-			peak_abs_mag_corrected = peak_abs_mag + ALPHA_JLA*x1 - BETA_JLA*c
+		#  Calculate corrected peak absolute magnitude
+		ab = sncosmo.get_magsystem('ab')
+		flux_zp = ab.zpbandflux('p48g')
+		bandflux = self.fitted_model.bandflux(band = 'p48g', time = t0, zpsys = 'ab')
+		peak_mag = ab.band_flux_to_mag(bandflux, 'p48g')
+		peak_abs_mag_for_comparison = self.fitted_model.source_peakabsmag(band = 'p48g', magsys = 'ab')
+		peak_abs_mag = peak_mag - cosmo.distmod(self.z).value
+		peak_abs_mag_corrected = peak_abs_mag + ALPHA_JLA*x1 - BETA_JLA*c
 
-			# Calculate error for corrected peak absolute magnitude
-			peak_abs_mag_corrected_err = np.sqrt(((1.17882*x0_err**2)/x0**2) + (ALPHA_JLA**2 * x1_err**2) + (BETA_JLA**2 * c_err**2) - (2*ALPHA_JLA*BETA_JLA*cov_x1_c) + ((2.17147*BETA_JLA*cov_x0_c)/x0) - ((2.17147*ALPHA_JLA*cov_x0_x1)/x0)  )
+		# Calculate error for corrected peak absolute magnitude
+		peak_abs_mag_corrected_err = np.sqrt(((1.17882*x0_err**2)/x0**2) + (ALPHA_JLA**2 * x1_err**2) + (BETA_JLA**2 * c_err**2) - (2*ALPHA_JLA*BETA_JLA*cov_x1_c) + ((2.17147*BETA_JLA*cov_x0_c)/x0) - ((2.17147*ALPHA_JLA*cov_x0_x1)/x0)  )
 
-			# Plot
-			import matplotlib.pyplot as plt
-			fig = sncosmo.plot_lc(lc_sncosmo, model=self.fitted_model, errors=self.fitresult.errors, figtext=f"{self.name}\n{self.fitresult['chisq']/self.fitresult['ndof'] if self.fitresult['ndof'] > 0 else 999}")
-			plotdir = os.path.join(LOCALDATA, 'SALT')
-			if not os.path.exists(plotdir):
-				os.makedirs(plotdir)
-			plt.savefig(os.path.join(os.path.join(plotdir, '{}_SALT.png'.format(self.name))))
-			plt.close(fig)
-			self.logger.info("{} Plotted.".format(self.name))
-		except:
-			self.logger.info("{} Fit exited with error".format(self.name))
-			self.fitresult = sncosmo.utils.Result({'name': self.name, 'success': False})
-			self.fitted_model = None
-			self.result = None
-			return
+		# Plot
+		import matplotlib.pyplot as plt
+		fig = sncosmo.plot_lc(lc_sncosmo, model=self.fitted_model, errors=self.fitresult.errors, figtext="{}\nred. chi2 = {:.2f}\ncorr. peak abs mag = {:.2f}".format(self.name, self.fitresult['chisq']/self.fitresult['ndof'] if self.fitresult['ndof'] > 0 else 999, peak_abs_mag_corrected))
+		plotdir = os.path.join(LOCALDATA, 'SALT')
+		if not os.path.exists(plotdir):
+			os.makedirs(plotdir)
+		plt.savefig(os.path.join(os.path.join(plotdir, '{}_SALT.png'.format(self.name))))
+		plt.close(fig)
+		self.logger.info("{} Plotted.".format(self.name))
+		# except:
+		# 	self.logger.info("{} Fit exited with error".format(self.name))
+		# 	self.fitresult = sncosmo.utils.Result({'name': self.name, 'success': False})
+		# 	self.fitted_model = None
+		# 	self.result = None
+		# 	return
 
 		if 	self.fitresult.success is True:
 			self.logger.info("{} Fit succeeded!".format(self.name))
