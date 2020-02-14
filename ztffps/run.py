@@ -80,6 +80,10 @@ parser.add_argument(
     action="store_true",
     help="Runs a full filecheck on the ZTFDATA directory. Can take several hours",
 )
+parser.add_argument(
+    "--sciimg", "-sciimg", action="store_true", help="Also downloads the science images"
+)
+
 
 commandline_args = parser.parse_args()
 nprocess = commandline_args.nprocess
@@ -94,6 +98,7 @@ do_psffit = commandline_args.fit
 do_saltfit = commandline_args.saltfit
 do_filecheck = commandline_args.filecheck
 targetmail = commandline_args.sendmail
+sciimg = commandline_args.sciimg
 
 # WARNING: This parsing is bullshit
 if radec:
@@ -111,6 +116,7 @@ pl = pipeline.ForcedPhotometryPipeline(
     nprocess=nprocess,
     ra=ra,
     dec=dec,
+    sciimg=sciimg,
 )
 
 if do_filecheck:

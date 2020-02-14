@@ -38,6 +38,7 @@ class ForcedPhotometryPipeline:
         dec=None,
         nprocess=4,
         reprocess=False,
+        sciimg=False,
     ):
         self.startime = time.time()
         self.logger = logging.getLogger("pipeline")
@@ -61,6 +62,7 @@ class ForcedPhotometryPipeline:
         self.mag_range = mag_range
         self.reprocess = reprocess
         self.nprocess = nprocess
+        self.sciimg = sciimg
 
         # parse different formats of ra and dec
         if ra is not None and dec is not None:
@@ -212,13 +214,23 @@ class ForcedPhotometryPipeline:
             )
             self.logger.info("{} Downloading data".format(name))
             fp.load_metadata()
-            fp.io.download_data(
-                nprocess=32,
-                overwrite=False,
-                show_progress=True,
-                verbose=False,
-                ignore_warnings=True,
-            )
+            if self.sciimg:
+                fp.io.download_data(
+                    nprocess=32,
+                    overwrite=False,
+                    show_progress=True,
+                    verbose=False,
+                    ignore_warnings=True,
+                    which=["scimrefdiffimg.fits.fz", "diffimgpsf.fits", "sciimg.fits"],
+                )
+            else:
+                fp.io.download_data(
+                    nprocess=32,
+                    overwrite=False,
+                    show_progress=True,
+                    verbose=False,
+                    ignore_warnings=True,
+                )
 
     def check_if_psf_data_exists(self):
         """ """
