@@ -40,7 +40,7 @@ The basic file is run.py, which can be run using different flags. A (ZTF) name a
 
 ## Requirements
 
-- [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC. 
+- [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC.
 - [ztflc](https://github.com/mickaelrigault/ztflc) is used for PSF-fitting.
 - Marshal credentials are neccessary for determining object ra and dec.
 

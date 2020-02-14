@@ -3,6 +3,7 @@
 # License: BSD-3-Clause
 
 import os, getpass, socket, sqlalchemy, logging, time, multiprocessing
+
 # from ampel.ztf.archive.ArchiveDB import ArchiveDB
 import numpy as np
 from itertools import product
@@ -89,23 +90,29 @@ MARSHAL_BASEURL = "http://skipper.caltech.edu:8080/cgi-bin/growth/view_avro.cgi?
 #             bar.update()
 #         return queryresult
 
-class MarshalInfo():
+
+class MarshalInfo:
     """ """
+
     def __init__(self, ztf_names, nprocess=16, logger=None):
         import requests
         import pandas as pd
+
         auth = ztfquery.io._load_id_("marshal")
         urls = []
         for ztf_name in ztf_names:
             url = MARSHAL_BASEURL + ztf_name
             urls.append(url)
         object_count = len(ztf_names)
-        auth_ = [auth]*object_count
+        auth_ = [auth] * object_count
         from astropy.utils.console import ProgressBar
+
         bar = ProgressBar(object_count)
         results = []
         with multiprocessing.Pool(nprocess) as p:
-            for index, result in enumerate( p.map(self._get_info_multiprocessor_, zip(ztf_names, urls, auth_))):
+            for index, result in enumerate(
+                p.map(self._get_info_multiprocessor_, zip(ztf_names, urls, auth_))
+            ):
                 bar.update()
                 results.append(result)
             bar.update(object_count)
@@ -116,10 +123,11 @@ class MarshalInfo():
         """ """
         import requests
         import pandas as pd
+
         ztf_name, url, auth = args
         request = requests.get(url, auth=auth)
         tables = pd.read_html(request.content)
-        mtb = tables[len(tables)-1]
+        mtb = tables[len(tables) - 1]
         ndet = len(mtb)
 
         if ndet == 0:
@@ -137,19 +145,19 @@ class MarshalInfo():
                     print(mtb.values[i][0])
                 for j in range(len(line)):
                     if line[j][:7] == '  "ra":':
-                        ra[i] = float(line[j].split(':')[1])
+                        ra[i] = float(line[j].split(":")[1])
                     if line[j][:8] == '  "dec":':
-                        dec[i] = float(line[j].split(':')[1])
+                        dec[i] = float(line[j].split(":")[1])
                     if line[j][:7] == '  "jd":':
-                        jd[i] = float(line[j].split(':')[1])
-            ras = ra[ra!=0]
-            decs = dec[ra!=0]
-            jds = jd[ra!=0]
+                        jd[i] = float(line[j].split(":")[1])
+            ras = ra[ra != 0]
+            decs = dec[ra != 0]
+            jds = jd[ra != 0]
             ind = np.argsort(jds)
             ra = np.median(ras[ind])
             dec = np.median(decs[ind])
             jd = np.median(jds[ind])
-        now = Time(time.time(), format='unix', scale='utc').jd
+        now = Time(time.time(), format="unix", scale="utc").jd
         jdmin = 2458209
         jdmax = now
-        return[ztf_name, ra, dec, jdmin, jdmax]
+        return [ztf_name, ra, dec, jdmin, jdmax]
