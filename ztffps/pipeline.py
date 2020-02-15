@@ -173,7 +173,7 @@ class ForcedPhotometryPipeline:
 
         # for name in self.object_list:
 
-        print("Connecting to Marshal (or AMPEL if Marshal is down")
+        print("\nConnecting to Marshal (or AMPEL if Marshal is down)")
         import connectors
 
         try:
