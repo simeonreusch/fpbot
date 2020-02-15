@@ -17,9 +17,12 @@ plt.style.use(astropy_mpl_style)
 import pipeline
 import pandas as pd
 
+# TODO: as argument
+snt = 5.0
+
 
 def generate_thumbnails(name, size=50):
-    lc_file = os.path.join(pipeline.FORCEPHOTODATA, f"{name}.csv")
+    lc_file = os.path.join(pipeline.PLOT_DATAFRAMES, f"{name}_SNT_{snt}.csv")
     df = pd.read_csv(lc_file)
     df = df.sort_values(by=["obsmjd"])
     ra = 8.157122
@@ -28,6 +31,8 @@ def generate_thumbnails(name, size=50):
     filenames = df["filename"].values
     quadrants = df["amp_id"].values
     filters = df["filter"].values
+    mags = df["mag"].values
+    obsmjds = df["obsmjd"].values
     for index, filename in enumerate(filenames):
         if filters[index] == "ZTF_i":
             filename_split = filename.split("_")[1]
@@ -52,7 +57,16 @@ def generate_thumbnails(name, size=50):
             # Plot
             fig, ax = plt.subplots(1, 1, figsize=[5, 5], dpi=300)
             ax.imshow(img_data, cmap="gray", norm=LogNorm())
-            fig.suptitle("{}".format(name), fontweight="bold")
+            if mags[index] == 99:
+                fig.suptitle(
+                    "{} | {:.2f}".format(name, obsmjds[index]), fontweight="bold"
+                )
+            else:
+                fig.suptitle(
+                    "{} | {:.2f}".format(name, obsmjds[index]),
+                    fontweight="bold",
+                    color="orange",
+                )
             fig.savefig("test/test_{:03.0f}.png".format(np.float(count)))
             count = count + 1
 
