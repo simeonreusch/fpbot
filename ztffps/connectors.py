@@ -12,83 +12,102 @@ import ztfquery
 
 MARSHAL_BASEURL = "http://skipper.caltech.edu:8080/cgi-bin/growth/view_avro.cgi?name="
 
-# class AmpelInfo():
-#     """ """
-#     def __init__(self, ztf_names, nprocess=16, logger=None):
-#         if logger is None:
-#             logging.basicConfig(level = logging.INFO)
-#             self.logger = logging.getLogger('cosmology')
-#         else:
-#             self.logger = logger
 
-#         self.ztf_names = ztf_names
-#         self.nprocess = nprocess
+class AmpelInfo:
+    """ """
 
-#         _ampel_user = ".AMPEL_user.txt"
-#         _ampel_pass = ".AMPEL_pass.txt"
+    def __init__(self, ztf_names, nprocess=16, logger=None):
+        if logger is None:
+            logging.basicConfig(level=logging.INFO)
+            self.logger = logging.getLogger("cosmology")
+        else:
+            self.logger = logger
 
-#         try:
-#             with open(_ampel_user, "r") as f:
-#                 self.username = f.read()
-#         except FileNotFoundError:
-#             self.username = getpass.getpass(prompt='Username: ', stream=None)
-#             with open(_ampel_user, "wb") as f:
-#                 f.write(self.username.encode())
-#         try:
-#             with open(_ampel_pass, "r") as f:
-#                 self.password = f.read()
-#         except FileNotFoundError:
-#             self.password = getpass.getpass(prompt='Password: ', stream=None)
-#             with open(_ampel_pass, "wb") as f:
-#                 f.write(self.password.encode())
+        self.ztf_names = ztf_names
+        self.nprocess = nprocess
 
-#         if socket.gethostname() == "wgs33.zeuthen.desy.de":
-#             self.port = 5433
-#         else:
-#             self.port = 5432
+        _ampel_user = ".AMPEL_user.txt"
+        _ampel_pass = ".AMPEL_pass.txt"
 
-#         self.logger.info('postgresql://{0}:{1}@localhost:{2}/ztfarchive'.format(self.username, self.password, self.port))
+        try:
+            with open(_ampel_user, "r") as f:
+                self.username = f.read()
+        except FileNotFoundError:
+            self.username = getpass.getpass(prompt="Username: ", stream=None)
+            with open(_ampel_user, "wb") as f:
+                f.write(self.username.encode())
+        try:
+            with open(_ampel_pass, "r") as f:
+                self.password = f.read()
+        except FileNotFoundError:
+            self.password = getpass.getpass(prompt="Password: ", stream=None)
+            with open(_ampel_pass, "wb") as f:
+                f.write(self.password.encode())
 
-#         try:
-#             self.ampel_client = ArchiveDB('postgresql://{0}:{1}@localhost:{2}/ztfarchive'.format(self.username, self.password, self.port))
-#         except sqlalchemy.exc.OperationalError as e:
-#             print("---------------------------------------------------------------------")
-#             print("You can't access the archive database without first opening the port.")
-#             print("Open a new terminal and run the following command:")
-#             print("ssh -L5432:localhost:5433 ztf-wgs.zeuthen.desy.de")
-#             print("If that command doesn't work, you are either not a DESY user,")
-#             print("the credentials are wrong or your ssh-config is erroneous .")
-#             print("---------------------------------------------------------------------")
-#             raise e
+        if socket.gethostname() == "wgs33.zeuthen.desy.de":
+            self.port = 5433
+        else:
+            self.port = 5432
 
-#         self.queryresult = self.get_info()
+        self.logger.info(
+            "postgresql://{0}:{1}@localhost:{2}/ztfarchive".format(
+                self.username, self.password, self.port
+            )
+        )
 
-#     def get_info(self):
-#         """ """
-#         object_count = len(self.ztf_names)
-#         print("\nObtaining ra/decs from AMPEL")
-#         from astropy.utils.console import ProgressBar
-#         bar = ProgressBar(object_count)
-#         queryresult = []
-#         for index, ztf_name in enumerate(self.ztf_names):
-#             ampel_object = self.ampel_client.get_alerts_for_object(ztf_name, with_history=True)
-#             query_res = [i for i in ampel_object]
-#             ras = []
-#             decs = []
-#             for res in query_res:
-#                 ra = res['candidate']['ra']
-#                 dec = res['candidate']['dec']
-#                 ras.append(ra)
-#                 decs.append(dec)
-#             ra = np.median(ras)
-#             dec = np.median(decs)
-#             now = Time(time.time(), format='unix', scale='utc').jd
-#             jdmin = 2458209
-#             jdmax = now
-#             result = [ztf_name, ra, dec, jdmin, jdmax]
-#             queryresult.append(result)
-#             bar.update()
-#         return queryresult
+        try:
+            self.ampel_client = ArchiveDB(
+                "postgresql://{0}:{1}@localhost:{2}/ztfarchive".format(
+                    self.username, self.password, self.port
+                )
+            )
+        except sqlalchemy.exc.OperationalError as e:
+            print(
+                "---------------------------------------------------------------------"
+            )
+            print(
+                "You can't access the archive database without first opening the port."
+            )
+            print("Open a new terminal and run the following command:")
+            print("ssh -L5432:localhost:5433 ztf-wgs.zeuthen.desy.de")
+            print("If that command doesn't work, you are either not a DESY user,")
+            print("the credentials are wrong or your ssh-config is erroneous .")
+            print(
+                "---------------------------------------------------------------------"
+            )
+            raise e
+
+        self.queryresult = self.get_info()
+
+    def get_info(self):
+        """ """
+        object_count = len(self.ztf_names)
+        print("\nObtaining ra/decs from AMPEL")
+        from astropy.utils.console import ProgressBar
+
+        bar = ProgressBar(object_count)
+        queryresult = []
+        for index, ztf_name in enumerate(self.ztf_names):
+            ampel_object = self.ampel_client.get_alerts_for_object(
+                ztf_name, with_history=True
+            )
+            query_res = [i for i in ampel_object]
+            ras = []
+            decs = []
+            for res in query_res:
+                ra = res["candidate"]["ra"]
+                dec = res["candidate"]["dec"]
+                ras.append(ra)
+                decs.append(dec)
+            ra = np.median(ras)
+            dec = np.median(decs)
+            now = Time(time.time(), format="unix", scale="utc").jd
+            jdmin = 2458209
+            jdmax = now
+            result = [ztf_name, ra, dec, jdmin, jdmax]
+            queryresult.append(result)
+            bar.update()
+        return queryresult
 
 
 class MarshalInfo:
