@@ -4,7 +4,7 @@
 
 import os, getpass, socket, sqlalchemy, logging, time, multiprocessing
 
-# from ampel.ztf.archive.ArchiveDB import ArchiveDB
+from ampel.ztf.archive.ArchiveDB import ArchiveDB
 import numpy as np
 from itertools import product
 from astropy.time import Time
@@ -54,7 +54,6 @@ class AmpelInfo:
                 self.username, self.password, self.port
             )
         )
-
         try:
             self.ampel_client = ArchiveDB(
                 "postgresql://{0}:{1}@localhost:{2}/ztfarchive".format(

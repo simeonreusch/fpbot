@@ -89,9 +89,9 @@ class ForcedPhotometryPipeline:
             self.create_info_dataframe()
             try:
                 self.get_position_and_timerange()
-            except ValueError:
+            except:
                 self.logger.info(
-                    "\nMarshal not reachable at the moment (temporary outages are frequent)"
+                    "\nMarshal and AMPEL not reachable at the moment (temporary outages are frequent)"
                 )
                 raise ConnectionError
 
@@ -173,11 +173,13 @@ class ForcedPhotometryPipeline:
 
         # for name in self.object_list:
 
-        print("Connecting to Marshal")
+        print("Connecting to Marshal (or AMPEL if Marshal is down")
         import connectors
 
-        connector = connectors.MarshalInfo(self.object_list, nprocess=32)
-        # connector = connectors.AmpelInfo(self.object_list)
+        try:
+            connector = connectors.MarshalInfo(self.object_list, nprocess=32)
+        except:
+            connector = connectors.AmpelInfo(self.object_list)
         if self.daysago is None:
             print("\nNo 'daysago' given, full timerange used")
         else:
