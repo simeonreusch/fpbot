@@ -4,7 +4,6 @@
 
 import os, getpass, socket, sqlalchemy, logging, time, multiprocessing
 
-from ampel.ztf.archive.ArchiveDB import ArchiveDB
 import numpy as np
 from itertools import product
 from astropy.time import Time
@@ -22,6 +21,8 @@ class AmpelInfo:
             self.logger = logging.getLogger("cosmology")
         else:
             self.logger = logger
+
+        from ampel.ztf.archive.ArchiveDB import ArchiveDB
 
         self.ztf_names = ztf_names
         self.nprocess = nprocess
