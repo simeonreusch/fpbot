@@ -1,4 +1,3 @@
 *.log
 .AMPEL*
 __pycache__
-*.txt
