@@ -1,0 +1,11 @@
+astropy
+numpy
+sncosmo
+git+https://github.com/MickaelRigault/ztflc@master
+git+https://github.com/MickaelRigault/ztfquery@master
+slackclient
+sqlalchemy
+requests
+pandas
+datetime
+matplotlib
