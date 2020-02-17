@@ -25,8 +25,8 @@ def generate_thumbnails(name, size=50):
     lc_file = os.path.join(pipeline.PLOT_DATAFRAMES, f"{name}_SNT_{snt}.csv")
     df = pd.read_csv(lc_file)
     df = df.sort_values(by=["obsmjd"])
-    ra = 8.157122
-    dec = +41.315637
+    ra = 134.656544
+    dec = +20.191857
     count = 0
     filenames = df["filename"].values
     quadrants = df["amp_id"].values
@@ -34,7 +34,7 @@ def generate_thumbnails(name, size=50):
     mags = df["mag"].values
     obsmjds = df["obsmjd"].values
     for index, filename in enumerate(filenames):
-        if filters[index] == "ZTF_i":
+        if filters[index] == "ZTF_r":
             filename_split = filename.split("_")[1]
             basedir = os.path.join(pipeline.ZTFDATA, "sci")
             sciimg_path = os.path.join(
@@ -72,4 +72,4 @@ def generate_thumbnails(name, size=50):
 
 
 if __name__ == "__main__":
-    generate_thumbnails(name="ZTF20aanakcd")
+    generate_thumbnails(name="ZTF19aaklqod")
