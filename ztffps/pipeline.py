@@ -90,14 +90,16 @@ class ForcedPhotometryPipeline:
             self.dec = None
             if type(self.file_or_name) == str:
                 self.use_if_ztf()
-            if type(self.file_or_name) == list:
+            elif type(self.file_or_name) == list:
                 self.object_list = self.file_or_name
+            else:
+                raise TypeError
             self.create_info_dataframe()
             try:
                 self.get_position_and_timerange()
             except:
                 self.logger.info(
-                    "\nMarshal and AMPEL not reachable at the moment (temporary outages are frequent)"
+                    "\nMarshal and AMPEL not reachable at the moment (temporary outages are frequent). Problems with AMPEL are most likely due to a problem with your .ssh/config)"
                 )
                 raise ConnectionError
 
@@ -213,12 +215,12 @@ class ForcedPhotometryPipeline:
         """ """
         for name in self.object_list:
             self.logger.info("{} Starting download".format(name))
-            _ra = self.ZTF_object_infos.loc["{}".format(name), "ra"]
-            _dec = self.ZTF_object_infos.loc["{}".format(name), "dec"]
-            _jdmin = self.ZTF_object_infos.loc["{}".format(name), "jdmin"]
-            _jdmax = self.ZTF_object_infos.loc["{}".format(name), "jdmax"]
+            ra = self.ZTF_object_infos.loc["{}".format(name), "ra"]
+            dec = self.ZTF_object_infos.loc["{}".format(name), "dec"]
+            jdmin = self.ZTF_object_infos.loc["{}".format(name), "jdmin"]
+            jdmax = self.ZTF_object_infos.loc["{}".format(name), "jdmax"]
             fp = forcephotometry.ForcePhotometry.from_coords(
-                ra=_ra, dec=_dec, jdmin=_jdmin, jdmax=_jdmax, name=name
+                ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
             )
             self.logger.info("{} Downloading data".format(name))
             fp.load_metadata()
@@ -298,10 +300,10 @@ class ForcedPhotometryPipeline:
         """ """
         self.logger.info("Plotting")
         object_count = len(self.object_list)
-        snt_ = [self.snt] * object_count
-        daysago_ = [self.daysago] * object_count
-        daysuntil_ = [self.daysuntil] * object_count
-        mag_range_ = [self.mag_range] * object_count
+        snt = [self.snt] * object_count
+        daysago = [self.daysago] * object_count
+        daysuntil = [self.daysuntil] * object_count
+        mag_range = [self.mag_range] * object_count
         from astropy.utils.console import ProgressBar
 
         bar = ProgressBar(object_count)
@@ -309,7 +311,7 @@ class ForcedPhotometryPipeline:
             for j, result in enumerate(
                 p.imap_unordered(
                     self._plot_multiprocessing_,
-                    zip(self.object_list, snt_, daysago_, daysuntil_, mag_range_),
+                    zip(self.object_list, snt, daysago, daysuntil, mag_range),
                 )
             ):
                 if bar is not None:
@@ -319,7 +321,9 @@ class ForcedPhotometryPipeline:
 
     def global_filecheck(self):
         """ """
-        print("Running filecheck. This can take several hours.")
+        print(
+            "Running filecheck. This can take several hours, depending on the size of your ZTDFATA folder."
+        )
         badfiles = ztfquery.io.run_full_filecheck(
             erasebad=True, nprocess=self.nprocess, redownload=True
         )
@@ -345,11 +349,11 @@ class ForcedPhotometryPipeline:
 
         dustmap = sfdmap.SFDMap()
         for name in self.cleaned_object_list:
-            _mwebv = dustmap.ebv(
+            mwebv = dustmap.ebv(
                 self.ZTF_object_infos.loc["{}".format(name), "ra"],
                 self.ZTF_object_infos.loc["{}".format(name), "dec"],
             )
-            self.ZTF_object_infos.loc["{}".format(name), "mwebv"] = _mwebv
+            self.ZTF_object_infos.loc["{}".format(name), "mwebv"] = mwebv
         object_count = len(self.cleaned_object_list)
 
         bar = ProgressBar(object_count)
