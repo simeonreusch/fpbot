@@ -15,8 +15,14 @@ from astropy import units as u
 # TODO
 # CREATE LOCAL FILE THAT STORES NAME, RA/DEC + MWEBV
 
-ZTFDATA = os.getenv("ZTFDATA")
-FORCEPHOTODATA = os.path.join(ZTFDATA, "forcephotometry")
+try:
+    ZTFDATA = os.getenv("ZTFDATA")
+    FORCEPHOTODATA = os.path.join(ZTFDATA, "forcephotometry")
+except TypeError:
+    print(
+        "You have to export the environment variable ZTFDATA in your bash profile; e.g. export ZTFSATA='PATH_TO_ZTF_DATA_FOLDER'"
+    )
+
 COSMODATA = os.path.join(ZTFDATA, "cosmology")
 MARSHALDATA = os.path.join(ZTFDATA, "marshal")
 SALTDATA = os.path.join(FORCEPHOTODATA, "SALT")
@@ -423,7 +429,6 @@ class ForcedPhotometryPipeline:
         """ """
         print("\nSending mail")
         import smtplib, getpass
-        from os.path import basename
         from email.mime.application import MIMEApplication
         from email.mime.multipart import MIMEMultipart
         from email.mime.text import MIMEText

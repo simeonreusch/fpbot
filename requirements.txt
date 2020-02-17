@@ -9,3 +9,7 @@ requests
 pandas
 datetime
 matplotlib
+lxml
+html5lib
+bs4
+psycopg2
