@@ -130,7 +130,7 @@ class MarshalInfo:
         results = []
         with multiprocessing.Pool(nprocess) as p:
             for index, result in enumerate(
-                p.map(self._get_info_multiprocessor_, zip(ztf_names, urls, auth_))
+                p.map(self.get_info_multiprocessor, zip(ztf_names, urls, auth_))
             ):
                 bar.update()
                 results.append(result)
@@ -138,7 +138,7 @@ class MarshalInfo:
         self.queryresult = results
 
     @staticmethod
-    def _get_info_multiprocessor_(args):
+    def get_info_multiprocessor(args):
         """ """
         import requests
         import pandas as pd

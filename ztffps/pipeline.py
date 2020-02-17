@@ -2,7 +2,11 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import multiprocessing, time, os, argparse, sys, logging, sqlalchemy
+import multiprocessing
+import time
+import os
+import sys
+import logging
 from ztflc import forcephotometry
 from ztflc.io import LOCALDATA
 import numpy as np
@@ -73,11 +77,15 @@ class ForcedPhotometryPipeline:
         # parse different formats of ra and dec
         if ra is not None and dec is not None:
             if str(ra)[2] == ":" or str(ra)[2] == "h":
-                c = SkyCoord(f"{ra} {dec}", unit=(u.hourangle, u.deg))
+                coords = SkyCoord(f"{ra} {dec}", unit=(u.hourangle, u.deg))
             else:
-                c = SkyCoord(f"{ra} {dec}", unit=u.deg)
-            self.ra = np.float(c.ra.to_string(decimal=True, unit=u.deg, precision=8))
-            self.dec = np.float(c.dec.to_string(decimal=True, unit=u.deg, precision=8))
+                coords = SkyCoord(f"{ra} {dec}", unit=u.deg)
+            self.ra = np.float(
+                coords.ra.to_string(decimal=True, unit=u.deg, precision=8)
+            )
+            self.dec = np.float(
+                coords.dec.to_string(decimal=True, unit=u.deg, precision=8)
+            )
             self.object_list = [self.file_or_name]
             self.create_info_dataframe()
 
@@ -88,9 +96,9 @@ class ForcedPhotometryPipeline:
         else:
             self.ra = None
             self.dec = None
-            if type(self.file_or_name) == str:
+            if isinstance(self, file_or_name, str):
                 self.use_if_ztf()
-            elif type(self.file_or_name) == list:
+            elif isinstance(self.file_or_name, list):
                 self.object_list = self.file_or_name
             else:
                 raise TypeError
@@ -260,9 +268,6 @@ class ForcedPhotometryPipeline:
         """ """
         if nprocess is None:
             nprocess = self.nprocess
-        object_count = len(self.object_list)
-
-        from astropy.utils.console import ProgressBar
 
         ras = self.ZTF_object_infos["ra"].values
         decs = self.ZTF_object_infos["dec"].values
@@ -296,7 +301,7 @@ class ForcedPhotometryPipeline:
             )
             print("\n{} successfully fitted and plotted".format(name))
 
-    def plot(self, nprocess=4):
+    def plot(self, nprocess=4, progress=True):
         """ """
         self.logger.info("Plotting")
         object_count = len(self.object_list)
@@ -306,7 +311,10 @@ class ForcedPhotometryPipeline:
         mag_range = [self.mag_range] * object_count
         from astropy.utils.console import ProgressBar
 
-        bar = ProgressBar(object_count)
+        if progress:
+            progress_bar = ProgressBar(object_count)
+        else:
+            progress_bar = None
         with multiprocessing.Pool(nprocess) as p:
             for j, result in enumerate(
                 p.imap_unordered(
@@ -314,10 +322,10 @@ class ForcedPhotometryPipeline:
                     zip(self.object_list, snt, daysago, daysuntil, mag_range),
                 )
             ):
-                if bar is not None:
-                    bar.update(j)
-            if bar is not None:
-                bar.update(object_count)
+                if progress_bar is not None:
+                    progress_bar.update(j)
+            if progress_bar is not None:
+                progress_bar.update(object_count)
 
     def global_filecheck(self):
         """ """
@@ -340,7 +348,7 @@ class ForcedPhotometryPipeline:
         )
         print("\n{} plotted".format(name))
 
-    def saltfit(self, snt=5, quality_checks=False):
+    def saltfit(self, snt=5, quality_checks=False, progress=True):
         """ """
         self.check_if_psf_data_exists()
         import sfdmap
@@ -355,8 +363,10 @@ class ForcedPhotometryPipeline:
             )
             self.ZTF_object_infos.loc["{}".format(name), "mwebv"] = mwebv
         object_count = len(self.cleaned_object_list)
-
-        bar = ProgressBar(object_count)
+        if progress:
+            progress_bar = ProgressBar(object_count)
+        else:
+            progress_bar = None
         fitresults = []
         fitted_models = []
 
@@ -398,12 +408,12 @@ class ForcedPhotometryPipeline:
                 mwebv=self.ZTF_object_infos.loc["{}".format(name), "mwebv"],
                 quality_checks=quality_checks,
             )
-            if bar is not None:
-                bar.update(index)
+            if progress_bar is not None:
+                progress_bar.update(index)
             fitresults.append(fitresult)
             fitted_models.append(fitted_model)
-        if bar is not None:
-            bar.update(object_count)
+        if progress_bar is not None:
+            progress_bar.update(object_count)
 
         for fitresult in fitresults:
             if fitresult is not None:
@@ -429,10 +439,11 @@ class ForcedPhotometryPipeline:
         fitresult, fitted_model = fit_salt(name=name, mwebv=mwebv, snt=snt)
         return fitresult, fitted_model
 
-    def sendmail(self, send_to, files=None):
+    def sendmail(self, send_to):
         """ """
         print("\nSending mail")
-        import smtplib, getpass
+        import smtplib
+        import getpass
         from email.mime.application import MIMEApplication
         from email.mime.multipart import MIMEMultipart
         from email.mime.text import MIMEText
@@ -443,14 +454,14 @@ class ForcedPhotometryPipeline:
         )
 
         try:
-            with open(_smtp_pass_file, "r") as f:
-                _smtp_pass = f.read()
+            with open(_smtp_pass_file, "r") as pass_file:
+                _smtp_pass = pass_file.read()
         except FileNotFoundError:
             _smtp_pass = getpass.getpass(
                 prompt="Password for SMTP-Server: ", stream=None
             )
-            with open(_smtp_pass_file, "wb") as f:
-                f.write(_smtp_pass.encode())
+            with open(_smtp_pass_file, "wb") as pass_file:
+                pass_file.write(_smtp_pass.encode())
 
         send_from = "simeon.reusch@desy.de"
         objectnumber = len(self.object_list)
