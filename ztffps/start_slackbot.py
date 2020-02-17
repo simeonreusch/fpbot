@@ -87,15 +87,15 @@ def say_hello(**payload):
                             },
                             {
                                 "type": "mrkdwn",
+                                "text": "*--daysuntil*: Only data till [daysuntil] is considered. Default is today",
+                            },
+                            {
+                                "type": "mrkdwn",
                                 "text": "*--sendmail*: Send the output to the mail address known to Slack.",
                             },
                             {
                                 "type": "mrkdwn",
                                 "text": "*--df*: Upload the dataframe of the lightcurve to Slack.",
-                            },
-                            {
-                                "type": "mrkdwn",
-                                "text": "*--daysuntil*: Only data till [daysuntil] is considered. Default is today",
                             },
                             {
                                 "type": "mrkdwn",
