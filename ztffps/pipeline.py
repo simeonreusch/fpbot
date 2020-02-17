@@ -6,6 +6,7 @@ import multiprocessing
 import time
 import os
 import sys
+import re
 import logging
 from ztflc import forcephotometry
 from ztflc.io import LOCALDATA
@@ -96,7 +97,7 @@ class ForcedPhotometryPipeline:
         else:
             self.ra = None
             self.dec = None
-            if isinstance(self, file_or_name, str):
+            if isinstance(self.file_or_name, str):
                 self.use_if_ztf()
             elif isinstance(self.file_or_name, list):
                 self.object_list = self.file_or_name
@@ -113,19 +114,9 @@ class ForcedPhotometryPipeline:
 
     def is_ztf_name(self, name):
         """ """
-        if (
-            name[:3] == "ZTF"
-            and len(name) == 12
-            and (int(name[3]) == 1 or int(name[3]) == 2)
-        ):
-            letters = []
-            for c in name[3:12]:
-                if c.isalpha():
-                    letters.append(c)
-            if len(letters) == 7:
-                return True
-            else:
-                return False
+        regex_match = re.match("^ZTF[1-2]\d[a-z]{7}$", name)
+        if regex_match:
+            return True
         else:
             return False
 
