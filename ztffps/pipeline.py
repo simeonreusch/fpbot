@@ -16,6 +16,7 @@ import pandas as pd
 from astropy.time import Time
 from astropy.coordinates import SkyCoord
 from astropy import units as u
+from astropy.utils.console import ProgressBar
 
 # TODO
 # CREATE LOCAL FILE THAT STORES NAME, RA/DEC + MWEBV
@@ -30,9 +31,10 @@ except TypeError:
 
 COSMODATA = os.path.join(ZTFDATA, "cosmology")
 MARSHALDATA = os.path.join(ZTFDATA, "marshal")
-SALTDATA = os.path.join(FORCEPHOTODATA, "SALT")
+SALTDATA = os.path.join(FORCEPHOTODATA, "salt")
 PLOTDATA = os.path.join(FORCEPHOTODATA, "plots")
 PLOT_DATAFRAMES = os.path.join(PLOTDATA, "dataframes")
+THUMBNAILS = os.path.join(PLOTDATA, "thumbnails")
 
 
 class ForcedPhotometryPipeline:
@@ -304,7 +306,6 @@ class ForcedPhotometryPipeline:
         daysago = [self.daysago] * object_count
         daysuntil = [self.daysuntil] * object_count
         mag_range = [self.mag_range] * object_count
-        from astropy.utils.console import ProgressBar
 
         if progress:
             progress_bar = ProgressBar(object_count)
@@ -520,3 +521,19 @@ class ForcedPhotometryPipeline:
         smtp.login(send_from, _smtp_pass)
         smtp.sendmail(send_from, send_to, msg.as_string())
         smtp.close()
+
+    def generate_thumbnails(self):
+        from thumbnail import generate_thumbnails
+
+        ras = self.ZTF_object_infos["ra"].values
+        decs = self.ZTF_object_infos["dec"].values
+
+        for index, name in enumerate(self.object_list):
+            generate_thumbnails(
+                name=name,
+                ra=ras[index],
+                dec=decs[index],
+                size=50,
+                progress=True,
+                snt=self.snt,
+            )

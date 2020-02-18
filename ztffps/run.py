@@ -81,6 +81,12 @@ parser.add_argument(
     help="Runs a full filecheck on the ZTFDATA directory. Can take several hours",
 )
 parser.add_argument(
+    "--thumbnails",
+    "-thumbnails",
+    action="store_true",
+    help="Generate sciimg-thumbnails for ZTF objects",
+)
+parser.add_argument(
     "--sciimg", "-sciimg", action="store_true", help="Also downloads the science images"
 )
 
@@ -99,6 +105,7 @@ do_saltfit = commandline_args.saltfit
 do_filecheck = commandline_args.filecheck
 targetmail = commandline_args.sendmail
 sciimg = commandline_args.sciimg
+thumbnails = commandline_args.thumbnails
 
 # WARNING: This parsing is bullshit
 if radec:
@@ -131,6 +138,8 @@ if do_saltfit:
     pl.saltfit(quality_checks=True)
 if targetmail:
     pl.sendmail(targetmail)
+if thumbnails:
+    pl.generate_thumbnails()
 
 endtime = time.time()
 duration = endtime - pl.startime

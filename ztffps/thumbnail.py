@@ -12,27 +12,38 @@ from astropy import units as u
 import matplotlib.pyplot as plt
 from astropy.visualization import astropy_mpl_style
 from matplotlib.colors import LogNorm
+from astropy.utils.console import ProgressBar
 
 plt.style.use(astropy_mpl_style)
 import pipeline
 import pandas as pd
 
-# TODO: as argument
-snt = 5.0
+# TODO: filter!
 
 
-def generate_thumbnails(name, size=50):
+def generate_thumbnails(name, ra, dec, size=50, progress=True, snt=5):
     lc_file = os.path.join(pipeline.PLOT_DATAFRAMES, f"{name}_SNT_{snt}.csv")
+
+    thumbnails_base = pipeline.THUMBNAILS
+    if not os.path.exists(thumbnails_base):
+        os.makedirs(thumbnails_base)
+
+    thumbnails_path = os.path.join(thumbnails_base, name)
+    if not os.path.exists(thumbnails_path):
+        os.makedirs(thumbnails_path)
+
     df = pd.read_csv(lc_file)
     df = df.sort_values(by=["obsmjd"])
-    ra = 134.656544
-    dec = +20.191857
-    count = 0
     filenames = df["filename"].values
     quadrants = df["amp_id"].values
     filters = df["filter"].values
     mags = df["mag"].values
     obsmjds = df["obsmjd"].values
+
+    if progress:
+        progress_bar = ProgressBar(len(filenames))
+
+    count = 0
     for index, filename in enumerate(filenames):
         if filters[index] == "ZTF_r":
             filename_split = filename.split("_")[1]
@@ -44,7 +55,6 @@ def generate_thumbnails(name, size=50):
                 filename_split[8:14],
                 filename[:-5],
             ) + "_q{}_sciimg.fits".format(quadrants[index] + 1)
-            print(sciimg_path)
 
             coords = SkyCoord(f"{ra} {dec}", unit=(u.deg, u.deg))
 
@@ -65,11 +75,18 @@ def generate_thumbnails(name, size=50):
                 fig.suptitle(
                     "{} | {:.2f}".format(name, obsmjds[index]),
                     fontweight="bold",
-                    color="orange",
+                    color="red",
                 )
-            fig.savefig("test/test_{:03.0f}.png".format(np.float(count)))
+            savepath = os.path.join(
+                thumbnails_path, "{:003.0f}.png".format(np.float(count))
+            )
+            fig.savefig(savepath)
+            plt.close()
+            progress_bar.update(count)
             count = count + 1
 
 
 if __name__ == "__main__":
-    generate_thumbnails(name="ZTF19aaklqod")
+    generate_thumbnails(
+        name="ZTF19aaklqod", ra=134.656544, dec=+20.191857, progress=True, snt=5
+    )
