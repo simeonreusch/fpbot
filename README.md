@@ -10,9 +10,11 @@ The majority of required packages can be installed by issuing:
 
 ## Usage
 
-The basic file is pipeline.py, which can be run using different flags. A (ZTF) name always has to be provided (or a textfile containing one ZTF name in each line). Alternatively, the pipeline class can be imported from this file.
+The basic file is pipeline.py, which can be run using different flags. A (ZTF) name has to be provided (or an ASCII file containing one ZTF name in each line). Alternatively, the pipeline class can be imported from this file.
 
-`-radec`	If this is given, the name can be arbitrary (but a name must be provided). Radec must be given in a format that can be parse by astropy; e.g. `-radec 218.487548 +40.243758` or `-radec 14:33:57.01 +40:14:37.5` or `-radec 14h33m57.01 +40d14m37.5`
+`-radec`	If this is given, the name can be chosen arbitrarily (but a name MUST be provided). Radec must be given in a format that can be parsed by astropy; e.g. `-radec 218.487548 +40.243758` or `-radec 14:33:57.01 +40:14:37.5` or `-radec 14h33m57.01 +40d14m37.5`
+
+### Additional commands
 
 `-dl`        Downloads the images used for forced photometry from IPAC. Needs a valid IPAC account.
 
@@ -22,6 +24,10 @@ The basic file is pipeline.py, which can be run using different flags. A (ZTF) n
 
 `-saltfit`   Fits the lightcurve using SALT2 as provided by sncosmo.
 
+`-thumbnails` Experimental: Generates thumbnails for all science-images. Science images have to be downloaded (see `--sciimg`)
+
+### Options
+
 `--nprocess`  Only applied if a textfile is passed. Specifies the number of processes spawned for parallel computing. Default is 4.
 
 `--daysago`  Determines how old the datapoints used should be. Default uses all datapoints available.
@@ -29,8 +35,6 @@ The basic file is pipeline.py, which can be run using different flags. A (ZTF) n
 `--daysuntil`  Determines how new the datapoints used should be. Default uses all datapoints available.
 
 `--sciimg`  Experimental: Also downloads the science images from IPAC.
-
-`--thumbnails` Experimental: Generates thumbnails for all science-images. Science images have to be downloaded (see `--sciimg`)
 
 `--filecheck` Checks all images downloaded for data integrity and redownloads corrupt images.
 
