@@ -494,9 +494,9 @@ class ForcedPhotometryPipeline:
             if os.path.exists(filepath_plot):
                 with open(filepath_plot, "rb") as plot:
                     part = MIMEApplication(plot.read(), Name=f"Plot_{name}")
-            part[
-                "Content-Disposition"
-            ] = f'attachment; filename="{name}_SNT_{self.snt}.png"'
+                part[
+                    "Content-Disposition"
+                ] = f'attachment; filename="{name}_SNT_{self.snt}.png"'
             msg.attach(part)
 
         # attach dataframes
@@ -505,16 +505,16 @@ class ForcedPhotometryPipeline:
                 os.getenv("ZTFDATA"),
                 "forcephotometry",
                 "plots",
-                "lightcurves",
+                "dataframes",
                 f"{name}_SNT_{self.snt}.csv",
             )
             if os.path.exists(filepath_csv):
                 with open(filepath_csv, "rb") as csv:
                     part = MIMEApplication(csv.read(), Name=f"Dataframe_{name}")
-            part[
-                "Content-Disposition"
-            ] = f'attachment; filename="{name}_SNT_{self.snt}.csv"'
-            msg.attach(part)
+                part[
+                    "Content-Disposition"
+                ] = f'attachment; filename="{name}_SNT_{self.snt}.csv"'
+                msg.attach(part)
 
         smtp = smtplib.SMTP(server, port)
         smtp.starttls()
