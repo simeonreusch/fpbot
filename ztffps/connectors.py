@@ -50,11 +50,6 @@ class AmpelInfo:
         else:
             self.port = 5432
 
-        self.logger.info(
-            "postgresql://{0}:{1}@localhost:{2}/ztfarchive".format(
-                self.username, self.password, self.port
-            )
-        )
         try:
             self.ampel_client = ArchiveDB(
                 "postgresql://{0}:{1}@localhost:{2}/ztfarchive".format(

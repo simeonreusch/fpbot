@@ -107,6 +107,9 @@ targetmail = commandline_args.sendmail
 sciimg = commandline_args.sciimg
 thumbnails = commandline_args.thumbnails
 
+# if thumbnails:
+#     sciimg = True
+
 # WARNING: This parsing is bullshit
 if radec:
     ra = radec[0]
