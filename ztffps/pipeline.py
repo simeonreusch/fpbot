@@ -143,7 +143,7 @@ class ForcedPhotometryPipeline:
                 self.object_list[0][:3] == "ZTF" and len(self.object_list[0]) == 12
             ), "You have to provide either a ZTF name or a file containing ZTF names (1 per line)"
         print("Doing forced photometry for {} SNe".format(len(self.object_list)))
-        print("Logs are stored in forced_photometry.log")
+        print("Logs are stored in pipeline.log")
 
     def create_info_dataframe(self):
         """ """
@@ -446,7 +446,7 @@ class ForcedPhotometryPipeline:
         from email.utils import formatdate
 
         _smtp_pass_file = (
-            f"{os.path.dirname(os.path.realpath(__file__))}/.smtp_pass.txt"
+            f"{os.path.dirname(os.path.realpath(__file__))}/.smtp_pass.cred"
         )
 
         try:
@@ -523,7 +523,7 @@ class ForcedPhotometryPipeline:
         smtp.close()
 
     def generate_thumbnails(self):
-        from thumbnail import generate_thumbnails
+        from thumbnails import generate_thumbnails
 
         ras = self.ZTF_object_infos["ra"].values
         decs = self.ZTF_object_infos["dec"].values
@@ -536,4 +536,6 @@ class ForcedPhotometryPipeline:
                 size=50,
                 progress=True,
                 snt=self.snt,
+                nprocess=self.nprocess,
+                logger=self.logger,
             )
