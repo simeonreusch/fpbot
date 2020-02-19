@@ -460,7 +460,7 @@ class ForcedPhotometryPipeline:
             with open(_smtp_pass_file, "wb") as pass_file:
                 pass_file.write(_smtp_pass.encode())
 
-        send_from = "simeon.reusch@desy.de"
+        send_from = "forcedphotometry@desy.de"
         objectnumber = len(self.object_list)
 
         if objectnumber == 1:
