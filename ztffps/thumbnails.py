@@ -3,6 +3,7 @@
 # License: BSD-3-Clause
 
 import os
+import tarfile
 import time
 import multiprocessing
 import argparse
@@ -76,6 +77,14 @@ def generate_thumbnails(
 
             if progress_bar is not None:
                 progress_bar.update(object_count)
+
+    # with tarfile.open(os.path.join(pipeline.THUMBNAILS, '{}_thumbnails.gzip'.format(name)), "w:gz") as tar:
+    #     for root, dirs, files in os.walk(os.path.join(pipeline.THUMBNAILS, name)):
+    #         for file in files:
+    #             print(os.path.join(root, file))
+    #             arcname = os.path.join(root, file).split('/')[-1]
+    #             tar.add(os.path.join(root, file), arcname)
+    # tar.close()
 
 
 def get_lists_for_multiprocessing(name, df, band, ra, dec, size):
@@ -151,7 +160,7 @@ if __name__ == "__main__":
         dec=+20.191857,
         progress=True,
         snt=5,
-        nprocess=1,
+        nprocess=4,
     )
     endtime = time.time()
     print("\nThe script took {:.1f} seconds".format(endtime - starttime))
