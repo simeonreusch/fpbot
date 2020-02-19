@@ -130,7 +130,7 @@ def plot_thumbnail_multiprocess(args):
 
     # Plot
     fig, ax = plt.subplots(1, 1, figsize=[5, 5], dpi=300)
-    ax.imshow(img_data, cmap="gray", norm=LogNorm())
+    ax.imshow(img_data, cmap="viridis", norm=LogNorm())
     if mag == 99:
         fig.suptitle("{} | {:.2f}".format(name, obsmjd), fontweight="bold")
     else:
