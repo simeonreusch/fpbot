@@ -27,8 +27,8 @@ class AmpelInfo:
         self.ztf_names = ztf_names
         self.nprocess = nprocess
 
-        _ampel_user = ".AMPEL_user.txt"
-        _ampel_pass = ".AMPEL_pass.txt"
+        _ampel_user = ".AMPEL_user.cred"
+        _ampel_pass = ".AMPEL_pass.cred"
 
         try:
             with open(_ampel_user, "r") as f:
