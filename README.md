@@ -1,6 +1,6 @@
 # ztffps
 
-Provides a forced photometry pipeline based on ztfquery and ztflc. Note: Requires python >= 3.7.
+Provides a Forced Photometry Pipeline based on [ztfquery](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery). Note: Requires Python >= 3.7.
 
 ## Installation
 
@@ -22,7 +22,7 @@ The basic file is pipeline.py, which can be run using different flags. A (ZTF) n
 
 `-plot`     Plots the lightcurve(s).
 
-`-saltfit`   Fits the lightcurve using SALT2 as provided by sncosmo.
+`-saltfit`   Fits the lightcurve using SALT2 as provided by [sncosmo](https://github.com/sncosmo/).
 
 `-thumbnails` Experimental: Generates thumbnails for all science-images. Science images have to be downloaded (see `--sciimg`)
 
@@ -49,7 +49,8 @@ The basic file is pipeline.py, which can be run using different flags. A (ZTF) n
 ## Requirements
 - [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC.
 - [ztflc](https://github.com/mickaelrigault/ztflc) is used for PSF-fitting.
-- Marshal credentials are neccessary for determining object ra and dec.
+- [Marshal](http://skipper.caltech.edu:8080/cgi-bin/growth/marshal.cgi) credentials are neccessary for determining object ra and dec.
+- Optionally: [AMPEL](https://github.com/ampelproject) can be used alternatively to the Marshal.
 
 ## Slackbot
 There is a bot for Slack included, based on the SlackRTM-API. To use it, create a legacy bot in slack (with the legacy privilege system, the new system depends on the EventApi, which itself needs a webserver). Change the bot-username in slackbot_realtime.py and it should basically work (first start requires you to enter the bot- and bot-user credentials).
