@@ -10,7 +10,7 @@ The majority of required packages can be installed by issuing:
 
 ## Usage
 
-The basic file is run.py, which can be run using different flags. A (ZTF) name always has to be provided (or a textfile containing one ZTF name in each line). Alternatively, the pipeline class can be imported from pipeline.py.
+The basic file is pipeline.py, which can be run using different flags. A (ZTF) name always has to be provided (or a textfile containing one ZTF name in each line). Alternatively, the pipeline class can be imported from this file.
 
 `-radec`	If this is given, the name can be arbitrary (but a name must be provided). Radec must be given in a format that can be parse by astropy; e.g. `-radec 218.487548 +40.243758` or `-radec 14:33:57.01 +40:14:37.5` or `-radec 14h33m57.01 +40d14m37.5`
 
@@ -28,18 +28,21 @@ The basic file is run.py, which can be run using different flags. A (ZTF) name a
 
 `--daysuntil`  Determines how new the datapoints used should be. Default uses all datapoints available.
 
+`--sciimg`  Experimental: Also downloads the science images from IPAC.
+
+`--thumbnails` Experimental: Generates thumbnails for all science-images. Science images have to be downloaded (see `--sciimg`)
+
 `--filecheck` Checks all images downloaded for data integrity and redownloads corrupt images.
 
 **Examples**:
 
-`./run.py ZTF19abimkwn -dl -fit -saltfit --nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
+`./pipeline.py ZTF19abimkwn -dl -fit -saltfit --nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
 
-`./run.py supernovae.txt -plot --filecheck` Plots all lightcurves for ZTF transients found in supernovae.txt and additionally performs a full filecheck on all images downloaded by ztfquery (not only the ones in the textfile).
+`./pipeline.py supernovae.txt -plot --filecheck` Plots all lightcurves for ZTF transients found in supernovae.txt and additionally performs a full filecheck on all images downloaded by ztfquery (not only the ones in the textfile).
 
-`./run.py this_looks_interesting -radec 143.3123 66.42342 -dl -fit -plot --daysago 10` Downloads all images of the last ten days of the location given in ra and dec, does PSF-fits and plots the lightcurve.
+`./pipeline.py this_looks_interesting -radec 143.3123 66.42342 -dl -fit -plot --daysago 10` Downloads all images of the last ten days of the location given in ra and dec, does PSF-fits and plots the lightcurve.
 
 ## Requirements
-
 - [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC.
 - [ztflc](https://github.com/mickaelrigault/ztflc) is used for PSF-fitting.
 - Marshal credentials are neccessary for determining object ra and dec.
