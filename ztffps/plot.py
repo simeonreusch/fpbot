@@ -202,5 +202,8 @@ def plot_lightcurve(
         fontsize="small",
         title_fontsize="small",
     )
-    lc_plot_path = os.path.join(lc_plotdir, f"{name}_SNT_{snt}.png")
-    fig.savefig(lc_plot_path, dpi=300, bbox_inches="tight")
+    images_dir = os.path.join(lc_plotdir, "images")
+    if not os.path.exists(images_dir):
+        os.makedirs(images_dir)
+    image_path = os.path.join(images_dir, f"{name}_SNT_{snt}.png")
+    fig.savefig(image_path, dpi=300, bbox_inches="tight")

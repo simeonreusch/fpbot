@@ -70,6 +70,7 @@ class ForcedPhotometryPipeline:
         hdlr.setFormatter(formatter)
         self.logger.addHandler(hdlr)
         self.logger.setLevel(logging.INFO)
+
         self.daysago = daysago
         self.daysuntil = daysuntil
         self.snt = snt
@@ -489,6 +490,7 @@ class ForcedPhotometryPipeline:
                 os.getenv("ZTFDATA"),
                 "forcephotometry",
                 "plots",
+                "images",
                 f"{name}_SNT_{self.snt}.png",
             )
             if os.path.exists(filepath_plot):
