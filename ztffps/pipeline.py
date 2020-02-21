@@ -23,10 +23,6 @@ from tinydb import TinyDB, Query
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 
-
-# TODO
-# CREATE LOCAL FILE THAT STORES NAME, RA/DEC + MWEBV
-
 try:
     ZTFDATA = os.getenv("ZTFDATA")
     FORCEPHOTODATA = os.path.join(ZTFDATA, "forcephotometry")
@@ -573,6 +569,18 @@ class ForcedPhotometryPipeline:
                 part[
                     "Content-Disposition"
                 ] = f'attachment; filename="{name}_SNT_{self.snt}.csv"'
+                msg.attach(part)
+
+        for name in self.object_list or []:
+            filepath_thumbnails = os.path.join(
+                THUMBNAILS, "{}_thumbnails.zip".format(name)
+            )
+            if os.path.exists(filepath_thumbnails):
+                with open(filepath_thumbnails, "rb") as thumbnails:
+                    part = MIMEApplication(thumbnails.read(), Name=f"Thumbnails_{name}")
+                part[
+                    "Content-Disposition"
+                ] = f'attachment; filename="{name}_thumbnails.zip"'
                 msg.attach(part)
 
         smtp = smtplib.SMTP(server, port)
