@@ -84,7 +84,7 @@ class AmpelInfo:
         queryresult = []
         for index, ztf_name in enumerate(self.ztf_names):
             ampel_object = self.ampel_client.get_alerts_for_object(
-                ztf_name, with_history=True
+                ztf_name, with_history=False
             )
             query_res = [i for i in ampel_object]
             ras = []
@@ -96,10 +96,8 @@ class AmpelInfo:
                 decs.append(dec)
             ra = np.median(ras)
             dec = np.median(decs)
-            now = Time(time.time(), format="unix", scale="utc").jd
-            jdmin = 2458209
-            jdmax = now
-            result = [ztf_name, ra, dec, jdmin, jdmax]
+            entries = len(ras)
+            result = [ztf_name, ra, dec, entries]
             queryresult.append(result)
             bar.update()
         return queryresult
@@ -127,7 +125,7 @@ class MarshalInfo:
             for index, result in enumerate(
                 p.map(self.get_info_multiprocessor, zip(ztf_names, urls, auth_))
             ):
-                bar.update()
+                bar.update(index)
                 results.append(result)
             bar.update(object_count)
         self.queryresult = results
@@ -171,7 +169,5 @@ class MarshalInfo:
             ra = np.median(ras[ind])
             dec = np.median(decs[ind])
             jd = np.median(jds[ind])
-        now = Time(time.time(), format="unix", scale="utc").jd
-        jdmin = 2458209
-        jdmax = now
-        return [ztf_name, ra, dec, jdmin, jdmax]
+            entries = len(ras)
+        return [ztf_name, ra, dec, entries]

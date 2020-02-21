@@ -24,12 +24,9 @@ def plot_lightcurve(
         logger = logging.getLogger()
 
     ### define directories
-    lc_dir = pipeline.FORCEPHOTODATA
-    lc_path = os.path.join(lc_dir, "{}.csv".format(name))
+    lc_path = os.path.join(pipeline.FORCEPHOTODATA, "{}.csv".format(name))
     lc_plotdir = pipeline.PLOTDATA
     lc_plotted_dir = pipeline.PLOT_DATAFRAMES
-    if not os.path.exists(lc_plotted_dir):
-        os.makedirs(lc_plotted_dir)
 
     lc = pd.read_csv(lc_path)
 
