@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from astropy.utils.console import ProgressBar
 import pipeline
+import shutil
 
 plt.style.use(astropy_mpl_style)
 
@@ -78,13 +79,11 @@ def generate_thumbnails(
             if progress_bar is not None:
                 progress_bar.update(object_count)
 
-    # with tarfile.open(os.path.join(pipeline.THUMBNAILS, '{}_thumbnails.gzip'.format(name)), "w:gz") as tar:
-    #     for root, dirs, files in os.walk(os.path.join(pipeline.THUMBNAILS, name)):
-    #         for file in files:
-    #             print(os.path.join(root, file))
-    #             arcname = os.path.join(root, file).split('/')[-1]
-    #             tar.add(os.path.join(root, file), arcname)
-    # tar.close()
+    shutil.make_archive(
+        os.path.join(pipeline.THUMBNAILS, "{}_thumbnails".format(name)),
+        "zip",
+        os.path.join(pipeline.THUMBNAILS, name),
+    )
 
 
 def get_lists_for_multiprocessing(name, df, band, ra, dec, size):
@@ -128,6 +127,8 @@ def plot_thumbnail_multiprocess(args):
         filename[:-5],
     ) + "_q{}_sciimg.fits".format(quadrant + 1)
 
+    filter_color = {"ZTF_g": "green", "ZTF_r": "red", "ZTF_i": "orange"}
+
     thumbnails_path = os.path.join(pipeline.THUMBNAILS, name, band)
 
     coords = SkyCoord("{} {}".format(ra, dec), unit=(u.deg, u.deg))
@@ -144,7 +145,9 @@ def plot_thumbnail_multiprocess(args):
         fig.suptitle("{} | {:.2f}".format(name, obsmjd), fontweight="bold")
     else:
         fig.suptitle(
-            "{} | {:.2f}".format(name, obsmjd), fontweight="bold", color="red",
+            "{} | {:.2f}".format(name, obsmjd),
+            fontweight="bold",
+            color=filter_color[band],
         )
     savepath = os.path.join(thumbnails_path, "{:0004.0f}.png".format(np.float(index)))
     fig.savefig(savepath)
