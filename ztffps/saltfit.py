@@ -178,26 +178,6 @@ class SaltFit:
         obs_count.update(nr_filters=nr_filters, obs_total=obs_total)
         self.quality_info.update(obs_count)
 
-    # def count_obs(sn, lc, pl):
-    # 	data = lc.table_sncosmo
-    # 	print(data)
-    # 	nr_filters = len(np.unique(lc.table['filter'][lc.table['magpsf']<99] ))
-    # 	unique_obs, counts = np.unique(lc.table['filter'][lc.table['magpsf']<99], return_counts = True)
-    # 	filter_count = dict(zip(unique_obs, counts))
-    # 	if not 'g' in filter_count:
-    # 		filter_count['g'] = 0
-    # 	if not 'r' in filter_count:
-    # 		filter_count['r'] = 0
-    # 	if not 'i' in filter_count:
-    # 		filter_count['i'] = 0
-    # 	pl.sources[sn]['filter_counts'] = filter_count
-    # 	obs_total = np.sum(counts)
-    # 	try:
-    # 		first_obs = data['mjd'][0]
-    # 	except IndexError:
-    # 		first_obs = 'none'
-    # 	return {'first observation': first_obs, 'nr of filters': nr_filters, 'obs total': obs_total, 'obs g': filter_count['g'], 'obs r': filter_count['r'], 'obs i': filter_count['i']}
-
     def fit(self, snt=5, quality_checks=False, **kwargs):
         """ """
         from astropy.table import Table
@@ -312,7 +292,18 @@ class SaltFit:
         if self.fitresult.success is True:
             self.logger.info("{} Fit succeeded!".format(self.name))
 
-            chisq, ndof, z, z_spectro, z_precision, p48g, p48r, p48i, nr_filters, obs_total = (
+            (
+                chisq,
+                ndof,
+                z,
+                z_spectro,
+                z_precision,
+                p48g,
+                p48r,
+                p48i,
+                nr_filters,
+                obs_total,
+            ) = (
                 self.fitresult["chisq"],
                 self.fitresult["ndof"],
                 self.fitresult["parameters"][0],

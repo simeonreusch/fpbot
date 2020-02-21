@@ -20,6 +20,8 @@ from astropy import units as u
 from astropy.utils.console import ProgressBar
 import requests.exceptions
 from tinydb import TinyDB, Query
+from tinydb.storages import JSONStorage
+from tinydb.middlewares import CachingMiddleware
 
 
 # TODO
@@ -196,11 +198,17 @@ class ForcedPhotometryPipeline:
     def get_position_and_timerange(self):
         """ """
         # Check for entry in database
+        print("\nChecking database")
+        progress_bar = ProgressBar(len(self.object_list))
         needs_external_database = []
-        for name in self.object_list:
+
+        for index, name in enumerate(self.object_list):
             local_queryresult = self.metadata_db.search(Query().name == name)
             if len(local_queryresult) == 0 or local_queryresult[0]["entries"] < 10:
                 needs_external_database.append(name)
+            progress_bar.update(index)
+
+        progress_bar.update(len(self.object_list))
 
         print("\nConnecting to Marshal (or AMPEL if Marshal is down)")
         import connectors
@@ -232,7 +240,10 @@ class ForcedPhotometryPipeline:
         now = Time(time.time(), format="unix", scale="utc").jd
 
         if not (marshal_failed and ampel_failed):
-            for result in connector.queryresult:
+            print("\nUpdating metadata database")
+            progress_bar = ProgressBar(len(connector.queryresult))
+
+            for index, result in enumerate(connector.queryresult):
                 if self.daysago is None:
                     jdmin = 2458209
                 else:
@@ -260,6 +271,8 @@ class ForcedPhotometryPipeline:
                     },
                     Query().name == name,
                 )
+                progress_bar.update(index)
+            progress_bar.update(len(connector.queryresult))
 
     def download(self):
         """ """
@@ -734,4 +747,5 @@ if __name__ == "__main__":
 
     endtime = time.time()
     duration = endtime - pl.startime
+
     print("\nThe script took {:.2f} minutes".format(duration / 60))
