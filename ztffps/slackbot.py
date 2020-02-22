@@ -236,7 +236,7 @@ def run_on_event(thread_id, channel_id):
         try:
             pl.plot()
             wc = WebClient(token=bot_token)
-            imgpath = os.path.join(lc_plotdir, f"{name}_SNT_{snt}.png")
+            imgpath = os.path.join(lc_plotdir, "images", f"{name}_SNT_{snt}.png")
             imgdata = open(imgpath, "rb")
             wc.files_upload(
                 file=imgdata,
