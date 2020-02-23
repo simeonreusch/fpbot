@@ -10,6 +10,7 @@ import numpy as np
 import sncosmo
 import logging
 from astropy import time
+from tinydb import TinyDB, Query
 
 # TODO:
 # we have to talk about this
@@ -42,8 +43,8 @@ class SaltFit:
             self.logger = logger
         self.name = name
         self.lightcurve = pd.read_csv(os.path.join(LOCALDATA, f"{self.name}.csv"))
-        self.ra = m.target_sources.query(f'name == "{name}"')["ra"].values[0]
-        self.dec = m.target_sources.query(f'name == "{name}"')["dec"].values[0]
+        # self.ra = m.target_sources.query(f'name == "{name}"')["ra"].values[0]
+        # self.dec = m.target_sources.query(f'name == "{name}"')["dec"].values[0]
         self.z = m.target_sources.query(f'name == "{name}"')["redshift"].values[0]
         self.rcid = m.target_sources.query(f'name == "{name}"')["rcid"].values[0]
         self.fieldid = m.target_sources.query(f'name == "{name}"')["field"].values[0]
@@ -73,6 +74,7 @@ class SaltFit:
         marshal_t0_jd = marshal_lc_df.query("mag == @lowest_mag")["jdobs"].values[0]
         t = time.Time(marshal_t0_jd, format="jd", scale="utc")
         self.marshal_t0 = t.mjd
+        marshal_lc_df = marshal_lc_df.query("mag < 99")
 
     def modify_columns(self):
         """ """
