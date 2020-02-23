@@ -41,20 +41,12 @@ class SaltFit:
         else:
             self.logger = logger
         self.name = name
-        self.lightcurve = pd.read_csv(
-            os.path.join(LOCALDATA, "{}.csv".format(self.name))
-        )
-        self.ra = m.target_sources.query('name == "{}"'.format(name))["ra"].values[0]
-        self.dec = m.target_sources.query('name == "{}"'.format(name))["dec"].values[0]
-        self.z = m.target_sources.query('name == "{}"'.format(name))["redshift"].values[
-            0
-        ]
-        self.rcid = m.target_sources.query('name == "{}"'.format(name))["rcid"].values[
-            0
-        ]
-        self.fieldid = m.target_sources.query('name == "{}"'.format(name))[
-            "field"
-        ].values[0]
+        self.lightcurve = pd.read_csv(os.path.join(LOCALDATA, f"{self.name}.csv"))
+        self.ra = m.target_sources.query(f'name == "{name}"')["ra"].values[0]
+        self.dec = m.target_sources.query(f'name == "{name}"')["dec"].values[0]
+        self.z = m.target_sources.query(f'name == "{name}"')["redshift"].values[0]
+        self.rcid = m.target_sources.query(f'name == "{name}"')["rcid"].values[0]
+        self.fieldid = m.target_sources.query(f'name == "{name}"')["field"].values[0]
         self.mwebv = mwebv
         self.quality_info = {
             "name": self.name,
@@ -153,15 +145,13 @@ class SaltFit:
     def check_redshift_precision(self):
         """ """
         spectroscopic_redshifts = pd.read_csv(SPECTROSCOPIC_REFERENCE)
-        reference_object = spectroscopic_redshifts.query(
-            'sn_name == "{}"'.format(self.name)
-        )
+        reference_object = spectroscopic_redshifts.query(f'sn_name == "{self.name}"')
         if not reference_object.empty:
-            self.logger.info("{} Spectroscopic redshift found".format(self.name))
+            self.logger.info(f"{self.name} Spectroscopic redshift found")
             self.z = reference_object["sn_redshift"].values[0]
             self.quality_info.update(z_spectro=True)
         else:
-            self.logger.info("{} No spectroscopic redshift found")
+            self.logger.info(f"{self.name} No spectroscopic redshift found")
             self.quality_info.update(z_spectro=False)
             try:
                 _digits = self.get_digit_count(str(self.z))
@@ -277,11 +267,9 @@ class SaltFit:
         plotdir = os.path.join(LOCALDATA, "SALT")
         if not os.path.exists(plotdir):
             os.makedirs(plotdir)
-        plt.savefig(
-            os.path.join(os.path.join(plotdir, "{}_SALT.png".format(self.name)))
-        )
+        plt.savefig(os.path.join(os.path.join(plotdir, f"{self.name}_SALT.png")))
         plt.close(fig)
-        self.logger.info("{} Plotted.".format(self.name))
+        self.logger.info(f"{self.name} Plotted.")
         # except:
         # 	self.logger.info("{} Fit exited with error".format(self.name))
         # 	self.fitresult = sncosmo.utils.Result({'name': self.name, 'success': False})
@@ -290,7 +278,7 @@ class SaltFit:
         # 	return
 
         if self.fitresult.success is True:
-            self.logger.info("{} Fit succeeded!".format(self.name))
+            self.logger.info(f"{self.name} Fit succeeded!")
 
             (
                 chisq,
@@ -344,7 +332,7 @@ class SaltFit:
             ]
 
         else:
-            self.logger.info("{} Fit failed".format(self.name))
+            self.logger.info(f"{self.name} Fit failed")
             self.result = None
 
 

@@ -24,7 +24,7 @@ def plot_lightcurve(
         logger = logging.getLogger()
 
     ### define directories
-    lc_path = os.path.join(pipeline.FORCEPHOTODATA, "{}.csv".format(name))
+    lc_path = os.path.join(pipeline.FORCEPHOTODATA, f"{name}.csv")
     lc_plotdir = pipeline.PLOTDATA
     lc_plotted_dir = pipeline.PLOT_DATAFRAMES
 
@@ -102,9 +102,7 @@ def plot_lightcurve(
     i_uplim = uplim[uplim["filter"].isin(filterlist[2])]
 
     logger.info(
-        "{} {} of {} datapoints survived SNT cut of {}".format(
-            name, len_after_sn_cut, len_before_sn_cut, snt
-        )
+        f"{name} {len_after_sn_cut} of {len_before_sn_cut} datapoints survived SNT cut of {snt}"
     )
 
     ### define functions for secondary axis (conversion from jd --> distance to today)
@@ -123,7 +121,7 @@ def plot_lightcurve(
     fig.subplots_adjust(top=0.8)
     ax2 = ax.secondary_xaxis("top", functions=(t0_dist, t0_to_mjd))
     ax2.set_xlabel(f"Days from {date.today()}")
-    fig.suptitle("{}".format(name), fontweight="bold")
+    fig.suptitle(f"{name}", fontweight="bold")
     ax.grid(b=True, axis="y")
     ax.set_xlabel("MJD")
     ax.set_ylabel("magnitude [AB]")
@@ -195,7 +193,7 @@ def plot_lightcurve(
     ax.legend(
         loc=0,
         framealpha=1,
-        title="SNT={:.0f}".format(snt),
+        title=f"SNT={snt:.0f}",
         fontsize="small",
         title_fontsize="small",
     )

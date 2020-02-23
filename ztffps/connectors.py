@@ -52,9 +52,7 @@ class AmpelInfo:
 
         try:
             self.ampel_client = ArchiveDB(
-                "postgresql://{0}:{1}@localhost:{2}/ztfarchive".format(
-                    self.username, self.password, self.port
-                )
+                f"postgresql://{self.username}:{self.password}@localhost:{self.port}/ztfarchive"
             )
         except sqlalchemy.exc.OperationalError as e:
             print(

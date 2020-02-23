@@ -30,8 +30,8 @@ class Cosmology:
     min_filters = 2  # number of different filters needed def = 2
     max_chisquare = 10  # max chisquare to retain only good fits def = 1.3
     min_obs_per_filter = (
-        2
-    )  # minimum of observations in each filter actually used def = 2
+        2  # minimum of observations in each filter actually used def = 2
+    )
     min_obs = 5  # number of observations needed def = 5
     min_redshift_digits = 3  # minimum of sigificant digits of redshift def = 3
     pull_cut_sne_to_inspect = 5
@@ -47,9 +47,7 @@ class Cosmology:
         """ """
         self.fitresults.query("z <= @self.max_redshift", inplace=True)
         self.logger.info(
-            "surviving redshift range cut: {} ({:2.2f} %)".format(
-                len(self.fitresults), self.survival_percent(len(self.fitresults))
-            )
+            f"surviving redshift range cut: {len(self.fitresults)} ({self.survival_percent(len(self.fitresults)):2.2f} %)"
         )
         self.fitresults.query(
             "g_obs >= @self.min_obs_per_filter or g_obs == 0", inplace=True
@@ -61,38 +59,28 @@ class Cosmology:
             "i_obs >= @self.min_obs_per_filter or i_obs == 0", inplace=True
         )
         self.logger.info(
-            "surviving min obs per filter cut: {} ({:2.2f} %)".format(
-                len(self.fitresults), self.survival_percent(len(self.fitresults))
-            )
+            f"surviving min obs per filter cut: {len(self.fitresults)} ({self.survival_percent(len(self.fitresults)):2.2f} %)"
         )
         self.fitresults.query("obs_total >= @self.min_obs", inplace=True)
         self.logger.info(
-            "surviving obs total cut: {} ({:2.2f} %)".format(
-                len(self.fitresults), self.survival_percent(len(self.fitresults))
-            )
+            f"surviving obs total cut: {len(self.fitresults)} ({self.survival_percent(len(self.fitresults)):2.2f} %)"
         )
         self.fitresults.query("nr_filters >= @self.min_filters", inplace=True)
         self.logger.info(
-            "surviving nr of filters cut: {} ({:2.2f} %)".format(
-                len(self.fitresults), self.survival_percent(len(self.fitresults))
-            )
+            f"surviving nr of filters cut: {len(self.fitresults)} ({self.survival_percent(len(self.fitresults)):2.2f} %)"
         )
         # self.fitresults['first_observation'] = self.fitresults['first observation'].astype(float)
         # self.fitresults = self.fitresults[self.fitresults.first_observation < self.fitresults.t0]
         # self.logger.info('surviving first obs before peak cut: {} ({:2.2f} %)'.format(len(self.fitresults), self.survival_percent(len(self.fitresults))))
         self.fitresults.query("z_precision >= 3 or z_spectro == True", inplace=True)
         self.logger.info(
-            "surviving redshift precision cut: {} ({:2.2f} %)".format(
-                len(self.fitresults), self.survival_percent(len(self.fitresults))
-            )
+            f"surviving redshift precision cut: {len(self.fitresults)} ({self.survival_percent(len(self.fitresults)):2.2f} %)"
         )
         # self.fitresults.query('reference == "exists"', inplace = True)
         # self.logger.info('surviving reference exists cut: {} ({:2.2f} %)'.format(len(self.fitresults), self.survival_percent(len(self.fitresults))))
         self.fitresults.query("red_chisq <= @self.max_chisquare", inplace=True)
         self.logger.info(
-            "surviving chisquare cut: {} ({:2.2f} %)".format(
-                len(self.fitresults), self.survival_percent(len(self.fitresults))
-            )
+            f"surviving chisquare cut: {len(self.fitresults)} ({self.survival_percent(len(self.fitresults)):2.2f} %)"
         )
 
         self.calculate_statistics()
@@ -115,8 +103,8 @@ class Cosmology:
             np.abs(self.fitresults.residual - residuals_median)
         )
 
-        self.logger.info("RMS = {:.3f}".format(self.rms))
-        self.logger.info("nMAD = {:.3f}".format(self.nmad))
+        self.logger.info(f"RMS = {self.rms:.3f}")
+        self.logger.info(f"nMAD = {self.nmad:.3f}")
 
     def create_overview(self):
         """ """
@@ -134,12 +122,12 @@ class Cosmology:
         for ztf_name in self.fitresults.index.values:
             # if self.fitresults.loc["{}".format(result[0]), 'ra']
             if (
-                np.abs(self.fitresults.loc["{}".format(ztf_name)]["residual"])
+                np.abs(self.fitresults.loc[f"{ztf_name}"]["residual"])
                 >= self.annotation_threshold
             ):
                 names.append(ztf_name)
-                y.append(self.fitresults.loc["{}".format(ztf_name)]["residual"])
-                x.append(self.fitresults.loc["{}".format(ztf_name)]["z"])
+                y.append(self.fitresults.loc[f"{ztf_name}"]["residual"])
+                x.append(self.fitresults.loc[f"{ztf_name}"]["z"])
         self.bad_objects = names
         self.good_objects = [x for x in self.fitresults.index.values if x not in names]
         return names, x, y
@@ -176,12 +164,12 @@ class Cosmology:
         bad_images = []
 
         for ztf_name in self.good_objects:
-            image = os.path.join(self.salt_dir, "{}_SALT.png".format(ztf_name))
+            image = os.path.join(self.salt_dir, f"{ztf_name}_SALT.png")
             good_images.append(image)
 
         if hasattr(self, "bad_objects"):
             for ztf_name in self.bad_objects:
-                image = os.path.join(self.salt_dir, "{}_SALT.png".format(ztf_name))
+                image = os.path.join(self.salt_dir, f"{ztf_name}_SALT.png")
                 bad_images.append(image)
 
         good_rgbs = []

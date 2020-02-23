@@ -142,7 +142,7 @@ class ForcedPhotometryPipeline:
         else:
             self.object_list = []
             try:
-                file = open("{}".format(self.file_or_name), "r")
+                file = open(f"{self.file_or_name}", "r")
                 self.lines = file.read().splitlines()
                 for line in self.lines:
                     if self.is_ztf_name(line):
@@ -155,7 +155,7 @@ class ForcedPhotometryPipeline:
             assert (
                 self.object_list[0][:3] == "ZTF" and len(self.object_list[0]) == 12
             ), "You have to provide either a ZTF name or a file containing ZTF names (1 per line)"
-        print("Doing forced photometry for {} SNe".format(len(self.object_list)))
+        print("Doing forced photometry for {len(self.object_list)} SNe")
         print("Logs are stored in pipeline.log")
 
     def update_database_with_given_radec(self):
@@ -231,7 +231,7 @@ class ForcedPhotometryPipeline:
         if self.daysago is None:
             print("\nNo 'daysago' given, full timerange used")
         else:
-            print("\nData from {} days ago till today is used".format(self.daysago))
+            print(f"\nData from {self.daysago} days ago till today is used")
 
         now = Time(time.time(), format="unix", scale="utc").jd
 
@@ -273,7 +273,7 @@ class ForcedPhotometryPipeline:
     def download(self):
         """ """
         for name in self.object_list:
-            self.logger.info("{} Starting download".format(name))
+            self.logger.info(f"{name} Starting download")
             query = self.metadata_db.search(Query().name == name)
             ra = query[0]["ra"]
             dec = query[0]["dec"]
@@ -283,7 +283,7 @@ class ForcedPhotometryPipeline:
             fp = forcephotometry.ForcePhotometry.from_coords(
                 ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
             )
-            self.logger.info("{} Downloading data".format(name))
+            self.logger.info(f"{name} Downloading data")
             if not os.path.exists(
                 os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
             ):
@@ -312,7 +312,7 @@ class ForcedPhotometryPipeline:
         self.cleaned_object_list = []
         for name in self.object_list:
             try:
-                pd.read_csv(os.path.join(LOCALDATA, "{}.csv".format(name)))
+                pd.read_csv(os.path.join(LOCALDATA, f"{name}.csv"))
                 self.cleaned_object_list.append(name)
             except FileNotFoundError:
                 pass
@@ -335,7 +335,7 @@ class ForcedPhotometryPipeline:
             )
             fp.load_metadata()
             fp.load_filepathes(filecheck=False)
-            print("\n{} Fitting PSF".format(name))
+            print(f"\n{name} Fitting PSF")
             import matplotlib.pyplot as plt
 
             fp.run_forcefit(verbose=False, nprocess=nprocess, store=True)
@@ -343,13 +343,13 @@ class ForcedPhotometryPipeline:
             ax = fig.add_subplot(111)
             fp.show_lc(ax=ax)
             fp.store()
-            print("\n{} Plotting lightcurve".format(name))
+            print(f"\n{name} Plotting lightcurve")
             from plot import plot_lightcurve
 
             plot_lightcurve(
                 name, snt=self.snt, daysago=self.daysago, daysuntil=self.daysuntil
             )
-            print("\n{} successfully fitted and plotted".format(name))
+            print(f"\n{name} successfully fitted and plotted")
 
     def plot(self, nprocess=4, progress=True):
         """ """
@@ -384,7 +384,7 @@ class ForcedPhotometryPipeline:
         badfiles = ztfquery.io.run_full_filecheck(
             erasebad=True, nprocess=self.nprocess, redownload=True
         )
-        print("BADFILES:\n{}".format(badfiles))
+        print(f"BADFILES:\n{badfiles}")
 
     @staticmethod
     def _plot_multiprocessing_(args):
@@ -395,7 +395,7 @@ class ForcedPhotometryPipeline:
         plot_lightcurve(
             name, snt=snt, daysago=daysago, daysuntil=daysuntil, mag_range=mag_range
         )
-        print("\n{} plotted".format(name))
+        print(f"\n{name} plotted")
 
     def saltfit(self, snt=5, quality_checks=False, progress=True):
         """ """
@@ -452,7 +452,7 @@ class ForcedPhotometryPipeline:
         )
 
         for index, name in enumerate(self.cleaned_object_list):
-            print("\n{} performing SALT fit".format(name))
+            print(f"\n{name} performing SALT fit")
             fitresult, fitted_model = fit_salt(
                 name=name,
                 snt=snt,
@@ -475,9 +475,7 @@ class ForcedPhotometryPipeline:
         fitresult_df.to_csv(savepath)
 
         print(
-            "\n{} of {} fits were performed successfully\n".format(
-                len(fitresult_df), object_count
-            )
+            f"\n{len(fitresult_df)} of {object_count} fits were performed successfully\n"
         )
 
     @staticmethod
@@ -486,7 +484,7 @@ class ForcedPhotometryPipeline:
         from saltfit import fit_salt
 
         name, mwebv, snt = args
-        print("\n{} SALT fitting".format(name))
+        print(f"\n{name} SALT fitting")
         fitresult, fitted_model = fit_salt(name=name, mwebv=mwebv, snt=snt)
         return fitresult, fitted_model
 
@@ -518,8 +516,8 @@ class ForcedPhotometryPipeline:
         objectnumber = len(self.object_list)
 
         if objectnumber == 1:
-            subject = "Forced Photometry for {}".format(*self.object_list)
-            text = "Here is the forced photometry for {}.".format(*self.object_list)
+            subject = f"Forced Photometry for {self.object_list[0]}"
+            text = f"Here is the forced photometry for {self.object_list[0]}."
         else:
             subject = f"Forced Photometry for {objectnumber} objects"
             text = f"Here is your forced photometry output for {objectnumber} objects."
@@ -572,9 +570,7 @@ class ForcedPhotometryPipeline:
                 msg.attach(part)
 
         for name in self.object_list or []:
-            filepath_thumbnails = os.path.join(
-                THUMBNAILS, "{}_thumbnails.zip".format(name)
-            )
+            filepath_thumbnails = os.path.join(THUMBNAILS, f"{name}_thumbnails.zip")
             if os.path.exists(filepath_thumbnails):
                 with open(filepath_thumbnails, "rb") as thumbnails:
                     part = MIMEApplication(thumbnails.read(), Name=f"Thumbnails_{name}")
@@ -756,4 +752,4 @@ if __name__ == "__main__":
     endtime = time.time()
     duration = endtime - pl.startime
 
-    print("\nThe script took {:.2f} minutes".format(duration / 60))
+    print(f"\nThe script took {duration / 60:.2f} minutes")

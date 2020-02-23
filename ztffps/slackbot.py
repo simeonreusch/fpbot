@@ -52,7 +52,7 @@ def run_on_event(thread_id, channel_id):
     split_message = data["text"].split()
 
     name = split_message[1]
-    lc_path = os.path.join(lc_dir, "{}.csv".format(name))
+    lc_path = os.path.join(lc_dir, f"{name}.csv")
     lc_plotdir = os.path.join(lc_dir, "plots")
 
     do_download = False
