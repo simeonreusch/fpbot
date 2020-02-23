@@ -11,6 +11,7 @@ import sncosmo
 import logging
 from astropy import time
 from tinydb import TinyDB, Query
+import pipeline
 
 # TODO:
 # we have to talk about this
@@ -75,6 +76,8 @@ class SaltFit:
         t = time.Time(marshal_t0_jd, format="jd", scale="utc")
         self.marshal_t0 = t.mjd
         marshal_lc_df = marshal_lc_df.query("mag < 99")
+
+        # marshal_lc_df = marshal_lc_df.drop(["date", "isdiffpos", "absmag", "limmag", "instrument"], axis=1)
 
     def modify_columns(self):
         """ """
@@ -266,7 +269,7 @@ class SaltFit:
                 peak_abs_mag_corrected,
             ),
         )
-        plotdir = os.path.join(LOCALDATA, "SALT")
+        plotdir = pipeline.SALTDATA
         if not os.path.exists(plotdir):
             os.makedirs(plotdir)
         plt.savefig(os.path.join(os.path.join(plotdir, f"{self.name}_SALT.png")))

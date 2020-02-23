@@ -20,8 +20,6 @@ from astropy import units as u
 from astropy.utils.console import ProgressBar
 import requests.exceptions
 from tinydb import TinyDB, Query
-from tinydb.storages import JSONStorage
-from tinydb.middlewares import CachingMiddleware
 
 try:
     ZTFDATA = os.getenv("ZTFDATA")
@@ -471,7 +469,7 @@ class ForcedPhotometryPipeline:
                 results = pd.Series(fitresult, index=fitresult_df.columns)
                 fitresult_df = fitresult_df.append(results, ignore_index=True)
 
-        savepath = os.path.join(LOCALDATA, "SALT", "SALT_FIT.csv")
+        savepath = os.path.join(SALTDATA, "SALT_FIT.csv")
         fitresult_df.to_csv(savepath)
 
         print(
