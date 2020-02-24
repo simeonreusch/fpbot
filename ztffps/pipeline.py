@@ -252,6 +252,10 @@ class ForcedPhotometryPipeline:
                 dec = result[2]
                 entries = result[3]
                 mwebv = None
+                jdobs = result[4].tolist()
+                mag = result[5].tolist()
+                magerr = result[6].tolist()
+                maglim = result[7].tolist()
 
                 self.metadata_db.upsert(
                     {
@@ -262,6 +266,12 @@ class ForcedPhotometryPipeline:
                         "jdmax": jdmax,
                         "entries": entries,
                         "mwebv": mwebv,
+                        "alert_data": {
+                            "jdobs": jdobs,
+                            "mag": mag,
+                            "magerr": magerr,
+                            "maglim": maglim,
+                        },
                     },
                     Query().name == name,
                 )

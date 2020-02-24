@@ -88,6 +88,7 @@ class AmpelInfo:
             ras = []
             decs = []
             for res in query_res:
+                print(res["candidate"])
                 ra = res["candidate"]["ra"]
                 dec = res["candidate"]["dec"]
                 ras.append(ra)
@@ -148,6 +149,10 @@ class MarshalInfo:
             ra = np.zeros(ndet)
             dec = np.zeros(ndet)
             jd = np.zeros(ndet)
+            mag = np.full(ndet, 99.0)
+            magerr = np.zeros(ndet)
+            maglim = np.zeros(ndet)
+            jd = np.zeros(ndet)
             for i in range(ndet):
                 try:
                     line = mtb.values[i][0].split(",")
@@ -156,16 +161,21 @@ class MarshalInfo:
                 for j in range(len(line)):
                     if line[j][:7] == '  "ra":':
                         ra[i] = float(line[j].split(":")[1])
-                    if line[j][:8] == '  "dec":':
+                    elif line[j][:8] == '  "dec":':
                         dec[i] = float(line[j].split(":")[1])
-                    if line[j][:7] == '  "jd":':
+                    elif line[j][:7] == '  "jd":':
                         jd[i] = float(line[j].split(":")[1])
+                    elif line[j][:11] == '  "magpsf":':
+                        mag[i] = float(line[j].split(":")[1])
+                    elif line[j][:13] == '  "sigmapsf":':
+                        magerr[i] = float(line[j].split(":")[1])
+                    elif line[j][:15] == '  "diffmaglim":':
+                        maglim[i] = float(line[j].split(":")[1])
             ras = ra[ra != 0]
             decs = dec[ra != 0]
             jds = jd[ra != 0]
             ind = np.argsort(jds)
             ra = np.median(ras[ind])
             dec = np.median(decs[ind])
-            jd = np.median(jds[ind])
             entries = len(ras)
-        return [ztf_name, ra, dec, entries]
+        return [ztf_name, ra, dec, entries, jd, mag, magerr, maglim]
