@@ -185,6 +185,7 @@ class ForcedPhotometryPipeline:
                     "jdmax": jdmax,
                     "entries": entries,
                     "mwebv": mwebv,
+                    "marshal": None,
                 },
                 Query().name == name,
             )
@@ -252,10 +253,10 @@ class ForcedPhotometryPipeline:
                 dec = result[2]
                 entries = result[3]
                 mwebv = None
-                jdobs = result[4].tolist()
-                mag = result[5].tolist()
-                magerr = result[6].tolist()
-                maglim = result[7].tolist()
+                jdobs = result[4]
+                mag = result[5]
+                magerr = result[6]
+                maglim = result[7]
 
                 self.metadata_db.upsert(
                     {

@@ -87,16 +87,27 @@ class AmpelInfo:
             query_res = [i for i in ampel_object]
             ras = []
             decs = []
+            jds = []
+            mags = []
+            magerrs = []
+            maglims = []
             for res in query_res:
-                print(res["candidate"])
                 ra = res["candidate"]["ra"]
                 dec = res["candidate"]["dec"]
+                jd = res["candidate"]["jd"]
+                mag = res["candidate"]["magpsf"]
+                magerr = res["candidate"]["sigmapsf"]
+                maglim = res["candidate"]["diffmaglim"]
                 ras.append(ra)
                 decs.append(dec)
+                jds.append(jd)
+                mags.append(mag)
+                magerrs.append(magerr)
+                maglims.append(maglim)
             ra = np.median(ras)
             dec = np.median(decs)
             entries = len(ras)
-            result = [ztf_name, ra, dec, entries]
+            result = [ztf_name, ra, dec, entries, jds, mags, magerrs, maglims]
             queryresult.append(result)
             bar.update()
         return queryresult
@@ -174,8 +185,20 @@ class MarshalInfo:
             ras = ra[ra != 0]
             decs = dec[ra != 0]
             jds = jd[ra != 0]
+            mags = mag[ra != 0]
+            magerrs = magerr[ra != 0]
+            maglims = maglim[ra != 0]
             ind = np.argsort(jds)
             ra = np.median(ras[ind])
             dec = np.median(decs[ind])
             entries = len(ras)
-        return [ztf_name, ra, dec, entries, jd, mag, magerr, maglim]
+        return [
+            ztf_name,
+            ra,
+            dec,
+            entries,
+            jds.tolist(),
+            mags.tolist(),
+            magerrs.tolist(),
+            maglims.tolist(),
+        ]

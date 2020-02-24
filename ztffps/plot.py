@@ -11,6 +11,8 @@ from astropy.time import Time
 import matplotlib.pyplot as plt
 from datetime import datetime, date
 import pipeline
+from tinydb import TinyDB, Query
+
 
 print(__name__)
 
@@ -29,6 +31,9 @@ def plot_lightcurve(
     lc_plotted_dir = pipeline.PLOT_DATAFRAMES
 
     lc = pd.read_csv(lc_path)
+
+    # Read Marshal Alert Data from metadata database
+    metadata_db = TinyDB(os.path.join(METADATA, "meta_database.json"))
 
     ### apply time-range cut:
     now = Time(time.time(), format="unix", scale="utc").mjd
