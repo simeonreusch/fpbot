@@ -299,7 +299,7 @@ class ForcedPhotometryPipeline:
     def download(self):
         """ """
         for name in self.object_list:
-            self.logger.info(f"{name} Starting download")
+            self.logger.info(f"\n{name} Starting download")
             query = self.metadata_db.search(Query().name == name)
             ra = query[0]["ra"]
             dec = query[0]["dec"]
