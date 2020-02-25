@@ -20,6 +20,8 @@ from astropy import units as u
 from astropy.utils.console import ProgressBar
 import requests.exceptions
 from tinydb import TinyDB, Query
+from tinydb.storages import JSONStorage
+from tinydb.middlewares import CachingMiddleware
 
 try:
     ZTFDATA = os.getenv("ZTFDATA")
@@ -66,6 +68,7 @@ class ForcedPhotometryPipeline:
         nprocess=4,
         reprocess=False,
         sciimg=False,
+        update_alert=False,
     ):
         self.startime = time.time()
         self.logger = logging.getLogger("pipeline")
@@ -91,9 +94,13 @@ class ForcedPhotometryPipeline:
         self.reprocess = reprocess
         self.nprocess = nprocess
         self.sciimg = sciimg
+        self.update_alert = update_alert
 
         # # create local database with metadata for performance reasons and as backup if Marshal and Ampel are both not reachable
-        self.metadata_db = TinyDB(os.path.join(METADATA, "meta_database.json"))
+        self.metadata_db = db = TinyDB(
+            os.path.join(METADATA, "meta_database.json"),
+            storage=CachingMiddleware(JSONStorage),
+        )
 
         # parse different formats of ra and dec
         if ra is not None and dec is not None:
@@ -197,9 +204,16 @@ class ForcedPhotometryPipeline:
         progress_bar = ProgressBar(len(self.object_list))
         needs_external_database = []
 
+        if self.update_alert:
+            print("\nForced updating of alert data from Marshal/AMPEL")
+
         for index, name in enumerate(self.object_list):
             local_queryresult = self.metadata_db.search(Query().name == name)
-            if len(local_queryresult) == 0 or local_queryresult[0]["entries"] < 10:
+            if (
+                len(local_queryresult) == 0
+                or local_queryresult[0]["entries"] < 10
+                or self.update_alert
+            ):
                 needs_external_database.append(name)
             progress_bar.update(index)
 
@@ -257,6 +271,7 @@ class ForcedPhotometryPipeline:
                 mag = result[5]
                 magerr = result[6]
                 maglim = result[7]
+                fid = result[8]
 
                 self.metadata_db.upsert(
                     {
@@ -272,12 +287,14 @@ class ForcedPhotometryPipeline:
                             "mag": mag,
                             "magerr": magerr,
                             "maglim": maglim,
+                            "fid": fid,
                         },
                     },
                     Query().name == name,
                 )
                 progress_bar.update(index)
             progress_bar.update(len(connector.queryresult))
+        self.metadata_db.close()
 
     def download(self):
         """ """
@@ -705,6 +722,13 @@ if __name__ == "__main__":
         help="Also downloads the science images",
     )
 
+    parser.add_argument(
+        "--update_alert",
+        "-update_alert",
+        action="store_true",
+        help="Force update on alert photometry from Marshal/AMPEL",
+    )
+
     commandline_args = parser.parse_args()
     nprocess = commandline_args.nprocess
     snt = commandline_args.snt
@@ -720,6 +744,7 @@ if __name__ == "__main__":
     targetmail = commandline_args.sendmail
     sciimg = commandline_args.sciimg
     thumbnails = commandline_args.thumbnails
+    update_alert = commandline_args.update_alert
 
     # if thumbnails:
     #     sciimg = True
@@ -741,6 +766,7 @@ if __name__ == "__main__":
         ra=ra,
         dec=dec,
         sciimg=sciimg,
+        update_alert=update_alert,
     )
 
     if do_filecheck:

@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 from datetime import datetime, date
 import pipeline
 from tinydb import TinyDB, Query
-
+from tinydb.storages import JSONStorage
+from tinydb.middlewares import CachingMiddleware
 
 print(__name__)
 
@@ -33,7 +34,15 @@ def plot_lightcurve(
     lc = pd.read_csv(lc_path)
 
     # Read Marshal Alert Data from metadata database
-    metadata_db = TinyDB(os.path.join(METADATA, "meta_database.json"))
+    metadata_db = TinyDB(
+        os.path.join(pipeline.METADATA, "meta_database.json"),
+        storage=CachingMiddleware(JSONStorage),
+    )
+    alert_data = metadata_db.search(Query().name == name)[0]["alert_data"]
+    alert_jd = alert_data["jdobs"]
+    alert_mag = alert_data["mag"]
+    alert_magerr = alert_data["magerr"]
+    alert_fid = alert_data["fid"]
 
     ### apply time-range cut:
     now = Time(time.time(), format="unix", scale="utc").mjd
@@ -86,7 +95,6 @@ def plot_lightcurve(
     lc["mag"] = mags
     lc["mag_err"] = mags_unc
     # lc["moonness"] = np.sin(np.radians(lc["moonalt"].values)) * np.power(np.abs(lc["moonillf"].values), 2.5)
-    # lc_copy = lc
 
     ### save this version of the dataframe for later analysis (and to be sent by mail)
     lc.to_csv(os.path.join(lc_plotted_dir, f"{name}_SNT_{snt}.csv"))

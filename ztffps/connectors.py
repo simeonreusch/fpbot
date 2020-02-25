@@ -91,6 +91,7 @@ class AmpelInfo:
             mags = []
             magerrs = []
             maglims = []
+            fids = []
             for res in query_res:
                 ra = res["candidate"]["ra"]
                 dec = res["candidate"]["dec"]
@@ -98,16 +99,18 @@ class AmpelInfo:
                 mag = res["candidate"]["magpsf"]
                 magerr = res["candidate"]["sigmapsf"]
                 maglim = res["candidate"]["diffmaglim"]
+                fid = res["candidate"]["fid"]
                 ras.append(ra)
                 decs.append(dec)
                 jds.append(jd)
                 mags.append(mag)
                 magerrs.append(magerr)
                 maglims.append(maglim)
+                fids.append(fid)
             ra = np.median(ras)
             dec = np.median(decs)
             entries = len(ras)
-            result = [ztf_name, ra, dec, entries, jds, mags, magerrs, maglims]
+            result = [ztf_name, ra, dec, entries, jds, mags, magerrs, maglims, fids]
             queryresult.append(result)
             bar.update()
         return queryresult
@@ -164,6 +167,7 @@ class MarshalInfo:
             magerr = np.zeros(ndet)
             maglim = np.zeros(ndet)
             jd = np.zeros(ndet)
+            fid = np.full(ndet, 99)
             for i in range(ndet):
                 try:
                     line = mtb.values[i][0].split(",")
@@ -182,16 +186,21 @@ class MarshalInfo:
                         magerr[i] = float(line[j].split(":")[1])
                     elif line[j][:15] == '  "diffmaglim":':
                         maglim[i] = float(line[j].split(":")[1])
+                    elif line[j][:8] == '  "fid":':
+                        fid[i] = int(line[j].split(":")[1])
+
             ras = ra[ra != 0]
             decs = dec[ra != 0]
             jds = jd[ra != 0]
             mags = mag[ra != 0]
             magerrs = magerr[ra != 0]
             maglims = maglim[ra != 0]
+            fids = fid[ra != 0]
             ind = np.argsort(jds)
             ra = np.median(ras[ind])
             dec = np.median(decs[ind])
             entries = len(ras)
+
         return [
             ztf_name,
             ra,
@@ -201,4 +210,5 @@ class MarshalInfo:
             mags.tolist(),
             magerrs.tolist(),
             maglims.tolist(),
+            fids.tolist(),
         ]

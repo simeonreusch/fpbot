@@ -11,6 +11,8 @@ import sncosmo
 import logging
 from astropy import time
 from tinydb import TinyDB, Query
+from tinydb.storages import JSONStorage
+from tinydb.middlewares import CachingMiddleware
 import pipeline
 
 # TODO:
@@ -36,16 +38,24 @@ FILTER_TRANSLATION = {"p48r": 0, "p48g": 1, "p48i": 2}
 class SaltFit:
     """ """
 
-    def __init__(self, name, mwebv, logger=None, **kwargs):
+    def __init__(self, name, mwebv, logger=None, alpha=None, beta=None, **kwargs):
         if logger is None:
             logging.basicConfig(level=logging.INFO)
             self.logger = logging.getLogger()
         else:
             self.logger = logger
+        if alpha is not None:
+            self.alpha = ALPHA_JLA
+        else:
+            self.alpha = alpha
+        if beta is not None:
+            self.beta = BETA_JLA
+        else:
+            self.beta = beta
+
+        # self.metadata_db = TinyDB(os.path.join(pipeline.METADATA, "meta_database.json"), storage=CachingMiddleware(JSONStorage))
         self.name = name
         self.lightcurve = pd.read_csv(os.path.join(LOCALDATA, f"{self.name}.csv"))
-        # self.ra = m.target_sources.query(f'name == "{name}"')["ra"].values[0]
-        # self.dec = m.target_sources.query(f'name == "{name}"')["dec"].values[0]
         self.z = m.target_sources.query(f'name == "{name}"')["redshift"].values[0]
         self.rcid = m.target_sources.query(f'name == "{name}"')["rcid"].values[0]
         self.fieldid = m.target_sources.query(f'name == "{name}"')["field"].values[0]
