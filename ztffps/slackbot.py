@@ -190,6 +190,7 @@ def run_on_event(thread_id, channel_id):
         ra=ra,
         dec=dec,
         nprocess=8,
+        update_alert=True,
     )
     # except ValueError:
     # 	wc.chat_postMessage(channel=channel_id, text=f"Error: Either the Marshal is not reachable at the moment, which unfortunately happens quite frequently -- or your name is not a ZTFname or the --radec values are malformed.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
