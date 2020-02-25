@@ -229,7 +229,6 @@ class ForcedPhotometryPipeline:
             connector = connectors.MarshalInfo(needs_external_database, nprocess=32)
         except (ConnectionError, requests.exceptions.ConnectionError, ValueError):
             marshal_failed = True
-        # marshal_failed = True
 
         if marshal_failed:
             try:
