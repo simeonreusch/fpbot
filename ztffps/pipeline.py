@@ -379,7 +379,7 @@ class ForcedPhotometryPipeline:
 
     def plot(self, nprocess=4, progress=True):
         """ """
-        self.logger.info("Plotting")
+        self.logger.info("\nPlotting")
         object_count = len(self.object_list)
         snt = [self.snt] * object_count
         daysago = [self.daysago] * object_count

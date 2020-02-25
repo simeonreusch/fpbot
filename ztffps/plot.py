@@ -189,7 +189,7 @@ def plot_lightcurve(
         color="green",
         fmt=".",
         label="Alert g",
-        mew=0.5,
+        mew=0,
     )
     ax.errorbar(
         alert_r.obsmjd.values,
@@ -198,7 +198,7 @@ def plot_lightcurve(
         color="red",
         fmt=".",
         label="Alert r",
-        mew=0.5,
+        mew=0,
     )
     ax.errorbar(
         alert_i.obsmjd.values,
@@ -207,7 +207,7 @@ def plot_lightcurve(
         color="orange",
         fmt=".",
         label="Alert i",
-        mew=0.5,
+        mew=0,
     )
     ax.errorbar(
         g.obsmjd.values,
