@@ -226,13 +226,13 @@ class ForcedPhotometryPipeline:
 
         marshal_failed = False
         ampel_failed = False
-        if not ampel:
+        if not self.ampel:
             try:
                 connector = connectors.MarshalInfo(needs_external_database, nprocess=32)
             except (ConnectionError, requests.exceptions.ConnectionError, ValueError):
                 marshal_failed = True
 
-        if marshal_failed or ampel:
+        if marshal_failed or self.ampel:
             try:
                 connector = connectors.AmpelInfo(needs_external_database)
             except:
