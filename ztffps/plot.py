@@ -61,7 +61,7 @@ def plot_lightcurve(
     lc = lc.reset_index()
     del lc["index"]
 
-    ### add magnitudes, upper limits, errors and times
+    ### add magnitudes, upper limits, errors and times to forced photometry lightcurve
     mags = []
     mags_unc = []
     lc["F0"] = 10 ** (lc.magzp / 2.5)

@@ -69,6 +69,7 @@ class ForcedPhotometryPipeline:
         reprocess=False,
         sciimg=False,
         update_alert=False,
+        ampel=False,
     ):
         self.startime = time.time()
         self.logger = logging.getLogger("pipeline")
@@ -95,6 +96,7 @@ class ForcedPhotometryPipeline:
         self.nprocess = nprocess
         self.sciimg = sciimg
         self.update_alert = update_alert
+        self.ampel = ampel
 
         # # create local database with metadata for performance reasons and as backup if Marshal and Ampel are both not reachable
         self.metadata_db = db = TinyDB(
@@ -224,13 +226,13 @@ class ForcedPhotometryPipeline:
 
         marshal_failed = False
         ampel_failed = False
+        if not ampel:
+            try:
+                connector = connectors.MarshalInfo(needs_external_database, nprocess=32)
+            except (ConnectionError, requests.exceptions.ConnectionError, ValueError):
+                marshal_failed = True
 
-        try:
-            connector = connectors.MarshalInfo(needs_external_database, nprocess=32)
-        except (ConnectionError, requests.exceptions.ConnectionError, ValueError):
-            marshal_failed = True
-
-        if marshal_failed:
+        if marshal_failed or ampel:
             try:
                 connector = connectors.AmpelInfo(needs_external_database)
             except:
@@ -728,6 +730,12 @@ if __name__ == "__main__":
         action="store_true",
         help="Force update on alert photometry from Marshal/AMPEL",
     )
+    parser.add_argument(
+        "--ampel",
+        "-ampel",
+        action="store_true",
+        help="Force to use AMPEL instead of Marshal for alert photometry",
+    )
 
     commandline_args = parser.parse_args()
     nprocess = commandline_args.nprocess
@@ -745,6 +753,7 @@ if __name__ == "__main__":
     sciimg = commandline_args.sciimg
     thumbnails = commandline_args.thumbnails
     update_alert = commandline_args.update_alert
+    ampel = commandline_args.ampel
 
     # if thumbnails:
     #     sciimg = True
@@ -767,6 +776,7 @@ if __name__ == "__main__":
         dec=dec,
         sciimg=sciimg,
         update_alert=update_alert,
+        ampel=ampel,
     )
 
     if do_filecheck:
