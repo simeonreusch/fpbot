@@ -83,6 +83,10 @@ def say_hello(**payload):
                             },
                             {
                                 "type": "mrkdwn",
+                                "text": "*-thumbnails*: Generates thumbnails for the specified timerange. Caution: Be precise in defining time, images use A LOT of space!",
+                            },
+                            {
+                                "type": "mrkdwn",
                                 "text": "*--daysago*: Only data from [daysago] to now is considered. Default is start of ZTF operations (April 2018)",
                             },
                             {
@@ -115,7 +119,7 @@ def say_hello(**payload):
 
                 wc.chat_postMessage(
                     channel=channel_id,
-                    text=f"Hi <@{user}> This is a bot for forced photometry! Just type @fpbot ZTFName and it will download images from IPAC, perform a PSF fit and plot the lightcurve.\n[Only giving a ZTF name as argument is equivalent to *FP ZTFName -download -fit -plot --snt 5*]\nIf you have no ZTFname, but a RA and DEC, please provide an arbitrary name, followed by '-radec RA DEC'\nOptional arguments\n-downnload: only plots the lightcurve\n-fit: only does the fit\n-plot: only plots the lightcurve\n--sendmail: send the output to the mailadress provided. This will include the lightcurve-plot and the dataframe as csv\n--daysago: only data from [daysago] to now is considered; default is start of ZTF operations (April 2018)\n--df: upload the dataframe of the lightcurve to Slack\n--daysuntil: only data till [daysuntil] is considered; default is today\n--snt: signal to noise threshold; default is 5.0\n--magrange: for plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag\n--quiet: makes the bot less talkative",
+                    text=f"Hi <@{user}> This is a bot for forced photometry! Just type @fpbot ZTFName and it will download images from IPAC, perform a PSF fit and plot the lightcurve.\n[Only giving a ZTF name as argument is equivalent to *FP ZTFName -download -fit -plot --snt 5*]\nIf you have no ZTFname, but a RA and DEC, please provide an arbitrary name, followed by '-radec RA DEC'\nOptional arguments\n-downnload: only plots the lightcurve\n-fit: only does the fit\n-plot: only plots the lightcurve\n-thumbnails: Generates thumbnails for the specified timerange. Caution: Be precise in defining time, images use A LOT of space!\n--sendmail: send the output to the mailadress provided. This will include the lightcurve-plot and the dataframe as csv\n--daysago: only data from [daysago] to now is considered; default is start of ZTF operations (April 2018)\n--df: upload the dataframe of the lightcurve to Slack\n--daysuntil: only data till [daysuntil] is considered; default is today\n--snt: signal to noise threshold; default is 5.0\n--magrange: for plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag\n--quiet: makes the bot less talkative",
                     blocks=blocks,
                     thread_ts=thread_ts,
                     icon_emoji=":fp-emoji:",
