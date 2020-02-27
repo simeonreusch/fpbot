@@ -261,6 +261,24 @@ def run_on_event(thread_id, channel_id):
                 icon_emoji=":fp-emoji:",
             )
 
+    if do_thumbnails:
+        if verbose:
+            wc.chat_postMessage(
+                channel=channel_id,
+                text=f"Generating thumbnails.",
+                thread_ts=thread_id,
+                icon_emoji=":fp-emoji:",
+            )
+        try:
+            pl.generate_thumbnails()
+        except:
+            wc.chat_postMessage(
+                channel=channel_id,
+                text=f"Error: Sorry, I have run into a problem while generating thumbnails. Please contact <@UAQTC7L73>.",
+                thread_ts=thread_id,
+                icon_emoji=":fp-emoji:",
+            )
+
     if do_mail:
         if verbose:
             wc.chat_postMessage(
@@ -277,24 +295,6 @@ def run_on_event(thread_id, channel_id):
             wc.chat_postMessage(
                 channel=channel_id,
                 text=f"Error: Sorry, I have run into a problem while sending your email. Please contact <@UAQTC7L73>.",
-                thread_ts=thread_id,
-                icon_emoji=":fp-emoji:",
-            )
-
-    if do_thumbnails:
-        if verbose:
-            wc.chat_postMessage(
-                channel=channel_id,
-                text=f"Generating thumbnails.",
-                thread_ts=thread_id,
-                icon_emoji=":fp-emoji:",
-            )
-        try:
-            pl.generate_thumbnails()
-        except:
-            wc.chat_postMessage(
-                channel=channel_id,
-                text=f"Error: Sorry, I have run into a problem while generating thumbnails. Please contact <@UAQTC7L73>.",
                 thread_ts=thread_id,
                 icon_emoji=":fp-emoji:",
             )
