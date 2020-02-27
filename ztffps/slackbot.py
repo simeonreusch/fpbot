@@ -322,6 +322,29 @@ def run_on_event(thread_id, channel_id):
                 icon_emoji=":fp-emoji:",
             )
 
+    if do_thumbnails:
+        try:
+            wc = WebClient(token=bot_token)
+            filepath_thumbnails = os.path.join(
+                pipeline.THUMBNAILS, f"{name}_thumbnails.zip"
+            )
+            df = open(filepath_thumbnails, "rb")
+            wc.files_upload(
+                file=df,
+                filename=f"{name}_thumbnails.zip",
+                channels=channel_id,
+                thread_ts=thread_id,
+                title="The thumbnails. Note: This contains only thumbnails of the specified timerange. If you want the full set of thumbnails, issue 'FP ZTFname --thumbnails'. Caution: This uses a LOT of space.",
+                icon_emoji=":fp-emoji:",
+            )
+        except:
+            wc.chat_postMessage(
+                channel=channel_id,
+                text=f"Error: Sorry, I have run into a problem while uploading the thumbnails.",
+                thread_ts=thread_id,
+                icon_emoji=":fp-emoji:",
+            )
+
     endtime = time.time()
     duration = endtime - pl.startime
 
