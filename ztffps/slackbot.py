@@ -278,14 +278,16 @@ def run_on_event(thread_id, channel_id):
     if upload_dataframe:
         try:
             wc = WebClient(token=bot_token)
-            dfpath = os.path.join(lc_dir, f"{name}.csv")
-            df = open(dfpath, "rb")
+            filepath_csv = os.path.join(
+                pipeline.PLOT_DATAFRAMES, f"{name}_SNT_{snt}.csv",
+            )
+            df = open(filepath_csv, "rb")
             wc.files_upload(
                 file=df,
-                filename=dfpath,
+                filename=f"{name}_SNT_{snt}.csv",
                 channels=channel_id,
                 thread_ts=thread_id,
-                title="The dataframe. NOTE: THIS IS THE DATAFRAME AS CREATED BY THE LAST FIT COMMAND WITH THE TIMERANGE THEN SET. If you want the full dataset, issue 'FP ZTFname --df'",
+                title="The dataframe. Note: This is the dataframe as created by the last fit command with the timerange then set. If you want the full dataset, issue 'FP ZTFname --df'",
                 icon_emoji=":fp-emoji:",
             )
         except:

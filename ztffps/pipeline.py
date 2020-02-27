@@ -566,11 +566,7 @@ class ForcedPhotometryPipeline:
         # attach plots
         for name in self.object_list or []:
             filepath_plot = os.path.join(
-                os.getenv("ZTFDATA"),
-                "forcephotometry",
-                "plots",
-                "images",
-                f"{name}_SNT_{self.snt}.png",
+                PLOTDATA, "images", f"{name}_SNT_{self.snt}.png",
             )
             if os.path.exists(filepath_plot):
                 with open(filepath_plot, "rb") as plot:
@@ -582,13 +578,7 @@ class ForcedPhotometryPipeline:
 
         # attach dataframes
         for name in self.object_list or []:
-            filepath_csv = os.path.join(
-                os.getenv("ZTFDATA"),
-                "forcephotometry",
-                "plots",
-                "dataframes",
-                f"{name}_SNT_{self.snt}.csv",
-            )
+            filepath_csv = os.path.join(PLOT_DATAFRAMES, f"{name}_SNT_{self.snt}.csv",)
             if os.path.exists(filepath_csv):
                 with open(filepath_csv, "rb") as csv:
                     part = MIMEApplication(csv.read(), Name=f"Dataframe_{name}")
