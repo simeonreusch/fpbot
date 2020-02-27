@@ -604,8 +604,11 @@ class ForcedPhotometryPipeline:
         smtp.sendmail(send_from, send_to, msg.as_string())
         smtp.close()
 
-    def generate_thumbnails(self):
+    def generate_thumbnails(self, nprocess=1):
         from thumbnails import generate_thumbnails
+
+        # Note: Currently when run at DESY, this generates distorted plot headings
+        # when multiprocessed. Therefore nprocess is set to 1.
 
         for index, name in enumerate(self.object_list):
             query = self.metadata_db.search(Query().name == name)
@@ -619,7 +622,8 @@ class ForcedPhotometryPipeline:
                 size=50,
                 progress=True,
                 snt=self.snt,
-                nprocess=self.nprocess,
+                # nprocess=self.nprocess,
+                nprocess=nprocess,
                 logger=self.logger,
             )
 
