@@ -109,10 +109,6 @@ def say_hello(**payload):
                                 "type": "mrkdwn",
                                 "text": "*--magrange*: For plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag",
                             },
-                            {
-                                "type": "mrkdwn",
-                                "text": "*--quiet*: The bot gets less talkative",
-                            },
                         ],
                     }
                 ]
