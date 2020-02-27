@@ -59,6 +59,7 @@ def run_on_event(thread_id, channel_id):
     verbose = True
     do_fit = False
     do_plot = False
+    do_thumbnails = False
     upload_dataframe = False
     target_address = None
     do_mail = False
@@ -68,6 +69,7 @@ def run_on_event(thread_id, channel_id):
     mag_range = None
     ra = None
     dec = None
+    sciimg = False
 
     def fuzzy_parameters(param_list):
         """ """
@@ -90,6 +92,9 @@ def run_on_event(thread_id, channel_id):
             ["sendmail", "mail", "sendemail", "send_mail", "email"]
         ):
             do_mail = True
+        if item in fuzzy_parameters(["thumbnails, thumbnail, cutouts, stamps"]):
+            do_thumbnails = True
+            sciimg = True
 
     for i, parameter in enumerate(split_message):
         if parameter in fuzzy_parameters(
@@ -191,6 +196,7 @@ def run_on_event(thread_id, channel_id):
         dec=dec,
         nprocess=8,
         update_alert=True,
+        sciimg=sciimg,
     )
     # except ValueError:
     # 	wc.chat_postMessage(channel=channel_id, text=f"Error: Either the Marshal is not reachable at the moment, which unfortunately happens quite frequently -- or your name is not a ZTFname or the --radec values are malformed.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
@@ -271,6 +277,24 @@ def run_on_event(thread_id, channel_id):
             wc.chat_postMessage(
                 channel=channel_id,
                 text=f"Error: Sorry, I have run into a problem while sending your email. Please contact <@UAQTC7L73>.",
+                thread_ts=thread_id,
+                icon_emoji=":fp-emoji:",
+            )
+
+    if do_thumbnails:
+        if verbose:
+            wc.chat_postMessage(
+                channel=channel_id,
+                text=f"Generating thumbnails.",
+                thread_ts=thread_id,
+                icon_emoji=":fp-emoji:",
+            )
+        try:
+            pl.generate_thumbnails()
+        except:
+            wc.chat_postMessage(
+                channel=channel_id,
+                text=f"Error: Sorry, I have run into a problem while generating thumbnails. Please contact <@UAQTC7L73>.",
                 thread_ts=thread_id,
                 icon_emoji=":fp-emoji:",
             )
