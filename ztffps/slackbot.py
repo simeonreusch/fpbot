@@ -92,7 +92,7 @@ def run_on_event(thread_id, channel_id):
             ["sendmail", "mail", "sendemail", "send_mail", "email"]
         ):
             do_mail = True
-        if item in fuzzy_parameters(["thumbnails, thumbnail, cutouts, stamps"]):
+        if item in fuzzy_parameters(["thumbnails", "thumbnail", "cutouts", "stamps"]):
             do_thumbnails = True
             sciimg = True
 
