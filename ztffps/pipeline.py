@@ -223,15 +223,18 @@ class ForcedPhotometryPipeline:
             progress_bar.update(index)
 
         progress_bar.update(len(self.object_list))
-
-        print("\nConnecting to Marshal (or AMPEL if Marshal is down)")
+        if not self.ampel:
+            print("\nConnecting to Marshal (or AMPEL if Marshal is down)")
+        else:
+            print("\nConnecting to AMPEL")
         import connectors
 
-        marshal_failed = False
-        ampel_failed = False
+        marshal_failed = True
+        ampel_failed = True
         if not self.ampel:
             try:
                 connector = connectors.MarshalInfo(needs_external_database, nprocess=32)
+                marshal_failed = False
             except (
                 ConnectionError,
                 requests.exceptions.ConnectionError,
@@ -242,6 +245,7 @@ class ForcedPhotometryPipeline:
         if marshal_failed or self.ampel:
             try:
                 connector = connectors.AmpelInfo(needs_external_database)
+                ampel_failed = False
             except:
                 ampel_failed = True
 
