@@ -101,7 +101,7 @@ class ForcedPhotometryPipeline:
         self.ampel = ampel
 
         # # create local database with metadata for performance reasons and as backup if Marshal and Ampel are both not reachable
-        self.metadata_db = db = TinyDB(
+        self.metadata_db = TinyDB(
             os.path.join(METADATA, "meta_database.json"),
             storage=CachingMiddleware(JSONStorage),
         )
@@ -134,7 +134,8 @@ class ForcedPhotometryPipeline:
                 self.object_list = self.file_or_name
             else:
                 raise TypeError
-            self.get_position_and_timerange()
+            if not self.update_disable:
+                self.get_position_and_timerange()
 
     def is_ztf_name(self, name):
         """ """
@@ -208,107 +209,103 @@ class ForcedPhotometryPipeline:
         progress_bar = ProgressBar(len(self.object_list))
         needs_external_database = []
 
-        if not self.update_disable:
+        if self.update_enforce:
+            print("\nForced updating of alert data from Marshal/AMPEL")
 
-            if self.update_enforce:
-                print("\nForced updating of alert data from Marshal/AMPEL")
+        for index, name in enumerate(self.object_list):
+            local_queryresult = self.metadata_db.search(Query().name == name)
+            if (
+                len(local_queryresult) == 0
+                # or local_queryresult[0]["entries"] < 10
+                or self.update_enforce
+            ):
+                needs_external_database.append(name)
+            progress_bar.update(index)
 
-            for index, name in enumerate(self.object_list):
-                local_queryresult = self.metadata_db.search(Query().name == name)
-                if (
-                    len(local_queryresult) == 0
-                    # or local_queryresult[0]["entries"] < 10
-                    or self.update_enforce
-                ):
-                    needs_external_database.append(name)
-                progress_bar.update(index)
+        progress_bar.update(len(self.object_list))
 
-            progress_bar.update(len(self.object_list))
+        print("\nConnecting to Marshal (or AMPEL if Marshal is down)")
+        import connectors
 
-            print("\nConnecting to Marshal (or AMPEL if Marshal is down)")
-            import connectors
+        marshal_failed = False
+        ampel_failed = False
+        if not self.ampel:
+            try:
+                connector = connectors.MarshalInfo(needs_external_database, nprocess=32)
+            except (
+                ConnectionError,
+                requests.exceptions.ConnectionError,
+                ValueError,
+            ):
+                marshal_failed = True
 
-            marshal_failed = False
-            ampel_failed = False
-            if not self.ampel:
-                try:
-                    connector = connectors.MarshalInfo(
-                        needs_external_database, nprocess=32
-                    )
-                except (
-                    ConnectionError,
-                    requests.exceptions.ConnectionError,
-                    ValueError,
-                ):
-                    marshal_failed = True
+        if marshal_failed or self.ampel:
+            try:
+                connector = connectors.AmpelInfo(needs_external_database)
+            except:
+                ampel_failed = True
 
-            if marshal_failed or self.ampel:
-                try:
-                    connector = connectors.AmpelInfo(needs_external_database)
-                except:
-                    ampel_failed = True
+        if marshal_failed and ampel_failed:
+            print(
+                "\nConnection to Marshal and AMPEL failed. Temporary outages for the Marshal are frequent. Problems with AMPEL are most likely due to a problem with your .ssh/config.\nProceeding with local database. CAUTION: Data could be missing or not be up-to-date!!!"
+            )
 
-            if marshal_failed and ampel_failed:
-                print(
-                    "\nConnection to Marshal and AMPEL failed. Temporary outages for the Marshal are frequent. Problems with AMPEL are most likely due to a problem with your .ssh/config.\nProceeding with local database. CAUTION: Data could be missing or not be up-to-date!!!"
-                )
+        if self.daysago is None:
+            print("\nNo 'daysago' given, full timerange used")
+        else:
+            print(f"\nData from {self.daysago} days ago till today is used")
 
-            if self.daysago is None:
-                print("\nNo 'daysago' given, full timerange used")
-            else:
-                print(f"\nData from {self.daysago} days ago till today is used")
+        now = Time(time.time(), format="unix", scale="utc").jd
 
-            now = Time(time.time(), format="unix", scale="utc").jd
+        if not (marshal_failed and ampel_failed):
+            print("\nUpdating metadata database")
+            progress_bar = ProgressBar(len(connector.queryresult))
 
-            if not (marshal_failed and ampel_failed):
-                print("\nUpdating metadata database")
-                progress_bar = ProgressBar(len(connector.queryresult))
+            for index, result in enumerate(connector.queryresult):
+                if self.daysago is None:
+                    jdmin = 2458209
+                else:
+                    jdmin = now - self.daysago
+                if self.daysuntil is None:
+                    jdmax = now
+                else:
+                    jdmax = now - self.daysuntil
 
-                for index, result in enumerate(connector.queryresult):
-                    if self.daysago is None:
-                        jdmin = 2458209
-                    else:
-                        jdmin = now - self.daysago
-                    if self.daysuntil is None:
-                        jdmax = now
-                    else:
-                        jdmax = now - self.daysuntil
+                name = result[0]
+                ra = result[1]
+                dec = result[2]
+                entries = result[3]
+                mwebv = None
+                jdobs = result[4]
+                mag = result[5]
+                magerr = result[6]
+                maglim = result[7]
+                fid = result[8]
+                lastobs = result[9]
 
-                    name = result[0]
-                    ra = result[1]
-                    dec = result[2]
-                    entries = result[3]
-                    mwebv = None
-                    jdobs = result[4]
-                    mag = result[5]
-                    magerr = result[6]
-                    maglim = result[7]
-                    fid = result[8]
-                    lastobs = result[9]
-
-                    self.metadata_db.upsert(
-                        {
-                            "name": name,
-                            "ra": ra,
-                            "dec": dec,
-                            "jdmin": jdmin,
-                            "jdmax": jdmax,
-                            "entries": entries,
-                            "mwebv": mwebv,
-                            "lastobs": lastobs,
-                            "alert_data": {
-                                "jdobs": jdobs,
-                                "mag": mag,
-                                "magerr": magerr,
-                                "maglim": maglim,
-                                "fid": fid,
-                            },
+                self.metadata_db.upsert(
+                    {
+                        "name": name,
+                        "ra": ra,
+                        "dec": dec,
+                        "jdmin": jdmin,
+                        "jdmax": jdmax,
+                        "entries": entries,
+                        "mwebv": mwebv,
+                        "lastobs": lastobs,
+                        "alert_data": {
+                            "jdobs": jdobs,
+                            "mag": mag,
+                            "magerr": magerr,
+                            "maglim": maglim,
+                            "fid": fid,
                         },
-                        Query().name == name,
-                    )
-                    progress_bar.update(index)
-                progress_bar.update(len(connector.queryresult))
-            self.metadata_db.close()
+                    },
+                    Query().name == name,
+                )
+                progress_bar.update(index)
+            progress_bar.update(len(connector.queryresult))
+        self.metadata_db.close()
 
     def download(self):
         """ """
@@ -362,28 +359,49 @@ class ForcedPhotometryPipeline:
         if nprocess is None:
             nprocess = self.nprocess
 
+        metadata_db = TinyDB(os.path.join(METADATA, "meta_database.json"),)
+
         for i, name in enumerate(self.object_list):
 
-            query = self.metadata_db.search(Query().name == name)
+            query = metadata_db.search(Query().name == name)
             ra = query[0]["ra"]
             dec = query[0]["dec"]
             jdmin = query[0]["jdmin"]
             jdmax = query[0]["jdmax"]
             lastobs = query[0]["lastobs"]
 
-            fp = forcephotometry.ForcePhotometry.from_coords(
-                ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
-            )
-            fp.load_metadata()
-            fp.load_filepathes(filecheck=False)
-            print(f"\n{name} Fitting PSF")
-            import matplotlib.pyplot as plt
+            try:
+                lastfit = query[0]["lastfit"]
+                if lastfit >= lastobs:
+                    do_fit = False
+                else:
+                    do_fit = True
+            except KeyError:
+                do_fit = True
 
-            fp.run_forcefit(verbose=False, nprocess=nprocess, store=True)
-            fig = plt.figure(dpi=300)
-            ax = fig.add_subplot(111)
-            fp.show_lc(ax=ax)
-            fp.store()
+            if do_fit:
+                fp = forcephotometry.ForcePhotometry.from_coords(
+                    ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
+                )
+                fp.load_metadata()
+                fp.load_filepathes(filecheck=False)
+                print(f"\n{name} Fitting PSF")
+                import matplotlib.pyplot as plt
+
+                fp.run_forcefit(verbose=False, nprocess=nprocess, store=True)
+                fig = plt.figure(dpi=300)
+                ax = fig.add_subplot(111)
+                fp.show_lc(ax=ax)
+                fp.store()
+
+                lastfit = Time(time.time(), format="unix", scale="utc").jd
+
+                metadata_db.upsert(
+                    {"lastfit": lastfit}, Query().name == name,
+                )
+            else:
+                print(f"\n{name} No new data to fit, skipping PSF fit")
+
             print(f"\n{name} Plotting lightcurve")
             from plot import plot_lightcurve
 
@@ -391,11 +409,9 @@ class ForcedPhotometryPipeline:
                 name, snt=self.snt, daysago=self.daysago, daysuntil=self.daysuntil
             )
 
-            self.metadata_db.upsert(
-                {"lastfit": "BULLSHIT"}, Query().name == name,
-            )
-
             print(f"\n{name} successfully fitted and plotted")
+
+        metadata_db.close()
 
     def plot(self, nprocess=4, progress=True):
         """ """
