@@ -195,7 +195,7 @@ def run_on_event(thread_id, channel_id):
         ra=ra,
         dec=dec,
         nprocess=8,
-        update_alert=True,
+        update_enforce=True,
         sciimg=sciimg,
     )
     # except ValueError:
