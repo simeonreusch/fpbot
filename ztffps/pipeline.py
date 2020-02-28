@@ -68,7 +68,8 @@ class ForcedPhotometryPipeline:
         nprocess=4,
         reprocess=False,
         sciimg=False,
-        update_alert=False,
+        update_enforce=False,
+        update_disable=False,
         ampel=False,
     ):
         self.startime = time.time()
@@ -81,7 +82,7 @@ class ForcedPhotometryPipeline:
         else:
             self.file_or_name = file_or_name
 
-        hdlr = logging.FileHandler("./pipeline.log")
+        hdlr = logging.FileHandler("./log")
         logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
         formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
         hdlr.setFormatter(formatter)
@@ -95,7 +96,8 @@ class ForcedPhotometryPipeline:
         self.reprocess = reprocess
         self.nprocess = nprocess
         self.sciimg = sciimg
-        self.update_alert = update_alert
+        self.update_enforce = update_enforce
+        self.update_disable = update_disable
         self.ampel = ampel
 
         # # create local database with metadata for performance reasons and as backup if Marshal and Ampel are both not reachable
@@ -206,97 +208,107 @@ class ForcedPhotometryPipeline:
         progress_bar = ProgressBar(len(self.object_list))
         needs_external_database = []
 
-        if self.update_alert:
-            print("\nForced updating of alert data from Marshal/AMPEL")
+        if not self.update_disable:
 
-        for index, name in enumerate(self.object_list):
-            local_queryresult = self.metadata_db.search(Query().name == name)
-            if (
-                len(local_queryresult) == 0
-                # or local_queryresult[0]["entries"] < 10
-                or self.update_alert
-            ):
-                needs_external_database.append(name)
-            progress_bar.update(index)
+            if self.update_enforce:
+                print("\nForced updating of alert data from Marshal/AMPEL")
 
-        progress_bar.update(len(self.object_list))
-
-        print("\nConnecting to Marshal (or AMPEL if Marshal is down)")
-        import connectors
-
-        marshal_failed = False
-        ampel_failed = False
-        if not self.ampel:
-            try:
-                connector = connectors.MarshalInfo(needs_external_database, nprocess=32)
-            except (ConnectionError, requests.exceptions.ConnectionError, ValueError):
-                marshal_failed = True
-
-        if marshal_failed or self.ampel:
-            try:
-                connector = connectors.AmpelInfo(needs_external_database)
-            except:
-                ampel_failed = True
-
-        if marshal_failed and ampel_failed:
-            print(
-                "\nConnection to Marshal and AMPEL failed. Temporary outages for the Marshal are frequent. Problems with AMPEL are most likely due to a problem with your .ssh/config.\nProceeding with local database. CAUTION: Data could be missing or not be up-to-date!!!"
-            )
-
-        if self.daysago is None:
-            print("\nNo 'daysago' given, full timerange used")
-        else:
-            print(f"\nData from {self.daysago} days ago till today is used")
-
-        now = Time(time.time(), format="unix", scale="utc").jd
-
-        if not (marshal_failed and ampel_failed):
-            print("\nUpdating metadata database")
-            progress_bar = ProgressBar(len(connector.queryresult))
-
-            for index, result in enumerate(connector.queryresult):
-                if self.daysago is None:
-                    jdmin = 2458209
-                else:
-                    jdmin = now - self.daysago
-                if self.daysuntil is None:
-                    jdmax = now
-                else:
-                    jdmax = now - self.daysuntil
-
-                name = result[0]
-                ra = result[1]
-                dec = result[2]
-                entries = result[3]
-                mwebv = None
-                jdobs = result[4]
-                mag = result[5]
-                magerr = result[6]
-                maglim = result[7]
-                fid = result[8]
-
-                self.metadata_db.upsert(
-                    {
-                        "name": name,
-                        "ra": ra,
-                        "dec": dec,
-                        "jdmin": jdmin,
-                        "jdmax": jdmax,
-                        "entries": entries,
-                        "mwebv": mwebv,
-                        "alert_data": {
-                            "jdobs": jdobs,
-                            "mag": mag,
-                            "magerr": magerr,
-                            "maglim": maglim,
-                            "fid": fid,
-                        },
-                    },
-                    Query().name == name,
-                )
+            for index, name in enumerate(self.object_list):
+                local_queryresult = self.metadata_db.search(Query().name == name)
+                if (
+                    len(local_queryresult) == 0
+                    # or local_queryresult[0]["entries"] < 10
+                    or self.update_enforce
+                ):
+                    needs_external_database.append(name)
                 progress_bar.update(index)
-            progress_bar.update(len(connector.queryresult))
-        self.metadata_db.close()
+
+            progress_bar.update(len(self.object_list))
+
+            print("\nConnecting to Marshal (or AMPEL if Marshal is down)")
+            import connectors
+
+            marshal_failed = False
+            ampel_failed = False
+            if not self.ampel:
+                try:
+                    connector = connectors.MarshalInfo(
+                        needs_external_database, nprocess=32
+                    )
+                except (
+                    ConnectionError,
+                    requests.exceptions.ConnectionError,
+                    ValueError,
+                ):
+                    marshal_failed = True
+
+            if marshal_failed or self.ampel:
+                try:
+                    connector = connectors.AmpelInfo(needs_external_database)
+                except:
+                    ampel_failed = True
+
+            if marshal_failed and ampel_failed:
+                print(
+                    "\nConnection to Marshal and AMPEL failed. Temporary outages for the Marshal are frequent. Problems with AMPEL are most likely due to a problem with your .ssh/config.\nProceeding with local database. CAUTION: Data could be missing or not be up-to-date!!!"
+                )
+
+            if self.daysago is None:
+                print("\nNo 'daysago' given, full timerange used")
+            else:
+                print(f"\nData from {self.daysago} days ago till today is used")
+
+            now = Time(time.time(), format="unix", scale="utc").jd
+
+            if not (marshal_failed and ampel_failed):
+                print("\nUpdating metadata database")
+                progress_bar = ProgressBar(len(connector.queryresult))
+
+                for index, result in enumerate(connector.queryresult):
+                    if self.daysago is None:
+                        jdmin = 2458209
+                    else:
+                        jdmin = now - self.daysago
+                    if self.daysuntil is None:
+                        jdmax = now
+                    else:
+                        jdmax = now - self.daysuntil
+
+                    name = result[0]
+                    ra = result[1]
+                    dec = result[2]
+                    entries = result[3]
+                    mwebv = None
+                    jdobs = result[4]
+                    mag = result[5]
+                    magerr = result[6]
+                    maglim = result[7]
+                    fid = result[8]
+                    lastobs = result[9]
+
+                    self.metadata_db.upsert(
+                        {
+                            "name": name,
+                            "ra": ra,
+                            "dec": dec,
+                            "jdmin": jdmin,
+                            "jdmax": jdmax,
+                            "entries": entries,
+                            "mwebv": mwebv,
+                            "lastobs": lastobs,
+                            "alert_data": {
+                                "jdobs": jdobs,
+                                "mag": mag,
+                                "magerr": magerr,
+                                "maglim": maglim,
+                                "fid": fid,
+                            },
+                        },
+                        Query().name == name,
+                    )
+                    progress_bar.update(index)
+                progress_bar.update(len(connector.queryresult))
+            self.metadata_db.close()
 
     def download(self):
         """ """
@@ -357,6 +369,7 @@ class ForcedPhotometryPipeline:
             dec = query[0]["dec"]
             jdmin = query[0]["jdmin"]
             jdmax = query[0]["jdmax"]
+            lastobs = query[0]["lastobs"]
 
             fp = forcephotometry.ForcePhotometry.from_coords(
                 ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
@@ -377,6 +390,11 @@ class ForcedPhotometryPipeline:
             plot_lightcurve(
                 name, snt=self.snt, daysago=self.daysago, daysuntil=self.daysuntil
             )
+
+            self.metadata_db.upsert(
+                {"lastfit": "BULLSHIT"}, Query().name == name,
+            )
+
             print(f"\n{name} successfully fitted and plotted")
 
     def plot(self, nprocess=4, progress=True):
@@ -719,10 +737,16 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--update_alert",
-        "-update_alert",
+        "--update_enforce",
+        "-update_enforce",
         action="store_true",
-        help="Force update on alert photometry from Marshal/AMPEL",
+        help="Enorce update on alert photometry from Marshal/AMPEL",
+    )
+    parser.add_argument(
+        "--update_disable",
+        "-update_disable",
+        action="store_true",
+        help="No update on alert photometry from Marshal/AMPEL, force to use local database",
     )
     parser.add_argument(
         "--ampel",
@@ -746,7 +770,8 @@ if __name__ == "__main__":
     targetmail = commandline_args.sendmail
     sciimg = commandline_args.sciimg
     thumbnails = commandline_args.thumbnails
-    update_alert = commandline_args.update_alert
+    update_enforce = commandline_args.update_enforce
+    update_disable = commandline_args.update_disable
     ampel = commandline_args.ampel
 
     # if thumbnails:
@@ -769,7 +794,8 @@ if __name__ == "__main__":
         ra=ra,
         dec=dec,
         sciimg=sciimg,
-        update_alert=update_alert,
+        update_enforce=update_enforce,
+        update_disable=update_disable,
         ampel=ampel,
     )
 

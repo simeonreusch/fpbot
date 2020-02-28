@@ -110,9 +110,19 @@ class AmpelInfo:
             ra = np.median(ras)
             dec = np.median(decs)
             entries = len(ras)
-            result = [ztf_name, ra, dec, entries, jds, mags, magerrs, maglims, fids]
-            queryresult.append(result)
-            bar.update()
+            lastobs = np.max(jd)
+            result = [
+                ztf_name,
+                ra,
+                dec,
+                entries,
+                jds,
+                mags,
+                magerrs,
+                maglims,
+                fids,
+                lastobs,
+            ]
         return queryresult
 
 
@@ -200,6 +210,7 @@ class MarshalInfo:
             ra = np.median(ras[ind])
             dec = np.median(decs[ind])
             entries = len(ras)
+            lastobs = np.max(jds)
 
         return [
             ztf_name,
@@ -211,4 +222,5 @@ class MarshalInfo:
             magerrs.tolist(),
             maglims.tolist(),
             fids.tolist(),
+            lastobs,
         ]
