@@ -78,8 +78,9 @@ class AmpelInfo:
         print("\nObtaining ra/decs from AMPEL")
         from astropy.utils.console import ProgressBar
 
-        bar = ProgressBar(object_count)
         queryresult = []
+        bar = ProgressBar(object_count)
+
         for index, ztf_name in enumerate(self.ztf_names):
             ampel_object = self.ampel_client.get_alerts_for_object(
                 ztf_name, with_history=False
@@ -123,7 +124,7 @@ class AmpelInfo:
                 fids,
                 lastobs,
             ]
-        print(queryresult)
+            queryresult.append(result)
         return queryresult
 
 
