@@ -309,6 +309,16 @@ class ForcedPhotometryPipeline:
                 )
                 progress_bar.update(index)
             progress_bar.update(len(connector.queryresult))
+
+        # As a last step: Check for which objects there are infos available
+        # delete from object-list if no info is available
+        for name in self.object_list:
+            query = self.metadata_db.search(Query().name == name)
+            if len(query) == 0:
+                self.object_list.remove(name)
+                print(
+                    f"\n{name} could not be found in metadata database. Will not download and fit"
+                )
         self.metadata_db.close()
 
     def download(self):
