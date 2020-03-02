@@ -202,6 +202,7 @@ class ForcedPhotometryPipeline:
                 },
                 Query().name == name,
             )
+        self.metadata_db.close()
 
     def get_position_and_timerange(self):
         """ """

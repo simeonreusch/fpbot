@@ -123,6 +123,7 @@ class AmpelInfo:
                 fids,
                 lastobs,
             ]
+        print(queryresult)
         return queryresult
 
 

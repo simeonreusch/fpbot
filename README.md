@@ -53,7 +53,7 @@ The basic file is pipeline.py, which can be run using different flags. A (ZTF) n
 - Optionally: [AMPEL](https://github.com/ampelproject) can be used alternatively to the Marshal.
 
 ## Slackbot
-There is a bot for Slack included, based on the SlackRTM-API. To use it, create a legacy bot in slack (with the legacy privilege system, the new system depends on the EventApi, which itself needs a webserver). Change the bot-username in slackbot_realtime.py and it should basically work (first start requires you to enter the bot- and bot-user credentials).
+There is a bot for Slack included, based on the SlackRTM-API. To use it, create a legacy bot in slack (with the legacy privilege system, the new system depends on the EventAPI, which itself needs a webserver). Change the bot-username in slackbot_realtime.py and it should basically work (first start requires you to enter the bot- and bot-user credentials).
 
 ## Saltfit module
 Still experimental! Performs saltfits on the generated lightcurves.
