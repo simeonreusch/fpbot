@@ -125,6 +125,8 @@ class AmpelInfo:
                 lastobs,
             ]
             queryresult.append(result)
+            bar.update(index)
+        bar.update(object_count)
         return queryresult
 
 
