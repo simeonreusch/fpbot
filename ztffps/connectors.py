@@ -93,6 +93,8 @@ class AmpelInfo:
             magerrs = []
             maglims = []
             fids = []
+            magzps = []
+            magzps_err = []
             for res in query_res:
                 ra = res["candidate"]["ra"]
                 dec = res["candidate"]["dec"]
@@ -101,6 +103,8 @@ class AmpelInfo:
                 magerr = res["candidate"]["sigmapsf"]
                 maglim = res["candidate"]["diffmaglim"]
                 fid = res["candidate"]["fid"]
+                magzp = res["candidate"]["magzpsci"]
+                magzp_err = res["candidate"]["magzpsciunc"]
                 ras.append(ra)
                 decs.append(dec)
                 jds.append(jd)
@@ -108,6 +112,8 @@ class AmpelInfo:
                 magerrs.append(magerr)
                 maglims.append(maglim)
                 fids.append(fid)
+                magzps.append(magzp)
+                magzps_err.append(magzp_err)
             ra = np.median(ras)
             dec = np.median(decs)
             entries = len(ras)
@@ -123,6 +129,8 @@ class AmpelInfo:
                 maglims,
                 fids,
                 lastobs,
+                magzps,
+                magzps_err,
             ]
             queryresult.append(result)
             bar.update(index)
@@ -182,6 +190,9 @@ class MarshalInfo:
             maglim = np.zeros(ndet)
             jd = np.zeros(ndet)
             fid = np.full(ndet, 99)
+            magzp = np.zeros(ndet)
+            magzp_err = np.zeros(ndet)
+
             for i in range(ndet):
                 try:
                     line = mtb.values[i][0].split(",")
@@ -202,6 +213,10 @@ class MarshalInfo:
                         maglim[i] = float(line[j].split(":")[1])
                     elif line[j][:8] == '  "fid":':
                         fid[i] = int(line[j].split(":")[1])
+                    elif line[j][:12] == '  "magzpsci"':
+                        magzp[i] = float(line[j].split(":")[1])
+                    elif line[j][:15] == '  "magzpsciunc"':
+                        magzp[i] = float(line[j].split(":")[1])
 
             ras = ra[ra != 0]
             decs = dec[ra != 0]
@@ -215,6 +230,8 @@ class MarshalInfo:
             dec = np.median(decs[ind])
             entries = len(ras)
             lastobs = np.max(jds)
+            magzps = magzp[ra != 0]
+            magzps_err = magzp_err[ra != 0]
 
         return [
             ztf_name,
@@ -227,4 +244,6 @@ class MarshalInfo:
             maglims.tolist(),
             fids.tolist(),
             lastobs,
+            magzps.tolist(),
+            magzps_err.tolist(),
         ]

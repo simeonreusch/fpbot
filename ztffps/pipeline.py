@@ -198,7 +198,7 @@ class ForcedPhotometryPipeline:
                     "jdmax": jdmax,
                     "entries": entries,
                     "mwebv": mwebv,
-                    "marshal": None,
+                    "alert_data": None,
                 },
                 Query().name == name,
             )
@@ -288,6 +288,8 @@ class ForcedPhotometryPipeline:
                 maglim = result[7]
                 fid = result[8]
                 lastobs = result[9]
+                magzp = result[10]
+                magzp_err = result[11]
 
                 self.metadata_db.upsert(
                     {
@@ -305,6 +307,8 @@ class ForcedPhotometryPipeline:
                             "magerr": magerr,
                             "maglim": maglim,
                             "fid": fid,
+                            "magzp": magzp,
+                            "magzp_err": magzp_err,
                         },
                     },
                     Query().name == name,

@@ -10,6 +10,8 @@ import numpy as np
 import sncosmo
 import logging
 from astropy import time
+from astropy.table import Table
+from astropy.cosmology import Planck15 as cosmo
 from tinydb import TinyDB, Query
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
@@ -78,16 +80,51 @@ class SaltFit:
         """
 		This obtains the marshal lightcurve for upper and lower bounds on t0 for SALT
 		"""
-        marshal.download_lightcurve(self.name)
-        marshal_lc_df = marshal.get_local_lightcurves(self.name)
-        mags = marshal_lc_df["mag"].values
-        lowest_mag = np.min(mags)
-        marshal_t0_jd = marshal_lc_df.query("mag == @lowest_mag")["jdobs"].values[0]
-        t = time.Time(marshal_t0_jd, format="jd", scale="utc")
-        self.marshal_t0 = t.mjd
-        marshal_lc_df = marshal_lc_df.query("mag < 99")
+        metadata_db = TinyDB(os.path.join(pipeline.METADATA, "meta_database.json"))
+        query = metadata_db.search(Query().name == self.name)
+        mag = np.asarray(query[0]["alert_data"]["mag"])
+        jd_obs = query[0]["alert_data"]["jdobs"]
+        mjd_obs = np.asarray(jd_obs) - 2400000.5
+        mag_err = np.asarray(query[0]["alert_data"]["magerr"])
+        maglim = query[0]["alert_data"]["maglim"]
+        band = query[0]["alert_data"]["fid"]
+        magzp = np.asarray(query[0]["alert_data"]["magzp"])
+        magzp_err = np.asarray(query[0]["alert_data"]["magzp_err"])
 
-        # marshal_lc_df = marshal_lc_df.drop(["date", "isdiffpos", "absmag", "limmag", "instrument"], axis=1)
+        band_p48 = []
+        zpsys = ["ab"] * len(mag)
+
+        for fid in band:
+            if fid == 1:
+                band_p48.append("p48g")
+            elif fid == 2:
+                band_p48.append("p48r")
+            else:
+                band_p48.append("p48i")
+
+        F0 = 10 ** (magzp / 2.5)
+        F0_err = F0 / 2.5 * np.log(10) * magzp_err
+        ampl = 10 ** (-mag / 2.5) * F0
+        Fratio = ampl / F0
+        Fratio_err = mag_err * np.log(10) / 2.5 * Fratio
+        ampl_err = np.sqrt(Fratio_err ** 2 - (ampl * F0_err / F0 ** 2) ** 2) * F0
+        data = {
+            "mag": mag,
+            "mjd": mjd_obs,
+            "filter": band_p48,
+            "flux": ampl,
+            "flux_err": ampl_err,
+            "zp": magzp,
+            "zpsys": zpsys,
+        }
+        lc_alert = pd.DataFrame(data=data)
+        lc_sncosmo_alert = Table.from_pandas(
+            lc_alert[["mjd", "filter", "flux", "flux_err", "zp", "zpsys"]]
+        )
+
+        lowest_mag = np.min(mag)
+        self.marshal_t0 = lc_alert.query("mag == @lowest_mag")["mjd"].values[0]
+        print(self.marshal_t0)
 
     def modify_columns(self):
         """ """
@@ -185,8 +222,6 @@ class SaltFit:
 
     def fit(self, snt=5, quality_checks=False, **kwargs):
         """ """
-        from astropy.table import Table
-        from astropy.cosmology import Planck15 as cosmo
 
         self.snt = snt
         dust = sncosmo.CCM89Dust()
