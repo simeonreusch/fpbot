@@ -330,7 +330,7 @@ class ForcedPhotometryPipeline:
         for index, name in enumerate(self.object_list):
             query = metadata_db.search(Query().name == name)
             progress_bar.update(index)
-            if len(query) == 0:
+            if len(query) == 0 or query[0]["entries"] == 0:
                 self.object_list.remove(name)
                 print(
                     f"\n{name} could not be found in metadata database. Will not download and fit"
