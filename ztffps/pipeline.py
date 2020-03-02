@@ -218,7 +218,7 @@ class ForcedPhotometryPipeline:
             local_queryresult = self.metadata_db.search(Query().name == name)
             if (
                 len(local_queryresult) == 0
-                # or local_queryresult[0]["entries"] < 10
+                or local_queryresult[0]["entries"] < 10
                 or self.update_enforce
             ):
                 needs_external_database.append(name)
