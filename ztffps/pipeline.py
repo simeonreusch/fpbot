@@ -136,6 +136,7 @@ class ForcedPhotometryPipeline:
                 raise TypeError
             if not self.update_disable:
                 self.get_position_and_timerange()
+            self.check_if_present_in_metadata()
 
     def is_ztf_name(self, name):
         """ """
@@ -165,7 +166,7 @@ class ForcedPhotometryPipeline:
             assert (
                 self.object_list[0][:3] == "ZTF" and len(self.object_list[0]) == 12
             ), "You have to provide either a ZTF name or a file containing ZTF names (1 per line)"
-        print("Doing forced photometry for {len(self.object_list)} SNe")
+        print(f"Doing forced photometry for {len(self.object_list)} SNe")
         print("Logs are stored in pipeline.log")
 
     def update_database_with_given_radec(self):
@@ -310,16 +311,31 @@ class ForcedPhotometryPipeline:
                 progress_bar.update(index)
             progress_bar.update(len(connector.queryresult))
 
-        # As a last step: Check for which objects there are infos available
-        # delete from object-list if no info is available
-        for name in self.object_list:
-            query = self.metadata_db.search(Query().name == name)
+        self.metadata_db.close()
+
+    def check_if_present_in_metadata(self):
+        """Check for which objects there are infos available
+        Delete from object-list if no info is available"""
+
+        print("\nChecking if alert data is present in metadata database")
+        objectcount = len(self.object_list)
+        progress_bar = ProgressBar(objectcount)
+
+        metadata_db = TinyDB(
+            os.path.join(METADATA, "meta_database.json"),
+            storage=CachingMiddleware(JSONStorage),
+        )
+
+        for index, name in enumerate(self.object_list):
+            query = metadata_db.search(Query().name == name)
+            progress_bar.update(index)
             if len(query) == 0:
                 self.object_list.remove(name)
                 print(
                     f"\n{name} could not be found in metadata database. Will not download and fit"
                 )
-        self.metadata_db.close()
+        progress_bar.update(objectcount)
+        metadata_db.close()
 
     def download(self):
         """ """
@@ -767,14 +783,14 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--update_enforce",
-        "-update_enforce",
+        "--update",
+        "-update",
         action="store_true",
         help="Enorce update on alert photometry from Marshal/AMPEL",
     )
     parser.add_argument(
-        "--update_disable",
-        "-update_disable",
+        "--noupdate",
+        "-noupdate",
         action="store_true",
         help="No update on alert photometry from Marshal/AMPEL, force to use local database",
     )
@@ -800,8 +816,8 @@ if __name__ == "__main__":
     targetmail = commandline_args.sendmail
     sciimg = commandline_args.sciimg
     thumbnails = commandline_args.thumbnails
-    update_enforce = commandline_args.update_enforce
-    update_disable = commandline_args.update_disable
+    update_enforce = commandline_args.update
+    update_disable = commandline_args.noupdate
     ampel = commandline_args.ampel
 
     # if thumbnails:
