@@ -28,7 +28,7 @@ The basic file is pipeline.py, which can be run using different flags. A (ZTF) n
 
 ### Options
 
-`--nprocess`  Specifies the number of processes spawned for parallel computing. Default is 4. Note: download is always performed with 32 processes in parallel, as IPAC upload-speed is the bottleneck there.
+`--nprocess [int]`  Specifies the number of processes spawned for parallel computing. Default is 4. Note: download is always performed with 32 processes in parallel, as IPAC upload-speed is the bottleneck there.
 
 `--daysago`  Determines how old the photometric data should be. Default uses all datapoints available.
 
