@@ -10,11 +10,13 @@ All requiered packages should be installed by issuing:
 
 ## Usage
 
-The basic file is pipeline.py, which can be run using different flags.
+The basic file is pipeline.py, which can be run using different flags. Alternatively, the pipeline class can be imported from this file.
+
+#If run by command:
 
 Either:
 
-`[ZTFname OR filename]]` A (ZTF) name has to be provided (or an ASCII file containing one ZTF name in each line). Alternatively, the pipeline class can be imported from this file.
+`[name]` A ZTF name has to be provided, or an ASCII file containing one ZTF name in each line) or an arbitrary name if followed by the ra/dec-option as to be provided.
 
 Or:
 
