@@ -16,11 +16,11 @@ The basic file is pipeline.py, which can be run using different flags. Alternati
 
 ### By command
 
-Either:
+Always:
 
 `[name]` A ZTF name has to be provided, or an ASCII file containing one ZTF name in each line or an arbitrary name if followed by the ra/dec-option as to be provided.
 
-Or:
+optionally:
 
 `-radec [RA DEC]`	If this is given, the name can be chosen arbitrarily (but a name MUST be provided). Radec must be given in a format that can be parsed by astropy; e.g. `-radec 218.487548 +40.243758`.
 

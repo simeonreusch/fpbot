@@ -225,6 +225,7 @@ class ForcedPhotometryPipeline:
             progress_bar.update(index)
 
         progress_bar.update(len(self.object_list))
+
         if not self.ampel:
             print("\nConnecting to Marshal (or AMPEL if Marshal is down)")
         else:
@@ -233,6 +234,7 @@ class ForcedPhotometryPipeline:
 
         marshal_failed = True
         ampel_failed = True
+
         if not self.ampel:
             try:
                 connector = connectors.MarshalInfo(needs_external_database, nprocess=32)
