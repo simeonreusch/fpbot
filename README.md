@@ -1,6 +1,6 @@
 # ztffps
 
-Provides a Forced Photometry Pipeline based on [ztfquery](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery), needing [Marshal](http://skipper.caltech.edu:8080/cgi-bin/growth/marshal.cgi) or [AMPEL](https://github.com/ampelproject) access.
+Provides a Forced Photometry Pipeline based on [ztfquery](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery), needs [IPAC](https://irsa.ipac.caltech.edu/account/signon/login.do?josso_back_to=https://irsa.ipac.caltech.edu/frontpage/&ts=517) as well as [Marshal](http://skipper.caltech.edu:8080/cgi-bin/growth/marshal.cgi) or [AMPEL](https://github.com/ampelproject) access.
 
 Note: Requires Python >= 3.6.
 
@@ -18,7 +18,7 @@ The basic file is pipeline.py, which can be run using different flags. Alternati
 
 Either:
 
-`[name]` A ZTF name has to be provided, or an ASCII file containing one ZTF name in each line) or an arbitrary name if followed by the ra/dec-option as to be provided.
+`[name]` A ZTF name has to be provided, or an ASCII file containing one ZTF name in each line or an arbitrary name if followed by the ra/dec-option as to be provided.
 
 Or:
 
@@ -26,7 +26,7 @@ Or:
 
 ### Additional commands
 
-`-dl`        Downloads the images used for forced photometry from IPAC. Needs a valid IPAC account.
+`-dl`        Downloads the images used for forced photometry from [IPAC](https://irsa.ipac.caltech.edu/account/signon/login.do?josso_back_to=https://irsa.ipac.caltech.edu/frontpage/&ts=517). Needs a valid IPAC account.
 
 `-fit`       Performs the PSF-photometry fit and generates plots of the lightcurve(s).
 
