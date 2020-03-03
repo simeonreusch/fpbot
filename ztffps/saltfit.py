@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import sncosmo
 import logging
+import matplotlib.pyplot as plt
 from astropy import time
 from astropy.table import Table
 from astropy.cosmology import Planck15 as cosmo
@@ -78,10 +79,13 @@ class SaltFit:
 
     def obtain_marshal_lightcurve(self):
         """
-		This obtains the marshal lightcurve for upper and lower bounds on t0 for SALT
+		This reads the marshal lightcurve from the metadata database to
+        put upper and lower bounds on t0 for better SALT-fitting
 		"""
+
         metadata_db = TinyDB(os.path.join(pipeline.METADATA, "meta_database.json"))
         query = metadata_db.search(Query().name == self.name)
+
         mag = np.asarray(query[0]["alert_data"]["mag"])
         jd_obs = query[0]["alert_data"]["jdobs"]
         mjd_obs = np.asarray(jd_obs) - 2400000.5
@@ -91,6 +95,7 @@ class SaltFit:
         magzp = np.asarray(query[0]["alert_data"]["magzp"])
         magzp_err = np.asarray(query[0]["alert_data"]["magzp_err"])
 
+        # Das geht besser!
         band_p48 = []
         zpsys = ["ab"] * len(mag)
 
@@ -102,6 +107,7 @@ class SaltFit:
             else:
                 band_p48.append("p48i")
 
+        # Calculate fluxes from mags
         F0 = 10 ** (magzp / 2.5)
         F0_err = F0 / 2.5 * np.log(10) * magzp_err
         ampl = 10 ** (-mag / 2.5) * F0
@@ -117,7 +123,10 @@ class SaltFit:
             "zp": magzp,
             "zpsys": zpsys,
         }
+
+        # Create alert-dataframe
         lc_alert = pd.DataFrame(data=data)
+        # Convert to astropy-table for SNCosmo
         lc_sncosmo_alert = Table.from_pandas(
             lc_alert[["mjd", "filter", "flux", "flux_err", "zp", "zpsys"]]
         )
@@ -127,7 +136,8 @@ class SaltFit:
         print(self.marshal_t0)
 
     def modify_columns(self):
-        """ """
+        """Rename filters, calculate mags"""
+
         self.lightcurve.replace(
             ["ZTF_r", "ZTF_g", "ZTF_i"], ["p48r", "p48g", "p48i"], inplace=True
         )
@@ -156,7 +166,7 @@ class SaltFit:
 
     @staticmethod
     def load_ztf_filters():
-        """ """
+        """Add ZTF filters from file to SNCosmo"""
         bands = {
             "p48r": "data/ztfr_eff.dat",
             "p48g": "data/ztfg_eff.dat",
@@ -170,7 +180,9 @@ class SaltFit:
 
     @staticmethod
     def get_digit_count(value_str):
+        # Geht das nicht schlauer? Nullen Zählen und offensichtliche Floatingpoint-Fehler ausgleichen!
         """ """
+
         value_str = value_str.replace(".", "").lstrip("0")
         return len(value_str)
 
@@ -198,6 +210,7 @@ class SaltFit:
         """ """
         spectroscopic_redshifts = pd.read_csv(SPECTROSCOPIC_REFERENCE)
         reference_object = spectroscopic_redshifts.query(f'sn_name == "{self.name}"')
+
         if not reference_object.empty:
             self.logger.info(f"{self.name} Spectroscopic redshift found")
             self.z = reference_object["sn_redshift"].values[0]
@@ -212,7 +225,8 @@ class SaltFit:
             self.quality_info.update(z_precision=_digits)
 
     def count_observations(self):
-        """ """
+        """How often was the transient observed per filter?"""
+
         unique_obs, counts = np.unique(self.lightcurve["filter"], return_counts=True)
         obs_count = dict(zip(unique_obs, counts))
         nr_filters = len(obs_count.keys())
@@ -221,7 +235,7 @@ class SaltFit:
         self.quality_info.update(obs_count)
 
     def fit(self, snt=5, quality_checks=False, **kwargs):
-        """ """
+        """Do the actual SALT-fitting"""
 
         self.snt = snt
         dust = sncosmo.CCM89Dust()
@@ -300,8 +314,6 @@ class SaltFit:
         )
 
         # Plot
-        import matplotlib.pyplot as plt
-
         fig = sncosmo.plot_lc(
             lc_sncosmo,
             model=self.fitted_model,

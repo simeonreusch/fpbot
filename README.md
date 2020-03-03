@@ -1,10 +1,10 @@
 # ztffps
 
-Provides a Forced Photometry Pipeline based on [ztfquery](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery). Note: Requires Python >= 3.7.
+Provides a Forced Photometry Pipeline based on [ztfquery](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery). Note: Requires Python >= 3.6.
 
 ## Installation
 
-The majority of required packages can be installed by issuing:
+All requiered packages should be installed by issuing:
 
 ```pip3 install -r requirements.txt```
 
