@@ -37,11 +37,13 @@ def plot_lightcurve(
         storage=CachingMiddleware(JSONStorage),
     )
     alert_data = metadata_db.search(Query().name == name)[0]["alert_data"]
-    alert_jd = alert_data["jdobs"]
-    alert_mjd = np.asarray(alert_jd) - 2400000.5
-    alert_mag = alert_data["mag"]
-    alert_magerr = alert_data["magerr"]
-    alert_fid = alert_data["fid"]
+
+    if alert_data is not None:
+        alert_jd = alert_data["jdobs"]
+        alert_mjd = np.asarray(alert_jd) - 2400000.5
+        alert_mag = alert_data["mag"]
+        alert_magerr = alert_data["magerr"]
+        alert_fid = alert_data["fid"]
 
     ### apply time-range cut:
     now = Time(time.time(), format="unix", scale="utc").mjd
@@ -99,20 +101,21 @@ def plot_lightcurve(
     lc.to_csv(os.path.join(lc_plotted_dir, f"{name}_SNT_{snt}.csv"))
 
     # Create Dataframe for Alert data / Rounding is neccessary because Alert and Forced Photometry MJDs are not consistent
-    alert_df = pd.DataFrame(
-        data={
-            "obsmjd": np.around(alert_mjd, decimals=4),
-            "mag": alert_mag,
-            "mag_err": alert_magerr,
-            "fid": alert_fid,
-        }
-    )
-    alert_df = alert_df[
-        ~alert_df["obsmjd"].isin(np.around(lc.obsmjd.values, decimals=4))
-    ]
-    alert_g = alert_df.query("fid == 1")
-    alert_r = alert_df.query("fid == 2")
-    alert_i = alert_df.query("fid == 3")
+    if alert_data is not None:
+        alert_df = pd.DataFrame(
+            data={
+                "obsmjd": np.around(alert_mjd, decimals=4),
+                "mag": alert_mag,
+                "mag_err": alert_magerr,
+                "fid": alert_fid,
+            }
+        )
+        alert_df = alert_df[
+            ~alert_df["obsmjd"].isin(np.around(lc.obsmjd.values, decimals=4))
+        ]
+        alert_g = alert_df.query("fid == 1")
+        alert_r = alert_df.query("fid == 2")
+        alert_i = alert_df.query("fid == 3")
 
     # Create filterspecific dataframes
     len_before_sn_cut = len(lc)
@@ -183,33 +186,6 @@ def plot_lightcurve(
         alpha=0.5,
     )
     ax.errorbar(
-        alert_g.obsmjd.values,
-        alert_g.mag.values,
-        alert_g.mag_err.values,
-        color="green",
-        fmt=".",
-        label="Alert g",
-        mew=0,
-    )
-    ax.errorbar(
-        alert_r.obsmjd.values,
-        alert_r.mag.values,
-        alert_r.mag_err.values,
-        color="red",
-        fmt=".",
-        label="Alert r",
-        mew=0,
-    )
-    ax.errorbar(
-        alert_i.obsmjd.values,
-        alert_i.mag.values,
-        alert_i.mag_err.values,
-        color="orange",
-        fmt=".",
-        label="Alert i",
-        mew=0,
-    )
-    ax.errorbar(
         g.obsmjd.values,
         g.mag.values,
         g.mag_err.values,
@@ -239,6 +215,36 @@ def plot_lightcurve(
         mec="black",
         mew=0.5,
     )
+
+    if alert_data is not None:
+        ax.errorbar(
+            alert_g.obsmjd.values,
+            alert_g.mag.values,
+            alert_g.mag_err.values,
+            color="green",
+            fmt=".",
+            label="Alert g",
+            mew=0,
+        )
+        ax.errorbar(
+            alert_r.obsmjd.values,
+            alert_r.mag.values,
+            alert_r.mag_err.values,
+            color="red",
+            fmt=".",
+            label="Alert r",
+            mew=0,
+        )
+        ax.errorbar(
+            alert_i.obsmjd.values,
+            alert_i.mag.values,
+            alert_i.mag_err.values,
+            color="orange",
+            fmt=".",
+            label="Alert i",
+            mew=0,
+        )
+
     ax.axvline(x=now, color="grey", linewidth=0.5, linestyle="--")
 
     if mag_range is None:

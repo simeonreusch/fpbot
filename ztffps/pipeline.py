@@ -175,33 +175,33 @@ class ForcedPhotometryPipeline:
         query = self.metadata_db.search(Query().name == name)
         now = Time(time.time(), format="unix", scale="utc").jd
 
-        if len(query) == 0:
-            ra = self.ra
-            dec = self.dec
-            entries = -1
-            mwebv = None
+        ra = self.ra
+        dec = self.dec
+        entries = -1
+        mwebv = None
 
-            if self.daysago is None:
-                jdmin = 2458209
-            else:
-                jdmin = now - self.daysago
-            if self.daysuntil is None:
-                jdmax = now
-            else:
-                jdmax = now - self.daysuntil
-            self.metadata_db.upsert(
-                {
-                    "name": name,
-                    "ra": ra,
-                    "dec": dec,
-                    "jdmin": jdmin,
-                    "jdmax": jdmax,
-                    "entries": entries,
-                    "mwebv": mwebv,
-                    "alert_data": None,
-                },
-                Query().name == name,
-            )
+        if self.daysago is None:
+            jdmin = 2458209
+        else:
+            jdmin = now - self.daysago
+        if self.daysuntil is None:
+            jdmax = now
+        else:
+            jdmax = now - self.daysuntil
+        self.metadata_db.upsert(
+            {
+                "name": name,
+                "ra": ra,
+                "dec": dec,
+                "jdmin": jdmin,
+                "jdmax": jdmax,
+                "entries": entries,
+                "mwebv": mwebv,
+                "lastobs": None,
+                "alert_data": None,
+            },
+            Query().name == name,
+        )
         self.metadata_db.close()
 
     def get_position_and_timerange(self):
@@ -353,7 +353,6 @@ class ForcedPhotometryPipeline:
             dec = query[0]["dec"]
             jdmin = query[0]["jdmin"]
             jdmax = query[0]["jdmax"]
-
             fp = forcephotometry.ForcePhotometry.from_coords(
                 ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
             )
@@ -413,7 +412,7 @@ class ForcedPhotometryPipeline:
                     do_fit = False
                 else:
                     do_fit = True
-            except KeyError:
+            except (KeyError, TypeError):
                 do_fit = True
 
             if do_fit:
