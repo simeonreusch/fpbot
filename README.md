@@ -12,7 +12,7 @@ All requiered packages should be installed by issuing:
 
 The basic file is pipeline.py, which can be run using different flags. A (ZTF) name has to be provided (or an ASCII file containing one ZTF name in each line). Alternatively, the pipeline class can be imported from this file.
 
-`-radec`	If this is given, the name can be chosen arbitrarily (but a name MUST be provided). Radec must be given in a format that can be parsed by astropy; e.g. `-radec 218.487548 +40.243758` or `-radec 14:33:57.01 +40:14:37.5` or `-radec 14h33m57.01 +40d14m37.5`
+`-radec`	If this is given, the name can be chosen arbitrarily (but a name MUST be provided). Radec must be given in a format that can be parsed by astropy; e.g. `-radec 218.487548 +40.243758`.
 
 ### Additional commands
 
@@ -30,13 +30,15 @@ The basic file is pipeline.py, which can be run using different flags. A (ZTF) n
 
 `--nprocess`  Specifies the number of processes spawned for parallel computing. Default is 4. Note: download is always performed with 32 processes in parallel, as IPAC upload-speed is the bottleneck there.
 
-`--daysago`  Determines how old the datapoints used should be. Default uses all datapoints available.
+`--daysago`  Determines how old the photometric data should be. Default uses all datapoints available.
 
-`--daysuntil`  Determines how new the datapoints used should be. Default uses all datapoints available.
+`--daysuntil`  Determines how new the photometric data should be. Default uses all datapoints available.
 
-`--sciimg`  Experimental: Also downloads the science images from IPAC.
+`--snt` Specifies the signal-to-noise ratio for plotting and SALT-fitting.
 
-`--filecheck` Checks all images downloaded for data integrity and redownloads corrupt images.
+`--magrange` Defines upper and lower magnitude bound for plotting the lightcurves. Order is irrelevant.
+
+`--sciimg`  Experimental: Also downloads the science images from IPAC (note: to create thumbnails if specified)
 
 ### Examples
 
@@ -44,7 +46,7 @@ The basic file is pipeline.py, which can be run using different flags. A (ZTF) n
 
 `./pipeline.py supernovae.txt -plot --filecheck` Plots all lightcurves for ZTF transients found in supernovae.txt and additionally performs a full filecheck on all images downloaded by ztfquery (not only the ones in the textfile).
 
-`./pipeline.py this_looks_interesting -radec 143.3123 66.42342 -dl -fit -plot --daysago 10` Downloads all images of the last ten days of the location given in ra and dec, does PSF-fits and plots the lightcurve.
+`./pipeline.py this_looks_interesting -radec 143.3123 66.42342 -dl -fit -plot --daysago 10 -magrange 18 20` Downloads all images of the last ten days of the location given in ra and dec, performs PSF-fits and plots the lightcurve in the 18--20 magnitude range.
 
 ## Requirements
 - [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC.
