@@ -1,6 +1,8 @@
 # ztffps
 
-Provides a Forced Photometry Pipeline based on [ztfquery](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery). Note: Requires Python >= 3.6.
+Provides a Forced Photometry Pipeline based on [ztfquery](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery), needing [Marshal](http://skipper.caltech.edu:8080/cgi-bin/growth/marshal.cgi) or [AMPEL](https://github.com/ampelproject) access.
+
+Note: Requires Python >= 3.6.
 
 ## Installation
 
@@ -62,8 +64,7 @@ All functionality of the command-line tool is present in the class. Just call it
 ## Requirements
 - [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC.
 - [ztflc](https://github.com/mickaelrigault/ztflc) is used for PSF-fitting.
-- [Marshal](http://skipper.caltech.edu:8080/cgi-bin/growth/marshal.cgi) credentials are neccessary for determining object ra and dec.
-- Optionally: [AMPEL](https://github.com/ampelproject) can be used alternatively to the Marshal.
+- [Marshal](http://skipper.caltech.edu:8080/cgi-bin/growth/marshal.cgi) or [AMPEL](https://github.com/ampelproject) credentials are neccessary for the pipeline to work.
 
 ## Notes
 ### Slackbot
