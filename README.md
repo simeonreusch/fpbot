@@ -10,9 +10,15 @@ All requiered packages should be installed by issuing:
 
 ## Usage
 
-The basic file is pipeline.py, which can be run using different flags. A (ZTF) name has to be provided (or an ASCII file containing one ZTF name in each line). Alternatively, the pipeline class can be imported from this file.
+The basic file is pipeline.py, which can be run using different flags.
 
-`-radec`	If this is given, the name can be chosen arbitrarily (but a name MUST be provided). Radec must be given in a format that can be parsed by astropy; e.g. `-radec 218.487548 +40.243758`.
+Either:
+
+`[ZTFname OR filename]]` A (ZTF) name has to be provided (or an ASCII file containing one ZTF name in each line). Alternatively, the pipeline class can be imported from this file.
+
+Or:
+
+`-radec [RA DEC]`	If this is given, the name can be chosen arbitrarily (but a name MUST be provided). Radec must be given in a format that can be parsed by astropy; e.g. `-radec 218.487548 +40.243758`.
 
 ### Additional commands
 
@@ -24,21 +30,21 @@ The basic file is pipeline.py, which can be run using different flags. A (ZTF) n
 
 `-saltfit`   Fits the lightcurve using SALT2 as provided by [sncosmo](https://github.com/sncosmo/).
 
+`-sciimg`  Experimental: Also downloads the science images from IPAC (note: to create thumbnails if specified)
+
 `-thumbnails` Experimental: Generates thumbnails for all science-images. Science images have to be downloaded (see `--sciimg`)
 
 ### Options
 
 `--nprocess [int]`  Specifies the number of processes spawned for parallel computing. Default is 4. Note: download is always performed with 32 processes in parallel, as IPAC upload-speed is the bottleneck there.
 
-`--daysago`  Determines how old the photometric data should be. Default uses all datapoints available.
+`--daysago [int]`  Determines how old the photometric data should be. Default uses all datapoints available.
 
-`--daysuntil`  Determines how new the photometric data should be. Default uses all datapoints available.
+`--daysuntil [int]`  Determines how new the photometric data should be. Default uses all datapoints available.
 
-`--snt` Specifies the signal-to-noise ratio for plotting and SALT-fitting.
+`--snt [float]` Specifies the signal-to-noise ratio for plotting and SALT-fitting.
 
-`--magrange` Defines upper and lower magnitude bound for plotting the lightcurves. Order is irrelevant.
-
-`--sciimg`  Experimental: Also downloads the science images from IPAC (note: to create thumbnails if specified)
+`--magrange [float float]` Defines upper and lower magnitude bound for plotting the lightcurves. Order is irrelevant.
 
 ### Examples
 
