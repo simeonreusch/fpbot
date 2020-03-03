@@ -12,7 +12,7 @@ All requiered packages should be installed by issuing:
 
 The basic file is pipeline.py, which can be run using different flags. Alternatively, the pipeline class can be imported from this file.
 
-#If run by command:
+*If run by command*:
 
 Either:
 
