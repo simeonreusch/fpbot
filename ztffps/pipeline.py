@@ -511,7 +511,7 @@ class ForcedPhotometryPipeline:
 
         objectcount = len(self.cleaned_object_list)
         progress_bar = ProgressBar(objectcount)
-        print("\nChecking if all mwebv-date is present and compute if not")
+        print("\nChecking if all mwebv-data is present and compute if not")
         for index, name in enumerate(self.cleaned_object_list):
             query = metadata_db.search(Query().name == name)
             ra = query[0]["ra"]
