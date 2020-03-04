@@ -339,7 +339,7 @@ class ForcedPhotometryPipeline:
             if len(query) == 0 or query[0]["entries"] == 0:
                 self.object_list.remove(name)
                 print(
-                    f"\n{name} could not be found in metadata database. Will not download and fit"
+                    f"\n{name} could not be found in metadata database. Will not download or fit"
                 )
         progress_bar.update(objectcount)
         metadata_db.close()
@@ -502,18 +502,27 @@ class ForcedPhotometryPipeline:
         from astropy.utils.console import ProgressBar
         from saltfit import fit_salt
 
-        # Rand info from metadata databse and update it with mwebv
-        metadata_db = TinyDB(os.path.join(METADATA, "meta_database.json"),)
+        # Read info from metadata databse and update it with mwebv
+        metadata_db = TinyDB(
+            os.path.join(METADATA, "meta_database.json"),
+            storage=CachingMiddleware(JSONStorage),
+        )
         dustmap = sfdmap.SFDMap()
-        for name in self.cleaned_object_list:
+
+        objectcount = len(self.cleaned_object_list)
+        progress_bar = ProgressBar(objectcount)
+        print("\nChecking if all mwebv-date is present and compute if not")
+        for index, name in enumerate(self.cleaned_object_list):
             query = metadata_db.search(Query().name == name)
             ra = query[0]["ra"]
             dec = query[0]["dec"]
-
-            mwebv = dustmap.ebv(ra, dec,)
-            query[0]["mwebv"] = mwebv
-            metadata_db.write_back(query)
+            if query[0]["mwebv"] is None:
+                mwebv = dustmap.ebv(ra, dec,)
+                query[0]["mwebv"] = mwebv
+                metadata_db.write_back(query)
+            progress_bar.update(index)
         metadata_db.close()
+        progress_bar.update(objectcount)
 
         object_count = len(self.cleaned_object_list)
         if progress:
@@ -558,17 +567,23 @@ class ForcedPhotometryPipeline:
                 print(f"\n{name} performing SALT fit for alert photometry")
             else:
                 print(f"\n{name} performing SALT fit for forced photometry")
-            fitresult, fitted_model = fit_salt(
-                name=name,
-                snt=snt,
-                mwebv=self.metadata_db.search(Query().name == name)[0]["mwebv"],
-                quality_checks=quality_checks,
-                alertfit=alertfit,
-            )
-            if progress_bar is not None:
-                progress_bar.update(index)
-            fitresults.append(fitresult)
-            fitted_models.append(fitted_model)
+
+            try:
+                fitresult, fitted_model = fit_salt(
+                    name=name,
+                    snt=snt,
+                    mwebv=self.metadata_db.search(Query().name == name)[0]["mwebv"],
+                    quality_checks=quality_checks,
+                    alertfit=alertfit,
+                )
+                if progress_bar is not None:
+                    progress_bar.update(index)
+                fitresults.append(fitresult)
+                fitted_models.append(fitted_model)
+            except:
+                print(f"\n{name} Error while fitting")
+                if progress_bar is not None:
+                    progress_bar.update(index)
 
         if progress_bar is not None:
             progress_bar.update(object_count)
@@ -588,10 +603,11 @@ class ForcedPhotometryPipeline:
         salt_dataframe = pd.read_csv(salt_dataframe_path, index_col="name")
 
         for index, name in enumerate(self.cleaned_object_list):
-            query = salt_dataframe.query("name == @name")
-            if len(query) == 1:
+            query_old = salt_dataframe.query("name == @name")
+            query_new = fitresult_df.query("name == @name")
+            if len(query_old) == 1:
                 salt_dataframe.drop(f"{name}", inplace=True)
-                salt_dataframe = salt_dataframe.append(query)
+            salt_dataframe = salt_dataframe.append(query_new)
 
         salt_dataframe.to_csv(salt_dataframe_path)
 

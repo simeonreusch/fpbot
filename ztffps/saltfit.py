@@ -272,7 +272,6 @@ class SaltFit:
         salt_model.set(mwebv=self.mwebv)
         self.load_ztf_filters()
 
-        # try:
         self.fitresult, self.fitted_model = sncosmo.fit_lc(
             self.lightcurve_sncosmo,
             salt_model,
@@ -340,7 +339,7 @@ class SaltFit:
             ),
         )
 
-        plotdir = pipeline.SALTDATA
+        plotdir = os.path.join(pipeline.PLOTDATA, "salt")
         if not os.path.exists(plotdir):
             os.makedirs(plotdir)
 
@@ -353,7 +352,7 @@ class SaltFit:
         plt.close(fig)
         self.logger.info(f"{self.name} Plotted.")
 
-        # except:
+        # except TypeError:
         # 	self.logger.info("{} Fit exited with error".format(self.name))
         # 	self.fitresult = sncosmo.utils.Result({'name': self.name, 'success': False})
         # 	self.fitted_model = None

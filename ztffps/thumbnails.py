@@ -60,7 +60,7 @@ def generate_thumbnails(
         filterstring = "ZTF_" + band
         object_count = len(df.query("filter == @filterstring"))
         logger.info(
-            "\nGenerating thumbnails for g-band ({} in total)".format(object_count)
+            f"\nGenerating thumbnails for {band}-band ({object_count} in total)"
         )
 
         if progress:
