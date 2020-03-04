@@ -495,22 +495,26 @@ class ForcedPhotometryPipeline:
         )
         print(f"\n{name} plotted")
 
-    def saltfit(self, snt=5, quality_checks=False, progress=True):
+    def saltfit(self, snt=5, quality_checks=False, progress=True, alertfit=False):
         """ """
         self.check_if_psf_data_exists()
         import sfdmap
         from astropy.utils.console import ProgressBar
         from saltfit import fit_salt
 
+        # Rand info from metadata databse and update it with mwebv
+        metadata_db = TinyDB(os.path.join(METADATA, "meta_database.json"),)
         dustmap = sfdmap.SFDMap()
         for name in self.cleaned_object_list:
-            query = self.metadata_db.search(Query().name == name)
+            query = metadata_db.search(Query().name == name)
             ra = query[0]["ra"]
             dec = query[0]["dec"]
 
             mwebv = dustmap.ebv(ra, dec,)
             query[0]["mwebv"] = mwebv
-            self.metadata_db.write_back(query)
+            metadata_db.write_back(query)
+        metadata_db.close()
+
         object_count = len(self.cleaned_object_list)
         if progress:
             progress_bar = ProgressBar(object_count)
@@ -550,17 +554,22 @@ class ForcedPhotometryPipeline:
         )
 
         for index, name in enumerate(self.cleaned_object_list):
-            print(f"\n{name} performing SALT fit")
+            if alertfit:
+                print(f"\n{name} performing SALT fit for alert photometry")
+            else:
+                print(f"\n{name} performing SALT fit for forced photometry")
             fitresult, fitted_model = fit_salt(
                 name=name,
                 snt=snt,
                 mwebv=self.metadata_db.search(Query().name == name)[0]["mwebv"],
                 quality_checks=quality_checks,
+                alertfit=alertfit,
             )
             if progress_bar is not None:
                 progress_bar.update(index)
             fitresults.append(fitresult)
             fitted_models.append(fitted_model)
+
         if progress_bar is not None:
             progress_bar.update(object_count)
 
@@ -569,22 +578,26 @@ class ForcedPhotometryPipeline:
                 results = pd.Series(fitresult, index=fitresult_df.columns)
                 fitresult_df = fitresult_df.append(results, ignore_index=True)
 
-        savepath = os.path.join(SALTDATA, "SALT_FIT.csv")
-        fitresult_df.to_csv(savepath)
+        if alertfit:
+            salt_dataframe_path = os.path.join(SALTDATA, "SALT_FIT_alert.csv")
+        else:
+            salt_dataframe_path = os.path.join(SALTDATA, "SALT_FIT.csv")
+        fitresult_df.set_index("name", inplace=True)
+
+        # Check if entry can be updated
+        salt_dataframe = pd.read_csv(salt_dataframe_path, index_col="name")
+
+        for index, name in enumerate(self.cleaned_object_list):
+            query = salt_dataframe.query("name == @name")
+            if len(query) == 1:
+                salt_dataframe.drop(f"{name}", inplace=True)
+                salt_dataframe = salt_dataframe.append(query)
+
+        salt_dataframe.to_csv(salt_dataframe_path)
 
         print(
             f"\n{len(fitresult_df)} of {object_count} fits were performed successfully\n"
         )
-
-    @staticmethod
-    def _saltfit_multiprocessing_(args):
-        """ """
-        from saltfit import fit_salt
-
-        name, mwebv, snt = args
-        print(f"\n{name} SALT fitting")
-        fitresult, fitted_model = fit_salt(name=name, mwebv=mwebv, snt=snt)
-        return fitresult, fitted_model
 
     def sendmail(self, send_to):
         """ """
@@ -860,7 +873,8 @@ if __name__ == "__main__":
     if do_plot:
         pl.plot()
     if do_saltfit:
-        pl.saltfit(quality_checks=True)
+        pl.saltfit(quality_checks=True, alertfit=True)
+        pl.saltfit(quality_checks=True, alertfit=False)
     if targetmail:
         pl.sendmail(targetmail)
     if thumbnails:

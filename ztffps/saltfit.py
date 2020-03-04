@@ -39,9 +39,11 @@ FILTER_TRANSLATION = {"p48r": 0, "p48g": 1, "p48i": 2}
 
 
 class SaltFit:
-    """ """
+    """Class for fitting lightcurves"""
 
-    def __init__(self, name, mwebv, logger=None, alpha=None, beta=None, **kwargs):
+    def __init__(
+        self, name, mwebv, logger=None, alpha=None, beta=None, alertfit=False, **kwargs
+    ):
         if logger is None:
             logging.basicConfig(level=logging.INFO)
             self.logger = logging.getLogger()
@@ -56,7 +58,6 @@ class SaltFit:
         else:
             self.beta = beta
 
-        # self.metadata_db = TinyDB(os.path.join(pipeline.METADATA, "meta_database.json"), storage=CachingMiddleware(JSONStorage))
         self.name = name
         self.lightcurve = pd.read_csv(os.path.join(LOCALDATA, f"{self.name}.csv"))
         self.z = m.target_sources.query(f'name == "{name}"')["redshift"].values[0]
@@ -74,6 +75,7 @@ class SaltFit:
             "obs_total": 0,
         }
         self.obs_count = {}
+        self.alertfit = alertfit
         self.modify_columns()
         self.obtain_marshal_lightcurve()
 
@@ -125,15 +127,16 @@ class SaltFit:
         }
 
         # Create alert-dataframe
-        lc_alert = pd.DataFrame(data=data)
+        self.lightcurve_alert = pd.DataFrame(data=data)
         # Convert to astropy-table for SNCosmo
-        lc_sncosmo_alert = Table.from_pandas(
-            lc_alert[["mjd", "filter", "flux", "flux_err", "zp", "zpsys"]]
+        self.lightcurve_sncosmo_alert = Table.from_pandas(
+            self.lightcurve_alert[["mjd", "filter", "flux", "flux_err", "zp", "zpsys"]]
         )
 
         lowest_mag = np.min(mag)
-        self.marshal_t0 = lc_alert.query("mag == @lowest_mag")["mjd"].values[0]
-        print(self.marshal_t0)
+        self.marshal_t0 = self.lightcurve_alert.query("mag == @lowest_mag")[
+            "mjd"
+        ].values[0]
 
     def modify_columns(self):
         """Rename filters, calculate mags"""
@@ -226,8 +229,14 @@ class SaltFit:
 
     def count_observations(self):
         """How often was the transient observed per filter?"""
-
-        unique_obs, counts = np.unique(self.lightcurve["filter"], return_counts=True)
+        if self.alertfit:
+            unique_obs, counts = np.unique(
+                self.lightcurve["filter"], return_counts=True
+            )
+        else:
+            unique_obs, counts = np.unique(
+                self.lightcurve_alert["filter"], return_counts=True
+            )
         obs_count = dict(zip(unique_obs, counts))
         nr_filters = len(obs_count.keys())
         obs_total = np.sum(counts)
@@ -247,11 +256,15 @@ class SaltFit:
             self.check_redshift_precision()
             self.count_observations()
 
-        lc_sncosmo = Table.from_pandas(
-            self.lightcurve.query("chi2 > 0")[
-                ["mjd", "filter", "flux", "flux_err", "zp", "zpsys"]
-            ]
-        )
+        if self.alertfit:
+            self.lightcurve_sncosmo = self.lightcurve_sncosmo_alert
+        else:
+            self.lightcurve_sncosmo = Table.from_pandas(
+                self.lightcurve.query("chi2 > 0")[
+                    ["mjd", "filter", "flux", "flux_err", "zp", "zpsys"]
+                ]
+            )
+
         salt_model = sncosmo.Model(
             source="salt2", effects=[dust], effect_names=["mw"], effect_frames=["obs"]
         )
@@ -261,7 +274,7 @@ class SaltFit:
 
         # try:
         self.fitresult, self.fitted_model = sncosmo.fit_lc(
-            lc_sncosmo,
+            self.lightcurve_sncosmo,
             salt_model,
             ["t0", "x0", "x1", "c"],
             phase_range=(-30, 50),
@@ -315,7 +328,7 @@ class SaltFit:
 
         # Plot
         fig = sncosmo.plot_lc(
-            lc_sncosmo,
+            self.lightcurve_sncosmo,
             model=self.fitted_model,
             errors=self.fitresult.errors,
             figtext="{}\nred. chi2 = {:.2f}\ncorr. peak abs mag = {:.2f}".format(
@@ -326,12 +339,20 @@ class SaltFit:
                 peak_abs_mag_corrected,
             ),
         )
+
         plotdir = pipeline.SALTDATA
         if not os.path.exists(plotdir):
             os.makedirs(plotdir)
-        plt.savefig(os.path.join(os.path.join(plotdir, f"{self.name}_SALT.png")))
+
+        if self.alertfit:
+            plt.savefig(
+                os.path.join(os.path.join(plotdir, f"{self.name}_SALT_alert.png"))
+            )
+        else:
+            plt.savefig(os.path.join(os.path.join(plotdir, f"{self.name}_SALT.png")))
         plt.close(fig)
         self.logger.info(f"{self.name} Plotted.")
+
         # except:
         # 	self.logger.info("{} Fit exited with error".format(self.name))
         # 	self.fitresult = sncosmo.utils.Result({'name': self.name, 'success': False})
@@ -398,8 +419,8 @@ class SaltFit:
             self.result = None
 
 
-def fit_salt(name, mwebv, snt, quality_checks=False, logger=None):
+def fit_salt(name, mwebv, snt, quality_checks=False, alertfit=False, logger=None):
     """ """
-    saltfit = SaltFit(name, mwebv=mwebv, plot=True, logger=logger)
+    saltfit = SaltFit(name, mwebv=mwebv, plot=True, alertfit=alertfit, logger=logger)
     saltfit.fit(snt=snt, quality_checks=quality_checks)
     return saltfit.result, saltfit.fitted_model
