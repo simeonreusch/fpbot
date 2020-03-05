@@ -2,7 +2,7 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import time, os, sys, argparse
+import time, os, sys, argparse, re
 from ztfquery import marshal
 from ztflc.io import LOCALDATA
 import pandas as pd
@@ -182,12 +182,13 @@ class SaltFit:
             sncosmo.registry.register(band, force=True)
 
     @staticmethod
-    def get_digit_count(value_str):
-        # Geht das nicht schlauer? Nullen Zählen und offensichtliche Floatingpoint-Fehler ausgleichen!
-        """ """
-
-        value_str = value_str.replace(".", "").lstrip("0")
-        return len(value_str)
+    def get_digit_count(z_str):
+        """Determines number of significant digits of z (accounts for rounding quirks)"""
+        z_str_right = z_str.split(".")[1]
+        rounding_artifact = re.search("[0,9]{4,}[0-9]$", z_str_right, flags=0)
+        if rounding_artifact is not None:
+            z_str_right = z_str_right[: -len(rounding_artifact.group())]
+        return len(z_str_right)
 
     # def check_for_reference(self):
     # 	if self.field is None or self.rcid is None:
@@ -222,10 +223,10 @@ class SaltFit:
             self.logger.info(f"{self.name} No spectroscopic redshift found")
             self.quality_info.update(z_spectro=False)
             try:
-                _digits = self.get_digit_count(str(self.z))
+                digits = self.get_digit_count(str(self.z))
             except AttributeError:
-                _digits = 0
-            self.quality_info.update(z_precision=_digits)
+                digits = 0
+            self.quality_info.update(z_precision=digits)
 
     def count_observations(self):
         """How often was the transient observed per filter?"""

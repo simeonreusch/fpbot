@@ -512,6 +512,7 @@ class ForcedPhotometryPipeline:
         objectcount = len(self.cleaned_object_list)
         progress_bar = ProgressBar(objectcount)
         print("\nChecking if all mwebv-data is present and compute if not")
+
         for index, name in enumerate(self.cleaned_object_list):
             query = metadata_db.search(Query().name == name)
             ra = query[0]["ra"]
@@ -889,7 +890,7 @@ if __name__ == "__main__":
     if do_plot:
         pl.plot()
     if do_saltfit:
-        pl.saltfit(quality_checks=True, alertfit=True)
+        # pl.saltfit(quality_checks=True, alertfit=True)
         pl.saltfit(quality_checks=True, alertfit=False)
     if targetmail:
         pl.sendmail(targetmail)
