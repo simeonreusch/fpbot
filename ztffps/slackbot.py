@@ -70,6 +70,7 @@ def run_on_event(thread_id, channel_id):
     ra = None
     dec = None
     sciimg = False
+    noupdate = False
 
     def fuzzy_parameters(param_list):
         """ """
@@ -180,7 +181,10 @@ def run_on_event(thread_id, channel_id):
                     )
                     return
 
-    if do_download == False and do_fit == False and do_plot == False:
+    if do_download is False and do_plot is True:
+        noupdate = True
+
+    if do_download is False and do_plot is False:
         do_download = True
         do_plot = True
         do_fit = True
@@ -197,7 +201,9 @@ def run_on_event(thread_id, channel_id):
         nprocess=8,
         update_enforce=True,
         sciimg=sciimg,
+        noupdate=noupdate,
     )
+
     # except ValueError:
     # 	wc.chat_postMessage(channel=channel_id, text=f"Error: Either the Marshal is not reachable at the moment, which unfortunately happens quite frequently -- or your name is not a ZTFname or the --radec values are malformed.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
     # return
