@@ -71,6 +71,7 @@ class ForcedPhotometryPipeline:
         update_enforce=False,
         update_disable=False,
         ampel=False,
+        download_newest=True,
     ):
         self.startime = time.time()
         self.logger = logging.getLogger("pipeline")
@@ -99,6 +100,7 @@ class ForcedPhotometryPipeline:
         self.update_enforce = update_enforce
         self.update_disable = update_disable
         self.ampel = ampel
+        self.download_newest = download_newest
 
         # # create local database with metadata for performance reasons and as backup if Marshal and Ampel are both not reachable
         self.metadata_db = TinyDB(
@@ -352,44 +354,62 @@ class ForcedPhotometryPipeline:
         )
 
         for name in self.object_list:
-            self.logger.info(f"\n{name} Starting download")
-            query = self.metadata_db.search(Query().name == name)
-            ra = query[0]["ra"]
-            dec = query[0]["dec"]
-            jdmin = query[0]["jdmin"]
-            jdmax = query[0]["jdmax"]
-            fp = forcephotometry.ForcePhotometry.from_coords(
-                ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
-            )
-            self.logger.info(f"{name} Downloading data")
-            if not os.path.exists(
-                os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
-            ):
-                fp.io.update_marshal()
-            fp.load_metadata()
-            if self.sciimg:
-                fp.io.download_data(
-                    nprocess=32,
-                    overwrite=False,
-                    show_progress=True,
-                    verbose=False,
-                    ignore_warnings=True,
-                    which=["scimrefdiffimg.fits.fz", "diffimgpsf.fits", "sciimg.fits"],
-                )
+            query = metadata_db.search(Query().name == name)
+
+            # In case download_newest option is passed: Download only if it has never been downloaded before
+            # (useful for bulk downloads which repeatedly fail because IPAC is unstable)
+            if download_newest is False:
+                try:
+                    last_download = query[0]["lastdownload"]
+                    do_download = False
+                except (KeyError, TypeError):
+                    do_download = True
             else:
-                fp.io.download_data(
-                    nprocess=32,
-                    overwrite=False,
-                    show_progress=True,
-                    verbose=False,
-                    ignore_warnings=True,
+                do_download = True
+
+            if do_download:
+                self.logger.info(f"\n{name} Starting download")
+                query = self.metadata_db.search(Query().name == name)
+                ra = query[0]["ra"]
+                dec = query[0]["dec"]
+                jdmin = query[0]["jdmin"]
+                jdmax = query[0]["jdmax"]
+                fp = forcephotometry.ForcePhotometry.from_coords(
+                    ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
                 )
+                self.logger.info(f"{name} Downloading data")
+                if not os.path.exists(
+                    os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
+                ):
+                    fp.io.update_marshal()
+                fp.load_metadata()
+                if self.sciimg:
+                    fp.io.download_data(
+                        nprocess=32,
+                        overwrite=False,
+                        show_progress=True,
+                        verbose=False,
+                        ignore_warnings=True,
+                        which=[
+                            "scimrefdiffimg.fits.fz",
+                            "diffimgpsf.fits",
+                            "sciimg.fits",
+                        ],
+                    )
+                else:
+                    fp.io.download_data(
+                        nprocess=32,
+                        overwrite=False,
+                        show_progress=True,
+                        verbose=False,
+                        ignore_warnings=True,
+                    )
 
-            last_download = Time(time.time(), format="unix", scale="utc").jd
+                last_download = Time(time.time(), format="unix", scale="utc").jd
 
-            metadata_db.upsert(
-                {"lastdownload": last_download}, Query().name == name,
-            )
+                metadata_db.upsert(
+                    {"lastdownload": last_download}, Query().name == name,
+                )
 
         metadata_db.close()
 
@@ -849,6 +869,12 @@ if __name__ == "__main__":
         action="store_true",
         help="Force to use AMPEL instead of Marshal for alert photometry",
     )
+    parser.add_argument(
+        "--no_new_download",
+        "-no_new_download",
+        action="store_false",
+        help="If this is passed, no updated images will be downloaded from IPAC. Intended for bulk downloads",
+    )
 
     commandline_args = parser.parse_args()
     nprocess = commandline_args.nprocess
@@ -868,6 +894,7 @@ if __name__ == "__main__":
     update_enforce = commandline_args.update
     update_disable = commandline_args.noupdate
     ampel = commandline_args.ampel
+    download_newest = commandline_args.no_new_download
 
     # if thumbnails:
     #     sciimg = True
@@ -892,6 +919,7 @@ if __name__ == "__main__":
         update_enforce=update_enforce,
         update_disable=update_disable,
         ampel=ampel,
+        download_newest=download_newest,
     )
 
     if do_filecheck:
