@@ -348,12 +348,8 @@ class ForcedPhotometryPipeline:
 
     def download(self):
         """ """
-        metadata_db = TinyDB(
-            os.path.join(METADATA, "meta_database.json"),
-            storage=CachingMiddleware(JSONStorage),
-        )
-
         for name in self.object_list:
+            metadata_db = TinyDB(os.path.join(METADATA, "meta_database.json"),)
             query = metadata_db.search(Query().name == name)
 
             # In case download_newest option is passed: Download only if it has never been downloaded before
@@ -411,7 +407,7 @@ class ForcedPhotometryPipeline:
                     {"lastdownload": last_download}, Query().name == name,
                 )
 
-        metadata_db.close()
+            metadata_db.close()
 
     def check_if_psf_data_exists(self):
         """ """
