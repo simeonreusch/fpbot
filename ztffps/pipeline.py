@@ -354,7 +354,7 @@ class ForcedPhotometryPipeline:
 
             # In case download_newest option is passed: Download only if it has never been downloaded before
             # (useful for bulk downloads which repeatedly fail because IPAC is unstable)
-            if download_newest is False:
+            if self.download_newest is False:
                 try:
                     last_download = query[0]["lastdownload"]
                     do_download = False
