@@ -202,6 +202,7 @@ def run_on_event(thread_id, channel_id):
         update_enforce=True,
         sciimg=sciimg,
         update_disable=noupdate,
+        download_newest=True,
     )
 
     # except ValueError:
