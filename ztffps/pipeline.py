@@ -142,11 +142,7 @@ class ForcedPhotometryPipeline:
 
     def is_ztf_name(self, name):
         """ """
-        regex_match = re.match("^ZTF[1-2]\d[a-z]{7}$", name)
-        if regex_match:
-            return True
-        else:
-            return False
+        return re.match("^ZTF[1-2]\d[a-z]{7}$", name)
 
     def use_if_ztf(self):
         """ """
@@ -160,11 +156,11 @@ class ForcedPhotometryPipeline:
                 for line in self.lines:
                     if self.is_ztf_name(line):
                         self.object_list.append(line)
-            except FileNotFoundError as e:
+            except FileNotFoundError as error:
                 print(
                     "\nYou have to provide either a ZTF name or a file containing ZTF names (1 per line) or an arbitrary name if using the radec option.\n"
                 )
-                raise e
+                raise error
             assert (
                 self.object_list[0][:3] == "ZTF" and len(self.object_list[0]) == 12
             ), "You have to provide either a ZTF name or a file containing ZTF names (1 per line)"
@@ -174,7 +170,6 @@ class ForcedPhotometryPipeline:
     def update_database_with_given_radec(self):
         """ """
         name = self.object_list[0]
-        query = self.metadata_db.search(Query().name == name)
         now = Time(time.time(), format="unix", scale="utc").jd
 
         ra = self.ra
@@ -257,7 +252,10 @@ class ForcedPhotometryPipeline:
 
         if marshal_failed and ampel_failed:
             print(
-                "\nConnection to Marshal and AMPEL failed. Temporary outages for the Marshal are frequent. Problems with AMPEL are most likely due to a problem with your .ssh/config.\nProceeding with local database. CAUTION: Data could be missing or not be up-to-date!!!"
+                "\nConnection to Marshal and AMPEL failed. Temporary outages for the\n"
+                "Marshal are frequent. Problems with AMPEL are most likely due to a \n"
+                "problem with your .ssh/config.\nProceeding with local database.\n"
+                "CAUTION: Data could be missing or not be up-to-date!!!"
             )
 
         if self.daysago is None:
