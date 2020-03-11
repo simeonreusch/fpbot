@@ -28,7 +28,7 @@ class Cosmology:
     # custom parameters
     max_redshift = 0.08  # maximum redshift def = 0.08
     min_filters = 2  # number of different filters needed def = 2
-    max_chisquare = 10  # max chisquare to retain only good fits def = 1.3
+    max_chisquare = 2.5  # max chisquare to retain only good fits def = 1.3
     min_obs_per_filter = (
         2  # minimum of observations in each filter actually used def = 2
     )
