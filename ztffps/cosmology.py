@@ -20,7 +20,7 @@ class Cosmology:
             self.logger = logger
 
     salt_dir = pipeline.SALTDATA
-    salt_path = os.path.join(salt_dir, "SALT_FIT_JLA.csv")
+    salt_path = os.path.join(salt_dir, "SALT_FIT.csv")
     cosmology_dir = pipeline.COSMODATA
     if not os.path.exists(pipeline.COSMODATA):
         os.makedirs(pipeline.COSMODATA)
@@ -147,7 +147,7 @@ class Cosmology:
         for i, name in enumerate(names):
             ax.annotate(name, (x[i], y[i]), size="xx-small")
         ax.grid(axis="y", which="both", linewidth=0.5)
-        ax.set_ylim([-10, 10])
+        ax.set_ylim([-1, 1])
         ax.set_xlabel("redshift")
         ax.set_ylabel("corrected abs mag residual [mag]")
         fig.savefig(os.path.join(self.cosmology_dir, "hubble.png"))
@@ -164,12 +164,12 @@ class Cosmology:
         bad_images = []
 
         for ztf_name in self.good_objects:
-            image = os.path.join(self.salt_dir, f"{ztf_name}_SALT.png")
+            image = os.path.join(pipeline.PLOTDATA, "salt", f"{ztf_name}_SALT.png")
             good_images.append(image)
 
         if hasattr(self, "bad_objects"):
             for ztf_name in self.bad_objects:
-                image = os.path.join(self.salt_dir, f"{ztf_name}_SALT.png")
+                image = os.path.join(pipeline.PLOTDATA, "salt", f"{ztf_name}_SALT.png")
                 bad_images.append(image)
 
         good_rgbs = []
