@@ -12,7 +12,14 @@ import pipeline
 class Cosmology:
     """ """
 
-    def __init__(self, logger=None, max_chisquare=2.5, alert=False, magrange=None):
+    def __init__(
+        self,
+        logger=None,
+        max_chisquare=2.5,
+        alert=False,
+        magrange=None,
+        photoz_allowed=False,
+    ):
         if logger is None:
             logging.basicConfig(level=logging.INFO)
             self.logger = logging.getLogger()
@@ -21,6 +28,8 @@ class Cosmology:
 
         self.max_chisquare = max_chisquare
         self.alert = alert
+        self.photoz_allowed = photoz_allowed
+
         if magrange:
             self.magrange = magrange
         else:
@@ -85,8 +94,10 @@ class Cosmology:
         # self.fitresults['first_observation'] = self.fitresults['first observation'].astype(float)
         # self.fitresults = self.fitresults[self.fitresults.first_observation < self.fitresults.t0]
         # self.logger.info('surviving first obs before peak cut: {} ({:2.2f} %)'.format(len(self.fitresults), self.survival_percent(len(self.fitresults))))
-        # self.fitresults.query("z_precision >= 3 or z_spectro == True", inplace=True)
-        self.fitresults.query("z_spectro == True", inplace=True)
+        if self.photoz_allowed:
+            self.fitresults.query("z_precision >= 3 or z_spectro == True", inplace=True)
+        else:
+            self.fitresults.query("z_spectro == True", inplace=True)
         self.logger.info(
             f"surviving redshift precision cut: {len(self.fitresults)} ({self.survival_percent(len(self.fitresults)):2.2f} %)"
         )
@@ -290,7 +301,13 @@ if __name__ == "__main__":
         "--alert",
         "-alert",
         action="store_true",
-        help="Plot for alert photometry instead of forced photometry",
+        help="Plot alert photometry instead of forced photometry",
+    )
+    parser.add_argument(
+        "--photoz",
+        "-photoz",
+        action="store_true",
+        help="Allows also SNe for which only photometric redshift exists",
     )
     parser.add_argument(
         "--magrange",
@@ -304,11 +321,17 @@ if __name__ == "__main__":
     max_chisquare = commandline_args.chisq
     alert = commandline_args.alert
     magrange = commandline_args.magrange
+    photoz_allowed = commandline_args.photoz
 
     startime = time.time()
     logger = logging.getLogger("cosmology")
 
-    cosmology = Cosmology(max_chisquare=max_chisquare, alert=alert, magrange=magrange)
+    cosmology = Cosmology(
+        max_chisquare=max_chisquare,
+        alert=alert,
+        magrange=magrange,
+        photoz_allowed=photoz_allowed,
+    )
     cosmology.prune_fitresults()
     cosmology.plot_hubble()
     cosmology.create_pdf_overview()
