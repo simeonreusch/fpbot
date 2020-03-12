@@ -36,7 +36,7 @@ class Cosmology:
     min_redshift_digits = 3  # minimum of sigificant digits of redshift def = 3
     pull_cut_sne_to_inspect = 5
     residual_cut_sne_to_inspect = 3
-    annotation_threshold = 2  # residual in mag above which object name will be plotted
+    annotation_threshold = 3  # residual in mag above which object name will be plotted
     color_range = [-2, 3]
 
     fitresults = pd.read_csv(salt_path)
@@ -72,7 +72,8 @@ class Cosmology:
         # self.fitresults['first_observation'] = self.fitresults['first observation'].astype(float)
         # self.fitresults = self.fitresults[self.fitresults.first_observation < self.fitresults.t0]
         # self.logger.info('surviving first obs before peak cut: {} ({:2.2f} %)'.format(len(self.fitresults), self.survival_percent(len(self.fitresults))))
-        self.fitresults.query("z_precision >= 3 or z_spectro == True", inplace=True)
+        # self.fitresults.query("z_precision >= 3 or z_spectro == True", inplace=True)
+        self.fitresults.query("z_spectro == True", inplace=True)
         self.logger.info(
             f"surviving redshift precision cut: {len(self.fitresults)} ({self.survival_percent(len(self.fitresults)):2.2f} %)"
         )
@@ -82,6 +83,13 @@ class Cosmology:
         self.logger.info(
             f"surviving chisquare cut: {len(self.fitresults)} ({self.survival_percent(len(self.fitresults)):2.2f} %)"
         )
+
+        # Manual override
+        # list_to_survive = ['ZTF19aadyijk', 'ZTF18adbhrjs', 'ZTF19abhzelh', 'ZTF18abwwuug', 'ZTF19abahsgg', 'ZTF18acchzkf', 'ZTF19aalyleg', 'ZTF18acxyarg', 'ZTF18acsxpmp', 'ZTF19aavwbpc', 'ZTF18acybdar', 'ZTF19aapcvdi', 'ZTF19aatvlfl', 'ZTF19aavwbpc', 'ZTF18acbwaax', 'ZTF19aaezwmr', 'ZTF19aaokist', 'ZTF19aaabmng', 'ZTF18abmmdif', 'ZTF19abqanpy']
+
+        # print(self.fitresults)
+        # self.fitresults.query("name in @list_to_survive", inplace=True)
+        # print(self.fitresults)
 
         self.calculate_statistics()
 
@@ -145,7 +153,7 @@ class Cosmology:
         )
         names, x, y = self.get_annotations()
         for i, name in enumerate(names):
-            ax.annotate(name, (x[i], y[i]), size="xx-small")
+            ax.annotate(name, (x[i], y[i]), size="4.5", rotation=60)
         ax.grid(axis="y", which="both", linewidth=0.5)
         ax.set_ylim([-1, 1])
         ax.set_xlabel("redshift")
@@ -179,17 +187,19 @@ class Cosmology:
             image = PIL.Image.open(image).convert("RGB")
             good_rgbs.append(image)
         savepath = os.path.join(self.cosmology_dir, "good_objects.pdf")
-        good_rgbs[0].save(
-            savepath, save_all=True, append_images=good_rgbs[1:], quality=85
-        )
+        if good_rgbs:
+            good_rgbs[0].save(
+                savepath, save_all=True, append_images=good_rgbs[1:], quality=85
+            )
 
         for image in bad_images:
             image = PIL.Image.open(image).convert("RGB")
             bad_rgbs.append(image)
         savepath = os.path.join(self.cosmology_dir, "bad_objects.pdf")
-        bad_rgbs[0].save(
-            savepath, save_all=True, append_images=bad_rgbs[1:], quality=85
-        )
+        if bad_rgbs:
+            bad_rgbs[0].save(
+                savepath, save_all=True, append_images=bad_rgbs[1:], quality=85
+            )
 
 
 if __name__ == "__main__":

@@ -32,9 +32,10 @@ ALPHA_GRID = 0.165
 BETA_GRID = 2.7
 
 FIELD_REFERENCE = os.path.join(os.getcwd(), "data", "reference.csv")
-SPECTROSCOPIC_REFERENCE = os.path.join(
-    os.getcwd(), "data", "ztf_host_w_redshift_20190510.csv"
-)
+# SPECTROSCOPIC_REFERENCE = os.path.join(
+#     os.getcwd(), "data", "ztf_host_w_redshift_20190510.csv"
+# )
+SPECTROSCOPIC_REFERENCE = os.path.join(os.getcwd(), "data", "rcf_2020_03_12.csv")
 FILTER_TRANSLATION = {"p48r": 0, "p48g": 1, "p48i": 2}
 
 
@@ -213,12 +214,23 @@ class SaltFit:
     def check_redshift_precision(self):
         """ """
         spectroscopic_redshifts = pd.read_csv(SPECTROSCOPIC_REFERENCE)
-        reference_object = spectroscopic_redshifts.query(f'sn_name == "{self.name}"')
+        # reference_object = spectroscopic_redshifts.query(f'sn_name == "{self.name}"')
+        reference_object = spectroscopic_redshifts.query(f'ZTF_Name == "{self.name}"')
 
         if not reference_object.empty:
             self.logger.info(f"{self.name} Spectroscopic redshift found")
-            self.z = reference_object["sn_redshift"].values[0]
-            self.quality_info.update(z_spectro=True)
+            # self.z = reference_object["sn_redshift"].values[0]
+            z_recheck = reference_object["z_host_recheck"].values[0]
+            z_snid = reference_object["z_snid"].values[0]
+            if z_recheck != 100:
+                self.z = reference_object["z_host_recheck"].values[0]
+                self.quality_info.update(z_spectro=True)
+            else:
+                if z_snid != "nan":
+                    self.z = z_snid
+                else:
+                    self.logger.info(f"{self.name} No spectroscopic redshift found")
+                    self.quality_info.update(z_spectro=False)
         else:
             self.logger.info(f"{self.name} No spectroscopic redshift found")
             self.quality_info.update(z_spectro=False)
