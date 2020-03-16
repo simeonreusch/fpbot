@@ -465,14 +465,14 @@ class ForcedPhotometryPipeline:
             else:
                 print(f"\n{name} No new data to fit, skipping PSF fit")
 
-            print(f"\n{name} Plotting lightcurve")
-            from plot import plot_lightcurve
+            # print(f"\n{name} Plotting lightcurve")
+            # from plot import plot_lightcurve
 
-            plot_lightcurve(
-                name, snt=self.snt, daysago=self.daysago, daysuntil=self.daysuntil
-            )
+            # plot_lightcurve(
+            #     name, snt=self.snt, daysago=self.daysago, daysuntil=self.daysuntil
+            # )
 
-            print(f"\n{name} successfully fitted and plotted")
+            # print(f"\n{name} successfully fitted and plotted")
 
         metadata_db.close()
 
