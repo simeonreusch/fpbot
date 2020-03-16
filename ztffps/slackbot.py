@@ -2,7 +2,7 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de); part of this code is by Robert Stein (robert.stein@desy.de)
 # License: BSD-3-Clause
 
-import time, os, getpass
+import time, os, getpass, re
 from slack import RTMClient, WebClient
 import pipeline
 import numpy as np
@@ -35,7 +35,7 @@ with open(user_token_file, "wb") as f:
     f.write(user_token.encode())
 
 
-def run_on_event(thread_id, channel_id):
+def run_on_event(thread_id, channel_id, verbose=False):
     """ """
     wc = WebClient(token=user_token)
 
@@ -47,10 +47,12 @@ def run_on_event(thread_id, channel_id):
 
     data = payload["messages"][0]
 
+    if verbose:
+        print(data)
+
     user = data["user"]
-
-    split_message = data["text"].split()
-
+    message = data["text"].replace("*", "")
+    split_message = message.split()
     name = split_message[1]
     lc_path = os.path.join(lc_dir, f"{name}.csv")
     lc_plotdir = os.path.join(lc_dir, "plots")
@@ -362,9 +364,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-channel", "--channel", type=str, help="Slack Channel ID")
     parser.add_argument("-thread", "--thread", type=str, help="Slack Thread ID")
+    parser.add_argument(
+        "--verbose", "-verbose", action="store_true", help="Run in verbose mode",
+    )
 
     commandline_args = parser.parse_args()
     channel_id = commandline_args.channel
     thread_id = commandline_args.thread
+    verbose = commandline_args.verbose
 
-    run_on_event(thread_id=thread_id, channel_id=channel_id)
+    run_on_event(thread_id=thread_id, channel_id=channel_id, verbose=verbose)

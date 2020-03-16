@@ -2,7 +2,7 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de); part of this code is by Robert Stein (robert.stein@desy.de)
 # License: BSD-3-Clause
 
-import os, io, argparse
+import os, io, argparse, re
 from slack import RTMClient, WebClient
 from ztflc.io import LOCALDATA
 from slackbot import bot_token, user_token
@@ -35,14 +35,7 @@ def run_on_event(data):
 
 def is_ztf_string(string):
     """ """
-    if (
-        string[:3] == "ZTF"
-        and len(string) == 12
-        and (int(string[3]) == 1 or int(string[3]) == 2)
-    ):
-        return True
-    else:
-        return False
+    return re.match("^ZTF[1-2]\d[a-z]{7}$", string)
 
 
 @RTMClient.run_on(event="message")
@@ -53,8 +46,9 @@ def say_hello(**payload):
 
     if "text" in data.keys():
         slacktext = data["text"]
+        slacktext = slacktext.replace("*", "")
         split_message = slacktext.split(" ")
-        if split_message[0] in [f"<@{botuser}>", "FP", ":fp-emoji:"]:
+        if split_message[0] in [f"<@{botuser}>", "FP", "*FP*", ":fp-emoji:"]:
             channel_id = data["channel"]
             thread_ts = data["ts"]
             user = data["user"]
