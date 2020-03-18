@@ -820,6 +820,14 @@ if __name__ == "__main__":
         help="Last day you want to include. Default is today.",
     )
     parser.add_argument(
+        "-magrange",
+        "--magrange",
+        nargs=2,
+        type=float,
+        metavar=("magnitude bound 1", "magnitude limit 2"),
+        help="Provide two magnitudes which limit the plot's y-axis range.",
+    )
+    parser.add_argument(
         "--sendmail",
         "-sendmail",
         type=str,
@@ -877,6 +885,7 @@ if __name__ == "__main__":
     radec = commandline_args.radec
     daysago = commandline_args.daysago
     daysuntil = commandline_args.daysuntil
+    mag_range_unsorted = commandline_args.magrange
     do_plot = commandline_args.plot
     do_download = commandline_args.dl
     do_psffit = commandline_args.fit
@@ -901,10 +910,16 @@ if __name__ == "__main__":
         ra = None
         dec = None
 
+    # if magrange is passed as commandline argument, sort it
+    if mag_range_unsorted:
+        mag_range_unsorted = np.asarray(mag_range_unsorted)
+        mag_range = [np.min(mag_range_unsorted), np.max(mag_range_unsorted)]
+
     pl = ForcedPhotometryPipeline(
         file_or_name=name,
         daysago=daysago,
         daysuntil=daysuntil,
+        mag_range=mag_range,
         snt=snt,
         nprocess=nprocess,
         ra=ra,
