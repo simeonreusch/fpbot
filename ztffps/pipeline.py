@@ -914,6 +914,8 @@ if __name__ == "__main__":
     if mag_range_unsorted:
         mag_range_unsorted = np.asarray(mag_range_unsorted)
         mag_range = [np.min(mag_range_unsorted), np.max(mag_range_unsorted)]
+    else:
+        mag_range = None
 
     pl = ForcedPhotometryPipeline(
         file_or_name=name,
