@@ -47,6 +47,7 @@ def plot_lightcurve(
 
     ### apply time-range cut:
     now = Time(time.time(), format="unix", scale="utc").mjd
+    # bla = Time("2020-01-09", format="iso", scale="utc").mjd
 
     mjdmin = now - daysago if daysago is not None else 58208.5
     mjdmax = now - daysuntil if daysuntil is not None else now
@@ -246,6 +247,7 @@ def plot_lightcurve(
         )
 
     ax.axvline(x=now, color="grey", linewidth=0.5, linestyle="--")
+    # ax.axvline(x=bla, color="grey", linewidth=0.5, linestyle="--")
 
     if mag_range is None:
         ax.set_ylim([23, 15])

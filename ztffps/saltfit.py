@@ -22,7 +22,10 @@ import pipeline
 # we have to talk about this
 m = marshal.MarshalAccess()
 # m.load_target_sources("Cosmology")
-m = m.load_local("Cosmology")
+m.load_target_sources("Redshift Completeness Factor")
+# m = m.load_local("Cosmology")
+m = m.load_local("Redshift Completeness Factor")
+
 
 ALPHA_JLA = 0.141
 ALPHA_JLA_UNC = 0.006

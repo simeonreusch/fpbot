@@ -417,7 +417,7 @@ class ForcedPhotometryPipeline:
             except FileNotFoundError:
                 pass
 
-    def psffit(self, nprocess=None):
+    def psffit(self, nprocess=None, force_refit=False):
         """ """
         if nprocess is None:
             nprocess = self.nprocess
@@ -435,7 +435,7 @@ class ForcedPhotometryPipeline:
 
             try:
                 lastfit = query[0]["lastfit"]
-                if lastfit >= lastobs:
+                if lastfit >= lastobs and not force_refit:
                     do_fit = False
                 else:
                     do_fit = True
@@ -451,7 +451,12 @@ class ForcedPhotometryPipeline:
                 print(f"\n{name} Fitting PSF")
                 import matplotlib.pyplot as plt
 
-                fp.run_forcefit(verbose=False, nprocess=nprocess, store=True)
+                fp.run_forcefit(
+                    verbose=False,
+                    nprocess=nprocess,
+                    store=True,
+                    force_refit=force_refit,
+                )
                 fig = plt.figure(dpi=300)
                 ax = fig.add_subplot(111)
                 fp.show_lc(ax=ax)
@@ -877,6 +882,12 @@ if __name__ == "__main__":
         action="store_false",
         help="If this is passed, no updated images will be downloaded from IPAC. Intended for bulk downloads",
     )
+    parser.add_argument(
+        "--refit",
+        "-refit",
+        action="store_true",
+        help="Forces the pipeline to refit all psf data",
+    )
 
     commandline_args = parser.parse_args()
     nprocess = commandline_args.nprocess
@@ -885,7 +896,7 @@ if __name__ == "__main__":
     radec = commandline_args.radec
     daysago = commandline_args.daysago
     daysuntil = commandline_args.daysuntil
-    mag_range_unsorted = commandline_args.magrange
+    mag_range = commandline_args.magrange
     do_plot = commandline_args.plot
     do_download = commandline_args.dl
     do_psffit = commandline_args.fit
@@ -898,6 +909,7 @@ if __name__ == "__main__":
     update_disable = commandline_args.noupdate
     ampel = commandline_args.ampel
     download_newest = commandline_args.no_new_download
+    force_refit = commandline_args.refit
 
     # if thumbnails:
     #     sciimg = True
@@ -911,9 +923,11 @@ if __name__ == "__main__":
         dec = None
 
     # if magrange is passed as commandline argument, sort it
-    if mag_range_unsorted:
-        mag_range_unsorted = np.asarray(mag_range_unsorted)
-        mag_range = [np.min(mag_range_unsorted), np.max(mag_range_unsorted)]
+    if mag_range:
+        mag_range = np.asarray(mag_range)
+        mag_range = [np.min(mag_range), np.max(mag_range)]
+    else:
+        mag_range = None
 
     pl = ForcedPhotometryPipeline(
         file_or_name=name,
@@ -930,13 +944,12 @@ if __name__ == "__main__":
         ampel=ampel,
         download_newest=download_newest,
     )
-
     if do_filecheck:
         pl.global_filecheck()
     if do_download:
         pl.download()
     if do_psffit:
-        pl.psffit()
+        pl.psffit(force_refit=force_refit)
     if do_plot:
         pl.plot()
     if do_saltfit:
