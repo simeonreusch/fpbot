@@ -24,7 +24,7 @@ optionally:
 
 `-radec [RA DEC]`	If this is given, the name can be chosen arbitrarily (but a name MUST be provided). Radec must be given in a format that can be parsed by astropy; e.g. `-radec 218.487548 +40.243758`.
 
-### Additional commands
+#### Additional commands
 
 `-dl`        Downloads the images used for forced photometry from [IPAC](https://irsa.ipac.caltech.edu/account/signon/login.do?josso_back_to=https://irsa.ipac.caltech.edu/frontpage/&ts=517). Needs a valid IPAC account.
 
@@ -36,7 +36,7 @@ optionally:
 
 `-sciimg`  Experimental: Also downloads the science images from IPAC (note: to create thumbnails if specified)
 
-`-thumbnails` Experimental: Generates thumbnails for all science-images. Science images have to be downloaded (see `--sciimg`)
+`-thumbnails` Experimental: Generates thumbnails for all science-images. Science images have to be downloaded (see `-sciimg`)
 
 ### Options
 
