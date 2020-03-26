@@ -13,9 +13,11 @@ All required packages should be installed by issuing:
 Note that libpq-dev needs to be present. On Debian/Ubuntu, issue ```sudo apt install libpq-dev```
 
 ### Troubleshooting
-Make sure that ztfquery and ztflc are install with the latest version. In case way too few images are downloaded, check your Marshal and IRSA credentials. These are stored in ```~.ztfquery```. If there is a problem with these, ztfquery will not complain but simply only download publicly accessable images.
+Make sure that ztfquery and ztflc are installed with the latest version.
 
-In this case make sure also to delete the database-file, otherwise no new downloads will be attempted. The file is located at ```ZTFDATA/forcephotometry/meta/meta_database.json```.
+In case way too few images are downloaded, check your Marshal and IRSA credentials. These are stored in ```~.ztfquery```. If there is a problem with these, ztfquery will not complain but simply only download publicly accessable images.
+
+In this case also make sure to delete the database-file, otherwise no new downloads will be attempted. The file is located at ```ZTFDATA/forcephotometry/meta/meta_database.json```.
 
 ## Usage
 
