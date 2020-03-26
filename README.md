@@ -77,8 +77,8 @@ All functionality of the command-line tool is present in the class. Just call it
 ### Slackbot
 There is a bot for Slack included, based on the SlackRTM-API.
 You have to create a classic Slack app for this, because the newer version depends on the Events API, which itself seems to need a web server to run.
-Classic slack Apps can be create [here](https://api.slack.com/apps?new_classic_app=1). Make sure not to convert to the new permission/privilege system in the process (Slack tries to push you towards it, be careful).
-After successfully setting up the App/bot and giving it permissions, change the bot-username in slackbot_realtime.py and it should basically work (first start requires you to enter the bot- and bot-user credentials).
+Classic slack Apps can be created [here](https://api.slack.com/apps?new_classic_app=1). Make sure not to convert to the new permission/privilege system in the process (Slack tries to push you towards it, be careful).
+After successfully setting up the App/bot and giving it permissions, change the bot-username to the one of your bot in start_slackbot.py and it should basically work (first start requires you to enter the bot- and bot-user credentials, also provided by Slack).
 
 ### Saltfit module
 Still experimental! Performs saltfits on the generated lightcurves.
