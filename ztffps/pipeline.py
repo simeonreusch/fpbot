@@ -26,9 +26,9 @@ from tinydb.middlewares import CachingMiddleware
 try:
     ZTFDATA = os.getenv("ZTFDATA")
     FORCEPHOTODATA = os.path.join(ZTFDATA, "forcephotometry")
-except TypeError:
+except (TypeError, NameError):
     print(
-        "You have to export the environment variable ZTFDATA in your bash profile; e.g. export ZTFSATA='PATH_TO_ZTF_DATA_FOLDER'"
+        "You have to export the environment variable ZTFDATA in your bash profile; e.g. export ZTFDATA='ABSOLUTE/PATH/TO/ZTFDATA'"
     )
 
 # Define and create directories
