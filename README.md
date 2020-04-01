@@ -87,7 +87,7 @@ Still experimental! Performs saltfits on the generated lightcurves.
 
 ### Resulting dataframe
 The dataframes resulting after plotting (located at `ZTDATA/forcephotometry/plot/dataframes`) consists of the following columns:
-- *sigma(.err)*:
+- **sigma(.err)**:
 - *ampl(.err)*: The flux amplitude (error)
 - *fval*:
 - *chi2(dof)*: PSF-fit chi square (per degrees of freedom)
@@ -96,5 +96,5 @@ The dataframes resulting after plotting (located at `ZTDATA/forcephotometry/plot
 - *data_hasnan*: Data contains NaN-values (should always be False)
 - *F0*: Zero point magnitude from header converted to flux
 - *Fratio(.err)*: Flux to flux zero point ratio (error)
-- *upper_limit*: For forced photometry result < signal to noise threshold, this is the limiting magnitude from the Marshal
+- *upper_limit*: For forced photometry result < signal to noise threshold, this is the limiting magnitude from the Marshal (see *maglim* column)
 - *mag(_err)*: Flux amplitude (error) converted to magnitude. For detections below signal to noise threshold, this is 99
