@@ -84,3 +84,8 @@ After successfully setting up the App/bot and giving it permissions, change the 
 
 ### Saltfit module
 Still experimental! Performs saltfits on the generated lightcurves.
+
+### Resulting dataframe
+The dataframes resulting after plotting (located at `ZTDATA/forcephotometry/plot/dataframes`) consists of the following columns:
+- *ampl*: The flux amplitude
+- *ampl.err* The error on the flux amplitude
