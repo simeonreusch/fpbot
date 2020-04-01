@@ -87,9 +87,9 @@ Still experimental! Performs saltfits on the generated lightcurves.
 
 ### Resulting dataframe
 The dataframes resulting after plotting (located at `ZTDATA/forcephotometry/plot/dataframes`) consists of the following columns:
-- **sigma(.err)**:
+- **sigma(.err)**: The intrinsic error
 - **ampl(.err)**: The flux amplitude (error)
-- **fval**:
+- **fval**: Total minimized value
 - **chi2(dof)**: PSF-fit chi square (per degrees of freedom)
 - **Columns 9-39**: The science image header
 - **target_x/y**: pixel position of target
