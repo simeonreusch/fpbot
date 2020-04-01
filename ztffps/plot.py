@@ -73,7 +73,7 @@ def plot_lightcurve(
     lc["Fratio.err"] = np.sqrt(
         (lc["ampl.err"] / lc.F0) ** 2 + (lc.ampl * lc["F0.err"] / lc.F0 ** 2) ** 2
     )
-    lc["limmag"] = -2.5 * np.log10(5 * lc["Fratio.err"])
+    # lc["limmag"] = -2.5 * np.log10(5 * lc["Fratio.err"])
     mags = []
     mags_unc = []
     upper_limits = []
