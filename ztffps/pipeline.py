@@ -165,7 +165,7 @@ class ForcedPhotometryPipeline:
                 self.object_list[0][:3] == "ZTF" and len(self.object_list[0]) == 12
             ), "You have to provide either a ZTF name or a file containing ZTF names (1 per line)"
         print(f"Doing forced photometry for {len(self.object_list)} SNe")
-        print("Logs are stored in pipeline.log")
+        print("Logs are stored in log")
 
     def update_database_with_given_radec(self):
         """ """
@@ -456,6 +456,7 @@ class ForcedPhotometryPipeline:
                     nprocess=nprocess,
                     store=True,
                     force_refit=force_refit,
+                    no_badsub=True,
                 )
                 fig = plt.figure(dpi=300)
                 ax = fig.add_subplot(111)
