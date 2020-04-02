@@ -120,13 +120,6 @@ class Cosmology:
         self.survival_number = len(self.fitresults)
         self.survival_percent = self.survival_percent(len(self.fitresults))
 
-        # Manual override
-        # list_to_survive = ['ZTF19aadyijk', 'ZTF18adbhrjs', 'ZTF19abhzelh', 'ZTF18abwwuug', 'ZTF19abahsgg', 'ZTF18acchzkf', 'ZTF19aalyleg', 'ZTF18acxyarg', 'ZTF18acsxpmp', 'ZTF19aavwbpc', 'ZTF18acybdar', 'ZTF19aapcvdi', 'ZTF19aatvlfl', 'ZTF19aavwbpc', 'ZTF18acbwaax', 'ZTF19aaezwmr', 'ZTF19aaokist', 'ZTF19aaabmng', 'ZTF18abmmdif', 'ZTF19abqanpy']
-
-        # print(self.fitresults)
-        # self.fitresults.query("name in @list_to_survive", inplace=True)
-        # print(self.fitresults)
-
         self.calculate_statistics()
 
         self.fitresults.to_csv(os.path.join(self.cosmology_dir, "cosmology.csv"))

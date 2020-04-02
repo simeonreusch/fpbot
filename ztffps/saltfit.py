@@ -229,7 +229,7 @@ class SaltFit:
                 self.z = reference_object["z_host_recheck"].values[0]
                 self.quality_info.update(z_spectro=True)
             else:
-                if z_snid != "nan":
+                if z_snid != "nan" and ~np.isnan(z_snid):
                     self.z = z_snid
                 else:
                     self.logger.info(f"{self.name} No spectroscopic redshift found")
