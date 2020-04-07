@@ -863,7 +863,7 @@ if __name__ == "__main__":
         "--update",
         "-update",
         action="store_true",
-        help="Enorce update on alert photometry from Marshal/AMPEL",
+        help="Enforce update on alert photometry from Marshal/AMPEL",
     )
     parser.add_argument(
         "--noupdate",
