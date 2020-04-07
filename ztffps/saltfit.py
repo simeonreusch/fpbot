@@ -265,8 +265,11 @@ class SaltFit:
         self.snt = snt
         dust = sncosmo.CCM89Dust()
         self.lightcurve = self.lightcurve.query(
-            "chi2 > 0 and Fratio > (Fratio_unc * @self.snt) and filter != 'p48i'"
+            "chi2 > 0 and Fratio > (Fratio_unc * @self.snt)"
         )
+        # self.lightcurve = self.lightcurve.query(
+        #     "chi2 > 0 and Fratio > (Fratio_unc * @self.snt) and filter != 'p48i'"
+        # )
 
         if quality_checks:
             self.check_redshift_precision()

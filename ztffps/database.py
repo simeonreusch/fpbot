@@ -7,13 +7,13 @@ from tinydb import TinyDB, Query
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 
-from pipeline import METADATA
-
 
 def read_data(ztf_objects: Union[list, str], requested_data: list, logger=None) -> Any:
     """
     Returns entries in metadata database for all ztf_objects given that are requested in requested_data
     """
+    from pipeline import METADATA
+
     if logger is None:
         logger = logging.getLogger("database")
     assert isinstance(requested_data, list)

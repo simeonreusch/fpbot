@@ -67,6 +67,20 @@ class Cosmology:
 
     def prune_fitresults(self):
         """ """
+        # exclude non Ia-datapoints
+        rcf = pd.read_csv("data/rcf_2020_03_12.csv")
+
+        ia_list = []
+        for ztf_name in self.fitresults.index.values:
+            query = rcf.query(f"ZTF_Name == '{ztf_name}'")["snid_type"]
+            if len(query) == 1:
+                if query.values[0] == "Ia" or query.values[0] == "Ia-norm":
+                    ia_list.append(ztf_name)
+
+        self.fitresults.query(f"index in @ia_list", inplace=True)
+        print(len(self.fitresults))
+
+        # Other pruning criteria
         self.fitresults.query("z <= @self.max_redshift", inplace=True)
         self.logger.info(
             f"surviving redshift range cut: {len(self.fitresults)} ({self.survival_percent(len(self.fitresults)):2.2f} %)"
