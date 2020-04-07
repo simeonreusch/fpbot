@@ -11,6 +11,7 @@ from astropy.time import Time
 import matplotlib.pyplot as plt
 from datetime import datetime, date
 import pipeline
+from database import read_data
 from tinydb import TinyDB, Query
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
@@ -31,12 +32,7 @@ def plot_lightcurve(
 
     lc = pd.read_csv(lc_path)
 
-    # Read Marshal Alert Data from metadata database
-    metadata_db = TinyDB(
-        os.path.join(pipeline.METADATA, "meta_database.json"),
-        storage=CachingMiddleware(JSONStorage),
-    )
-    alert_data = metadata_db.search(Query().name == name)[0]["alert_data"]
+    alert_data = read_data(name, ["alert_data"])["alert_data"][0]
 
     if alert_data is not None:
         alert_jd = alert_data["jdobs"]

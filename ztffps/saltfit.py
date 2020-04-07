@@ -265,7 +265,7 @@ class SaltFit:
         self.snt = snt
         dust = sncosmo.CCM89Dust()
         self.lightcurve = self.lightcurve.query(
-            "chi2 > 0 and Fratio > (Fratio_unc * @self.snt)"
+            "chi2 > 0 and Fratio > (Fratio_unc * @self.snt) and filter != 'p48i'"
         )
 
         if quality_checks:
@@ -439,3 +439,53 @@ def fit_salt(name, mwebv, snt, quality_checks=False, alertfit=False, logger=None
     saltfit = SaltFit(name, mwebv=mwebv, plot=True, alertfit=alertfit, logger=logger)
     saltfit.fit(snt=snt, quality_checks=quality_checks)
     return saltfit.result, saltfit.fitted_model
+
+
+if __name__ == "__main__":
+    """"""
+    from database import read_data
+    import sfdmap
+
+    logger = logging.getLogger("saltfit")
+
+    dustmap = sfdmap.SFDMap()
+
+    parser = argparse.ArgumentParser(
+        description="Doing a salt fit for ZTF object given"
+    )
+
+    parser.add_argument(
+        "name", type=str, help='Provide a ZTF name (e.g. "ZTF19aaelulu")',
+    )
+
+    parser.add_argument(
+        "--snt",
+        "-snt",
+        type=float,
+        default=5,
+        help="Provide a signal to noise. Default: 5",
+    )
+    parser.add_argument(
+        "--alert",
+        "-alert",
+        action="store_true",
+        help="Do saltfit for alert photometry",
+    )
+
+    commandline_args = parser.parse_args()
+    name = commandline_args.name
+    snt = commandline_args.snt
+    alertfit = commandline_args.alert
+
+    metadata = read_data(name, ["ra", "dec"])
+    ra = metadata["ra"][0]
+    dec = metadata["dec"][0]
+
+    if ra is None:
+        logger.warning("No entry in database found. Exiting.")
+        quit()
+    mwebv = dustmap.ebv(ra, dec,)
+
+    fit_salt(
+        name=name, snt=snt, mwebv=mwebv, quality_checks=False, alertfit=alertfit,
+    )

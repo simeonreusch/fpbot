@@ -22,6 +22,7 @@ import requests.exceptions
 from tinydb import TinyDB, Query
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
+import database
 
 try:
     ZTFDATA = os.getenv("ZTFDATA")
@@ -352,6 +353,7 @@ class ForcedPhotometryPipeline:
 
             # In case download_newest option is passed: Download only if it has never been downloaded before
             # (useful for bulk downloads which repeatedly fail because IPAC is unstable)
+
             if self.download_newest is False:
                 try:
                     last_download = query[0]["lastdownload"]
@@ -954,7 +956,7 @@ if __name__ == "__main__":
     if do_plot:
         pl.plot()
     if do_saltfit:
-        pl.saltfit(quality_checks=True, alertfit=True)
+        # pl.saltfit(quality_checks=True, alertfit=True)
         pl.saltfit(quality_checks=True, alertfit=False)
     if targetmail:
         pl.sendmail(targetmail)
