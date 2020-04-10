@@ -19,7 +19,6 @@ from astropy.coordinates import SkyCoord
 from astropy import units as u
 from astropy.utils.console import ProgressBar
 import requests.exceptions
-from tinydb import TinyDB, Query
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 import database
@@ -103,12 +102,6 @@ class ForcedPhotometryPipeline:
         self.ampel = ampel
         self.download_newest = download_newest
 
-        # # create local database with metadata for performance reasons and as backup if Marshal and Ampel are both not reachable
-        self.metadata_db = TinyDB(
-            os.path.join(METADATA, "meta_database.json"),
-            storage=CachingMiddleware(JSONStorage),
-        )
-
         # parse different formats of ra and dec
         if ra is not None and dec is not None:
             if str(ra)[2] == ":" or str(ra)[2] == "h":
@@ -186,7 +179,9 @@ class ForcedPhotometryPipeline:
             jdmax = now
         else:
             jdmax = now - self.daysuntil
-        self.metadata_db.upsert(
+
+        database.update_database(
+            name,
             {
                 "name": name,
                 "ra": ra,
@@ -198,13 +193,12 @@ class ForcedPhotometryPipeline:
                 "lastobs": None,
                 "alert_data": None,
             },
-            Query().name == name,
         )
-        self.metadata_db.close()
 
     def get_position_and_timerange(self):
-        """ """
-        # Check for entry in database
+        """
+        Check for entry in database and update with AMPEL or Marshal
+        """
         print("\nChecking database")
         progress_bar = ProgressBar(len(self.object_list))
         needs_external_database = []
@@ -213,10 +207,10 @@ class ForcedPhotometryPipeline:
             print("\nForced updating of alert data from Marshal/AMPEL")
 
         for index, name in enumerate(self.object_list):
-            local_queryresult = self.metadata_db.search(Query().name == name)
+            query = database.read_database(name, ["entries"])
             if (
-                len(local_queryresult) == 0
-                or local_queryresult[0]["entries"] < 10
+                query["entries"][0] == None
+                or query["entries"][0] < 10
                 or self.update_enforce
             ):
                 needs_external_database.append(name)
@@ -294,7 +288,8 @@ class ForcedPhotometryPipeline:
                 magzp = result[10]
                 magzp_err = result[11]
 
-                self.metadata_db.upsert(
+                database.update_database(
+                    name,
                     {
                         "name": name,
                         "ra": ra,
@@ -314,12 +309,9 @@ class ForcedPhotometryPipeline:
                             "magzp_err": magzp_err,
                         },
                     },
-                    Query().name == name,
                 )
                 progress_bar.update(index)
             progress_bar.update(len(connector.queryresult))
-
-        self.metadata_db.close()
 
     def check_if_present_in_metadata(self):
         """Check for which objects there are infos available
@@ -329,47 +321,40 @@ class ForcedPhotometryPipeline:
         objectcount = len(self.object_list)
         progress_bar = ProgressBar(objectcount)
 
-        metadata_db = TinyDB(
-            os.path.join(METADATA, "meta_database.json"),
-            storage=CachingMiddleware(JSONStorage),
-        )
-
         for index, name in enumerate(self.object_list):
-            query = metadata_db.search(Query().name == name)
+            query = database.read_database(name, ["entries"])
             progress_bar.update(index)
-            if len(query) == 0 or query[0]["entries"] == 0:
+            if query["entries"][0] == None:
                 self.object_list.remove(name)
                 print(
                     f"\n{name} could not be found in metadata database. Will not download or fit"
                 )
         progress_bar.update(objectcount)
-        metadata_db.close()
 
     def download(self):
         """ """
         for name in self.object_list:
-            metadata_db = TinyDB(os.path.join(METADATA, "meta_database.json"),)
-            query = metadata_db.search(Query().name == name)
+            query = database.read_database(name, ["lastdownload"])
 
             # In case download_newest option is passed: Download only if it has never been downloaded before
             # (useful for bulk downloads which repeatedly fail because IPAC is unstable)
 
             if self.download_newest is False:
-                try:
-                    last_download = query[0]["lastdownload"]
-                    do_download = False
-                except (KeyError, TypeError):
+                last_download = query["lastdownload"][0]
+                if last_download is None:
                     do_download = True
+                else:
+                    do_download = False
             else:
                 do_download = True
 
             if do_download:
                 self.logger.info(f"\n{name} Starting download")
-                query = self.metadata_db.search(Query().name == name)
-                ra = query[0]["ra"]
-                dec = query[0]["dec"]
-                jdmin = query[0]["jdmin"]
-                jdmax = query[0]["jdmax"]
+                query = database.read_database(name, ["ra", "dec", "jdmin", "jdmax"])
+                ra = query["ra"][0]
+                dec = query["dec"][0]
+                jdmin = query["jdmin"][0]
+                jdmax = query["jdmax"][0]
                 fp = forcephotometry.ForcePhotometry.from_coords(
                     ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
                 )
@@ -403,11 +388,7 @@ class ForcedPhotometryPipeline:
 
                 last_download = Time(time.time(), format="unix", scale="utc").jd
 
-                metadata_db.upsert(
-                    {"lastdownload": last_download}, Query().name == name,
-                )
-
-            metadata_db.close()
+                database.update_database(name, {"lastdownload": last_download})
 
     def check_if_psf_data_exists(self):
         """ """
@@ -424,25 +405,26 @@ class ForcedPhotometryPipeline:
         if nprocess is None:
             nprocess = self.nprocess
 
-        metadata_db = TinyDB(os.path.join(METADATA, "meta_database.json"),)
+        query = database.read_database(
+            self.object_list, ["ra", "dec", "jdmin", "jdmax", "lastobs", "lastfit"]
+        )
 
         for i, name in enumerate(self.object_list):
 
-            query = metadata_db.search(Query().name == name)
-            ra = query[0]["ra"]
-            dec = query[0]["dec"]
-            jdmin = query[0]["jdmin"]
-            jdmax = query[0]["jdmax"]
-            lastobs = query[0]["lastobs"]
+            ra = query["ra"][i]
+            dec = query["dec"][i]
+            jdmin = query["jdmin"][i]
+            jdmax = query["jdmax"][i]
+            lastobs = query["lastobs"][i]
+            lastfit = query["lastfit"][i]
 
-            try:
-                lastfit = query[0]["lastfit"]
+            if lastfit is None:
+                do_fit = True
+            else:
                 if lastfit >= lastobs and not force_refit:
                     do_fit = False
                 else:
                     do_fit = True
-            except (KeyError, TypeError):
-                do_fit = True
 
             if do_fit:
                 fp = forcephotometry.ForcePhotometry.from_coords(
@@ -467,22 +449,16 @@ class ForcedPhotometryPipeline:
 
                 lastfit = Time(time.time(), format="unix", scale="utc").jd
 
-                metadata_db.upsert(
-                    {"lastfit": lastfit}, Query().name == name,
-                )
+                database.update_database(name, {"lastfit": lastfit})
             else:
                 print(f"\n{name} No new data to fit, skipping PSF fit")
 
             # print(f"\n{name} Plotting lightcurve")
             # from plot import plot_lightcurve
-
             # plot_lightcurve(
             #     name, snt=self.snt, daysago=self.daysago, daysuntil=self.daysuntil
             # )
-
             # print(f"\n{name} successfully fitted and plotted")
-
-        metadata_db.close()
 
     def plot(self, nprocess=4, progress=True):
         """ """
@@ -538,10 +514,8 @@ class ForcedPhotometryPipeline:
         from saltfit import fit_salt
 
         # Read info from metadata databse and update it with mwebv
-        metadata_db = TinyDB(
-            os.path.join(METADATA, "meta_database.json"),
-            storage=CachingMiddleware(JSONStorage),
-        )
+        query = database.read_database(self.cleaned_object_list, ["ra", "dec", "mwebv"])
+
         dustmap = sfdmap.SFDMap()
 
         objectcount = len(self.cleaned_object_list)
@@ -549,15 +523,13 @@ class ForcedPhotometryPipeline:
         print("\nChecking if all mwebv-data is present and compute if not")
 
         for index, name in enumerate(self.cleaned_object_list):
-            query = metadata_db.search(Query().name == name)
-            ra = query[0]["ra"]
-            dec = query[0]["dec"]
-            if query[0]["mwebv"] is None:
+            ra = query["ra"][index]
+            dec = query["dec"][index]
+            if query["mwebv"][index] is None:
                 mwebv = dustmap.ebv(ra, dec,)
-                query[0]["mwebv"] = mwebv
-                metadata_db.write_back(query)
+                database.update_database(name, {"mwebv": mwebv})
             progress_bar.update(index)
-        metadata_db.close()
+
         progress_bar.update(objectcount)
 
         object_count = len(self.cleaned_object_list)
@@ -608,7 +580,8 @@ class ForcedPhotometryPipeline:
                 fitresult, fitted_model = fit_salt(
                     name=name,
                     snt=snt,
-                    mwebv=self.metadata_db.search(Query().name == name)[0]["mwebv"],
+                    # mwebv=self.metadata_db.search(Query().name == name)[0]["mwebv"],
+                    mwebv=database.read_database(name, ["mwebv"])["mwebv"][0],
                     quality_checks=quality_checks,
                     alertfit=alertfit,
                 )
@@ -745,10 +718,11 @@ class ForcedPhotometryPipeline:
         # Note: Currently when run at DESY, this generates distorted plot headings
         # when multiprocessed. Therefore nprocess is set to 1.
 
+        query = database.read_database(self.object_list, ["ra", "dec"])
+
         for index, name in enumerate(self.object_list):
-            query = self.metadata_db.search(Query().name == name)
-            ra = query[0]["ra"]
-            dec = query[0]["dec"]
+            ra = query["ra"][index]
+            dec = query["dec"][index]
 
             generate_thumbnails(
                 name=name,
