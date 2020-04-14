@@ -70,6 +70,12 @@ class Cosmology:
         # exclude non Ia-datapoints
         rcf = pd.read_csv("data/rcf_2020_03_12.csv")
 
+        # include only those in alert photometry cosmology that are present in forced photometry cosmology
+        if self.alert:
+            fp_fit = pd.read_csv(os.path.join(self.cosmology_dir, "cosmology.csv"))
+            fp_fit_list = fp_fit["name"].values
+            self.fitresults.query(f"index in @fp_fit_list", inplace=True)
+
         ia_list = []
         for ztf_name in self.fitresults.index.values:
             query = rcf.query(f"ZTF_Name == '{ztf_name}'")["snid_type"]
@@ -78,7 +84,6 @@ class Cosmology:
                     ia_list.append(ztf_name)
 
         self.fitresults.query(f"index in @ia_list", inplace=True)
-        print(len(self.fitresults))
 
         # Other pruning criteria
         self.fitresults.query("z <= @self.max_redshift", inplace=True)
@@ -136,7 +141,12 @@ class Cosmology:
 
         self.calculate_statistics()
 
-        self.fitresults.to_csv(os.path.join(self.cosmology_dir, "cosmology.csv"))
+        if self.alert:
+            self.fitresults.to_csv(
+                os.path.join(self.cosmology_dir, "cosmology_alert.csv")
+            )
+        else:
+            self.fitresults.to_csv(os.path.join(self.cosmology_dir, "cosmology.csv"))
 
     def calculate_statistics(self):
         """ """
