@@ -318,18 +318,18 @@ class ForcedPhotometryPipeline:
         Delete from object-list if no info is available"""
 
         print("\nChecking if alert data is present in metadata database")
-        objectcount = len(self.object_list)
-        progress_bar = ProgressBar(objectcount)
 
-        for index, name in enumerate(self.object_list):
-            query = database.read_database(name, ["entries"])
-            progress_bar.update(index)
-            if query["entries"][0] == None:
-                self.object_list.remove(name)
-                print(
-                    f"\n{name} could not be found in metadata database. Will not download or fit"
-                )
-        progress_bar.update(objectcount)
+        query = database.read_database(self.object_list, ["name", "entries"])
+        not_found = []
+        for index, entry in enumerate(query["entries"]):
+            if entry == None:
+                not_found.append(self.object_list[index])
+                del self.object_list[index]
+
+        if not_found:
+            print(
+                f"\nThese could not be found in meta database. Will not be downloaded or fit: {not_found}"
+            )
 
     def download(self):
         """ """
@@ -580,7 +580,6 @@ class ForcedPhotometryPipeline:
                 fitresult, fitted_model = fit_salt(
                     name=name,
                     snt=snt,
-                    # mwebv=self.metadata_db.search(Query().name == name)[0]["mwebv"],
                     mwebv=database.read_database(name, ["mwebv"])["mwebv"][0],
                     quality_checks=quality_checks,
                     alertfit=alertfit,
@@ -930,8 +929,8 @@ if __name__ == "__main__":
     if do_plot:
         pl.plot()
     if do_saltfit:
-        # pl.saltfit(quality_checks=True, alertfit=True)
-        pl.saltfit(quality_checks=True, alertfit=False)
+        pl.saltfit(quality_checks=True, alertfit=True)
+        # pl.saltfit(quality_checks=True, alertfit=False)
     if targetmail:
         pl.sendmail(targetmail)
     if thumbnails:

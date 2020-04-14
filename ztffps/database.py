@@ -6,6 +6,7 @@ from typing import Union, Any, Sequence, Tuple
 from tinydb import TinyDB, Query
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
+from astropy.utils.console import ProgressBar
 
 
 def read_database(
@@ -13,6 +14,9 @@ def read_database(
 ) -> Any:
     """
     Returns entries in metadata database for all ztf_objects given that are requested in requested_data
+    Note: When doing bulk requests, it is much faster to query a list than
+    do invidual queries in a loop, as the database has to be loaded
+    for each individual query
     """
     from pipeline import METADATA
 
@@ -22,12 +26,18 @@ def read_database(
     assert isinstance(requested_data, list) or isinstance(requested_data, str)
     assert isinstance(ztf_objects, list) or isinstance(ztf_objects, str)
 
-    metadata_db = TinyDB(os.path.join(METADATA, "meta_database.json"))
+    metadata_db = TinyDB(
+        os.path.join(METADATA, "meta_database.json"),
+        storage=CachingMiddleware(JSONStorage),
+    )
 
     if isinstance(ztf_objects, str):
         ztf_objects = [ztf_objects]
     if isinstance(requested_data, str):
         requested_data = [requested_data]
+
+    objectcount = len(ztf_objects)
+    progress_bar = ProgressBar(objectcount)
 
     dict_for_return_values = collections.defaultdict(list)
     for i, name in enumerate(ztf_objects):
@@ -42,7 +52,9 @@ def read_database(
             logger.warning(f"\nNo entry found for {name}, will return none")
             for entry in requested_data:
                 dict_for_return_values[entry].append(None)
+        progress_bar.update(i)
 
+    progress_bar.update(objectcount)
     metadata_db.close()
 
     return dict_for_return_values
