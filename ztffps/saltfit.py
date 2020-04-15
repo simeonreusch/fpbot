@@ -441,12 +441,13 @@ def fit_salt(name, mwebv, snt, quality_checks=False, alertfit=False, logger=None
     """ """
     saltfit = SaltFit(name, mwebv=mwebv, plot=True, alertfit=alertfit, logger=logger)
     saltfit.fit(snt=snt, quality_checks=quality_checks)
+    print(saltfit.result)
     return saltfit.result, saltfit.fitted_model
 
 
 if __name__ == "__main__":
     """"""
-    from database import read_data
+    from database import read_database
     import sfdmap
 
     logger = logging.getLogger("saltfit")
@@ -480,7 +481,7 @@ if __name__ == "__main__":
     snt = commandline_args.snt
     alertfit = commandline_args.alert
 
-    metadata = read_data(name, ["ra", "dec"])
+    metadata = read_database(name, ["ra", "dec"])
     ra = metadata["ra"][0]
     dec = metadata["dec"][0]
 
