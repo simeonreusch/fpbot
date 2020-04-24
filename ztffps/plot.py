@@ -11,7 +11,7 @@ from astropy.time import Time
 import matplotlib.pyplot as plt
 from datetime import datetime, date
 import pipeline
-from database import read_data
+from database import read_database
 from tinydb import TinyDB, Query
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
