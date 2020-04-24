@@ -930,7 +930,7 @@ if __name__ == "__main__":
         pl.plot()
     if do_saltfit:
         pl.saltfit(quality_checks=True, alertfit=True)
-        # pl.saltfit(quality_checks=True, alertfit=False)
+        pl.saltfit(quality_checks=True, alertfit=False)
     if targetmail:
         pl.sendmail(targetmail)
     if thumbnails:

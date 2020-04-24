@@ -2,7 +2,7 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import time, os, sys, argparse, re
+import time, os, sys, argparse, re, pickle
 from ztfquery import marshal
 from ztflc.io import LOCALDATA
 import pandas as pd
@@ -345,7 +345,7 @@ class SaltFit:
         )
 
         # Plot
-        fig = sncosmo.plot_lc(
+        fig, pull = sncosmo.plot_lc(
             self.lightcurve_sncosmo,
             model=self.fitted_model,
             errors=self.fitresult.errors,
@@ -435,13 +435,31 @@ class SaltFit:
         else:
             self.logger.info(f"{self.name} Fit failed")
             self.result = None
+        if self.alertfit:
+            pickle.dump(
+                pull,
+                open(
+                    os.path.join(
+                        LOCALDATA, "salt", "pull", f"{self.name}_pull_alert.pickle"
+                    ),
+                    "wb",
+                ),
+            )
+        else:
+            pickle.dump(
+                pull,
+                open(
+                    os.path.join(LOCALDATA, "salt", "pull", f"{self.name}_pull.pickle"),
+                    "wb",
+                ),
+            )
 
 
 def fit_salt(name, mwebv, snt, quality_checks=False, alertfit=False, logger=None):
     """ """
     saltfit = SaltFit(name, mwebv=mwebv, plot=True, alertfit=alertfit, logger=logger)
     saltfit.fit(snt=snt, quality_checks=quality_checks)
-    print(saltfit.result)
+
     return saltfit.result, saltfit.fitted_model
 
 
