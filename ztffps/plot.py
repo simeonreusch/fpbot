@@ -32,7 +32,7 @@ def plot_lightcurve(
 
     lc = pd.read_csv(lc_path)
 
-    alert_data = read_data(name, ["alert_data"])["alert_data"][0]
+    alert_data = read_database(name, ["alert_data"])["alert_data"][0]
 
     if alert_data is not None:
         alert_jd = alert_data["jdobs"]
