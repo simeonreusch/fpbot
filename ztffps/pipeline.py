@@ -358,7 +358,7 @@ class ForcedPhotometryPipeline:
                 fp = forcephotometry.ForcePhotometry.from_coords(
                     ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
                 )
-                self.logger.info(f"{name} Downloading data")
+                self.logger.info(f"\n{name} Downloading data")
                 if not os.path.exists(
                     os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
                 ):
