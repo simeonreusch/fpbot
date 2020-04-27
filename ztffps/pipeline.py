@@ -206,7 +206,6 @@ class ForcedPhotometryPipeline:
         if self.update_enforce:
             print("\nForced updating of alert data from Marshal/AMPEL")
 
-        self.object_list = ["ZTF20aaelulu", "ZTF19aapreis"]
         query = database.read_database(self.object_list, ["name", "entries"])
 
         for index, name in enumerate(self.object_list):
