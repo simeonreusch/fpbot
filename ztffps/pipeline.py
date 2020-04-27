@@ -206,11 +206,13 @@ class ForcedPhotometryPipeline:
         if self.update_enforce:
             print("\nForced updating of alert data from Marshal/AMPEL")
 
+        self.object_list = ["ZTF20aaelulu", "ZTF19aapreis"]
+        query = database.read_database(self.object_list, ["name", "entries"])
+
         for index, name in enumerate(self.object_list):
-            query = database.read_database(name, ["entries"])
             if (
-                query["entries"][0] == None
-                or query["entries"][0] < 10
+                query["entries"][index] == None
+                or query["entries"][index] < 10
                 or self.update_enforce
             ):
                 needs_external_database.append(name)
