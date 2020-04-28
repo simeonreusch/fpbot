@@ -130,6 +130,9 @@ class ForcedPhotometryPipeline:
                 self.object_list = self.file_or_name
             else:
                 raise TypeError
+            print(self.object_list)
+            self.check_for_duplicates()
+            print(self.object_list)
             if not self.update_disable:
                 self.get_position_and_timerange()
             self.check_if_present_in_metadata()
@@ -160,6 +163,10 @@ class ForcedPhotometryPipeline:
             ), "You have to provide either a ZTF name or a file containing ZTF names (1 per line)"
         print(f"Doing forced photometry for {len(self.object_list)} SNe")
         print("Logs are stored in log")
+
+    def check_for_duplicates(self):
+        """ """
+        self.object_list = list(dict.fromkeys(self.object_list))
 
     def update_database_with_given_radec(self):
         """ """
