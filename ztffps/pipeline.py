@@ -778,12 +778,20 @@ if __name__ == "__main__":
     )
 
     # operational args, defining HOW to run
+
+    # Obtain number of available cores
+    n_cores = multiprocessing.cpu_count()
+    if n_cores < 8:
+        nprocess_default = 4
+    else:
+        nprocess_default = int(n_cores / 2)
+
     parser.add_argument(
         "--nprocess",
         "-nprocess",
         type=int,
-        default=4,
-        help="Number of parallel threads. Default: 4",
+        default=nprocess_default,
+        help="Number of parallel threads. Default: 4 if n_cores <= 8, else half of the cores",
     )
     parser.add_argument(
         "--snt",
