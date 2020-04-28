@@ -130,9 +130,7 @@ class ForcedPhotometryPipeline:
                 self.object_list = self.file_or_name
             else:
                 raise TypeError
-            print(self.object_list)
             self.check_for_duplicates()
-            print(self.object_list)
             if not self.update_disable:
                 self.get_position_and_timerange()
             self.check_if_present_in_metadata()
