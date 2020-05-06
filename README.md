@@ -2,7 +2,7 @@
 
 Provides a Forced Photometry Pipeline based on [ztfquery](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery), needs [IPAC](https://irsa.ipac.caltech.edu/account/signon/login.do?josso_back_to=https://irsa.ipac.caltech.edu/frontpage/&ts=517) as well as [Marshal](http://skipper.caltech.edu:8080/cgi-bin/growth/marshal.cgi) or [AMPEL](https://github.com/ampelproject) access.
 
-Note: Requires Python >= 3.6.
+Note: Requires Python >= 3.6. Also requires a MongoDB instance for storing the metadata, reachable under port 27016. This can be modified of course.
 
 ## Installation
 
@@ -11,6 +11,12 @@ All required packages should be installed by issuing:
 ```pip3 install -r requirements.txt```
 
 Note that libpq-dev needs to be present. On Debian/Ubuntu, issue ```sudo apt install libpq-dev```
+
+If MongoDB is not present, it can easily be installed. On Debian/Ubuntu, run ```sudo apt install mongodb```. This also takes care of the demon running in the background. On MacOS, make sure brew is present and issue first ```brew tap mongodb/brew``` ```and then brew install mongodb-community@4.2```. Lastly, start the demon with ```mongod --config /usr/local/etc/mongod.conf --fork```.
+
+If you want AMPEL for alert data (you don't have to!), you have to install the AMPEL requirements (and of course have credentials for AMPEL) with
+
+```pip3 install -r ampel_requirements.txt```
 
 ### Troubleshooting
 Make sure that ztfquery and ztflc are installed with the latest version.

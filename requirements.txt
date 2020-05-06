@@ -16,3 +16,4 @@ psycopg2
 tinydb
 iminuit
 sfdmap
+pymongo
