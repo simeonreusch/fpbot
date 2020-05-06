@@ -15,3 +15,4 @@ bs4
 psycopg2
 tinydb
 iminuit
+sfdmap

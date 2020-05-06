@@ -21,6 +21,8 @@ def plot_lightcurve(
     name, snt=5.0, daysago=None, daysuntil=None, mag_range=None, logger=None
 ):
     """ """
+    import database
+
     if logger is None:
         logging.basicConfig(level=logging.INFO)
         logger = logging.getLogger()
@@ -32,14 +34,24 @@ def plot_lightcurve(
 
     lc = pd.read_csv(lc_path)
 
-    alert_data = read_database(name, ["alert_data"])["alert_data"][0]
+    # alert_data = read_database(name, ["alert_data"])["alert_data"][0]
+    # print(alert_data)
+    # if alert_data is not None:
+    #     alert_jd = alert_data["jdobs"]
+    #     alert_mjd = np.asarray(alert_jd) - 2400000.5
+    #     alert_mag = alert_data["mag"]
+    #     alert_magerr = alert_data["magerr"]
+    #     alert_fid = alert_data["fid"]
 
-    if alert_data is not None:
-        alert_jd = alert_data["jdobs"]
+    query = database.read_database(name)
+    has_alertdata = False
+    if query["jdobs_alert"][0] is not None:
+        has_alertdata = True
+        alert_jd = query["jdobs_alert"][0]
+        alert_mag = query["mag_alert"][0]
+        alert_magerr = query["magerr_alert"][0]
+        alert_fid = query["fid_alert"][0]
         alert_mjd = np.asarray(alert_jd) - 2400000.5
-        alert_mag = alert_data["mag"]
-        alert_magerr = alert_data["magerr"]
-        alert_fid = alert_data["fid"]
 
     ### apply time-range cut:
     now = Time(time.time(), format="unix", scale="utc").mjd
@@ -92,13 +104,12 @@ def plot_lightcurve(
     lc["upper_limit"] = upper_limits
     lc["mag"] = mags
     lc["mag_err"] = mags_unc
-    # lc["moonness"] = np.sin(np.radians(lc["moonalt"].values)) * np.power(np.abs(lc["moonillf"].values), 2.5)
 
     # Save this version of the dataframe for later analysis (and to be sent by mail)
     lc.to_csv(os.path.join(lc_plotted_dir, f"{name}_SNT_{snt}.csv"))
 
     # Create Dataframe for Alert data / Rounding is neccessary because Alert and Forced Photometry MJDs are not consistent
-    if alert_data is not None:
+    if has_alertdata:
         alert_df = pd.DataFrame(
             data={
                 "obsmjd": np.around(alert_mjd, decimals=4),
@@ -213,7 +224,7 @@ def plot_lightcurve(
         mew=0.5,
     )
 
-    if alert_data is not None:
+    if has_alertdata:
         ax.errorbar(
             alert_g.obsmjd.values,
             alert_g.mag.values,

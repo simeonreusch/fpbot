@@ -17,6 +17,7 @@ from tinydb import TinyDB, Query
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 import pipeline
+import database
 
 # TODO:
 # we have to talk about this
@@ -221,19 +222,26 @@ class SaltFit:
         reference_object = spectroscopic_redshifts.query(f'ZTF_Name == "{self.name}"')
 
         if not reference_object.empty:
-            self.logger.info(f"{self.name} Spectroscopic redshift found")
             # self.z = reference_object["sn_redshift"].values[0]
             z_recheck = reference_object["z_host_recheck"].values[0]
             z_snid = reference_object["z_snid"].values[0]
             if z_recheck != 100:
                 self.z = reference_object["z_host_recheck"].values[0]
+                self.logger.info(f"{self.name} Spectroscopic redshift found")
                 self.quality_info.update(z_spectro=True)
             else:
                 if z_snid != "nan" and ~np.isnan(z_snid):
                     self.z = z_snid
+                    self.logger.info(f"{self.name} Spectroscopic redshift found")
+                    self.quality_info.update(z_spectro=True)
                 else:
                     self.logger.info(f"{self.name} No spectroscopic redshift found")
                     self.quality_info.update(z_spectro=False)
+                    try:
+                        digits = self.get_digit_count(str(self.z))
+                    except AttributeError:
+                        digits = 0
+                    self.quality_info.update(z_precision=digits)
         else:
             self.logger.info(f"{self.name} No spectroscopic redshift found")
             self.quality_info.update(z_spectro=False)
@@ -270,7 +278,6 @@ class SaltFit:
         # self.lightcurve = self.lightcurve.query(
         #     "chi2 > 0 and Fratio > (Fratio_unc * @self.snt) and filter != 'p48i'"
         # )
-
         if quality_checks:
             self.check_redshift_precision()
             self.count_observations()
@@ -345,7 +352,7 @@ class SaltFit:
         )
 
         # Plot
-        fig, pull = sncosmo.plot_lc(
+        fig = sncosmo.plot_lc(
             self.lightcurve_sncosmo,
             model=self.fitted_model,
             errors=self.fitresult.errors,
@@ -435,24 +442,24 @@ class SaltFit:
         else:
             self.logger.info(f"{self.name} Fit failed")
             self.result = None
-        if self.alertfit:
-            pickle.dump(
-                pull,
-                open(
-                    os.path.join(
-                        LOCALDATA, "salt", "pull", f"{self.name}_pull_alert.pickle"
-                    ),
-                    "wb",
-                ),
-            )
-        else:
-            pickle.dump(
-                pull,
-                open(
-                    os.path.join(LOCALDATA, "salt", "pull", f"{self.name}_pull.pickle"),
-                    "wb",
-                ),
-            )
+        # if self.alertfit:
+        #     pickle.dump(
+        #         pull,
+        #         open(
+        #             os.path.join(
+        #                 LOCALDATA, "salt", "pull", f"{self.name}_pull_alert.pickle"
+        #             ),
+        #             "wb",
+        #         ),
+        #     )
+        # else:
+        #     pickle.dump(
+        #         pull,
+        #         open(
+        #             os.path.join(LOCALDATA, "salt", "pull", f"{self.name}_pull.pickle"),
+        #             "wb",
+        #         ),
+        #     )
 
 
 def fit_salt(name, mwebv, snt, quality_checks=False, alertfit=False, logger=None):
@@ -509,5 +516,5 @@ if __name__ == "__main__":
     mwebv = dustmap.ebv(ra, dec,)
 
     fit_salt(
-        name=name, snt=snt, mwebv=mwebv, quality_checks=False, alertfit=alertfit,
+        name=name, snt=snt, mwebv=mwebv, quality_checks=True, alertfit=alertfit,
     )

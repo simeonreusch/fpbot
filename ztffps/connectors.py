@@ -135,6 +135,7 @@ class AmpelInfo:
             queryresult.append(result)
             bar.update(index)
         bar.update(object_count)
+
         return queryresult
 
 
@@ -216,7 +217,7 @@ class MarshalInfo:
                     elif line[j][:12] == '  "magzpsci"':
                         magzp[i] = float(line[j].split(":")[1])
                     elif line[j][:15] == '  "magzpsciunc"':
-                        magzp[i] = float(line[j].split(":")[1])
+                        magzp_err[i] = float(line[j].split(":")[1])
 
             ras = ra[ra != 0]
             decs = dec[ra != 0]
@@ -226,17 +227,17 @@ class MarshalInfo:
             maglims = maglim[ra != 0]
             fids = fid[ra != 0]
             ind = np.argsort(jds)
-            ra = np.median(ras[ind])
-            dec = np.median(decs[ind])
             entries = len(ras)
             lastobs = np.max(jds)
             magzps = magzp[ra != 0]
             magzps_err = magzp_err[ra != 0]
+            ra_median = np.median(ras[ind])
+            dec_median = np.median(decs[ind])
 
         return [
             ztf_name,
-            ra,
-            dec,
+            ra_median,
+            dec_median,
             entries,
             jds.tolist(),
             mags.tolist(),

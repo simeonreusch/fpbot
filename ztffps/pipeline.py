@@ -174,7 +174,6 @@ class ForcedPhotometryPipeline:
         ra = self.ra
         dec = self.dec
         entries = -1
-        mwebv = None
 
         if self.daysago is None:
             jdmin = 2458209
@@ -194,9 +193,6 @@ class ForcedPhotometryPipeline:
                 "jdmin": jdmin,
                 "jdmax": jdmax,
                 "entries": entries,
-                "mwebv": mwebv,
-                "lastobs": None,
-                "alert_data": None,
             },
         )
 
@@ -211,7 +207,7 @@ class ForcedPhotometryPipeline:
         if self.update_enforce:
             print("\nForced updating of alert data from Marshal/AMPEL")
 
-        query = database.read_database(self.object_list, ["name", "entries"])
+        query = database.read_database(self.object_list, ["_id", "entries"])
 
         for index, name in enumerate(self.object_list):
             if (
@@ -280,40 +276,23 @@ class ForcedPhotometryPipeline:
                 else:
                     jdmax = now - self.daysuntil
 
-                name = result[0]
-                ra = result[1]
-                dec = result[2]
-                entries = result[3]
-                mwebv = None
-                jdobs = result[4]
-                mag = result[5]
-                magerr = result[6]
-                maglim = result[7]
-                fid = result[8]
-                lastobs = result[9]
-                magzp = result[10]
-                magzp_err = result[11]
-
                 database.update_database(
-                    name,
+                    result[0],
                     {
-                        "name": name,
-                        "ra": ra,
-                        "dec": dec,
+                        "_id": result[0],
+                        "ra": result[1],
+                        "dec": result[2],
                         "jdmin": jdmin,
                         "jdmax": jdmax,
-                        "entries": entries,
-                        "mwebv": mwebv,
-                        "lastobs": lastobs,
-                        "alert_data": {
-                            "jdobs": jdobs,
-                            "mag": mag,
-                            "magerr": magerr,
-                            "maglim": maglim,
-                            "fid": fid,
-                            "magzp": magzp,
-                            "magzp_err": magzp_err,
-                        },
+                        "entries": result[3],
+                        "lastobs": result[9],
+                        "jdobs_alert": result[4],
+                        "mag_alert": result[5],
+                        "magerr_alert": result[6],
+                        "maglim_alert": result[7],
+                        "fid_alert": result[8],
+                        "magzp_alert": result[10],
+                        "magzp_err_alert": result[11],
                     },
                 )
                 progress_bar.update(index)
@@ -451,6 +430,7 @@ class ForcedPhotometryPipeline:
                 fig = plt.figure(dpi=300)
                 ax = fig.add_subplot(111)
                 fp.show_lc(ax=ax)
+                # database.update_database(name, {"forced_photometry": fp._data_forcefit})
                 fp.store()
 
                 lastfit = Time(time.time(), format="unix", scale="utc").jd
@@ -791,7 +771,7 @@ if __name__ == "__main__":
         "-nprocess",
         type=int,
         default=nprocess_default,
-        help="Number of parallel threads. Default: 4 if n_cores <= 8, else half of the cores",
+        help="Number of parallel threads. Default: 4 if n_cores < 8, else half of the cores",
     )
     parser.add_argument(
         "--snt",
