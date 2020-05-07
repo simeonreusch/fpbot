@@ -207,10 +207,9 @@ class ForcedPhotometryPipeline:
         if self.update_enforce:
             print("\nForced updating of alert data from Marshal/AMPEL")
 
-        query = database.read_database(self.object_list, ["_id", "entries"])
+        query = database.read_database(self.object_list, ["_id", "entries", "ra"])
 
         for index, name in enumerate(self.object_list):
-            # print(query["ra"][index])
             if (
                 query["entries"][index] == None
                 or query["entries"][index] < 10
