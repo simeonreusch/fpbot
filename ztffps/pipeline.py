@@ -210,7 +210,7 @@ class ForcedPhotometryPipeline:
         query = database.read_database(self.object_list, ["_id", "entries"])
 
         for index, name in enumerate(self.object_list):
-            print(query["ra"][index])
+            # print(query["ra"][index])
             if (
                 query["entries"][index] == None
                 or query["entries"][index] < 10
