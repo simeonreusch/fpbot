@@ -10,9 +10,8 @@ from astropy.utils.console import ProgressBar
 
 from pymongo import MongoClient
 
-MONGO_CLIENT = MongoClient("localhost", 27017)
-MONGODB = MONGO_CLIENT.ztfhub
-OBJECTS = MONGODB.objects
+MONGO_DB = MongoClient("localhost", 27017).ztfhub
+METADATA_COLL = MONGO_DB.metadata_backup
 
 
 # def read_database(
@@ -141,7 +140,7 @@ def read_database(
     # argument
     if not requested_data:
         for i, name in enumerate(ztf_objects):
-            mydoc = OBJECTS.find()
+            mydoc = METADATA_COLL.find()
             for x in mydoc:
                 l = list(x.keys())
                 for key in l:
@@ -150,7 +149,7 @@ def read_database(
 
     dict_for_return_values = collections.defaultdict(list)
     for i, name in enumerate(ztf_objects):
-        query = OBJECTS.find_one({"_id": name})
+        query = METADATA_COLL.find_one({"_id": name})
         if query:
             for entry in requested_data:
                 if query.get(entry, None) is not None:
@@ -188,4 +187,6 @@ def update_database(
         data_to_update = [data_to_update]
 
     for index, name in enumerate(ztf_objects):
-        OBJECTS.update_one({"_id": name}, {"$set": data_to_update[index]}, upsert=True)
+        METADATA_COLL.update_one(
+            {"_id": name}, {"$set": data_to_update[index]}, upsert=True
+        )

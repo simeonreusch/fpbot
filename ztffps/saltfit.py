@@ -90,17 +90,26 @@ class SaltFit:
         put upper and lower bounds on t0 for better SALT-fitting
 		"""
 
-        metadata_db = TinyDB(os.path.join(pipeline.METADATA, "meta_database.json"))
-        query = metadata_db.search(Query().name == self.name)
-
-        mag = np.asarray(query[0]["alert_data"]["mag"])
-        jd_obs = query[0]["alert_data"]["jdobs"]
+        query = database.read_database(
+            self.name,
+            [
+                "mag_alert",
+                "jdobs_alert",
+                "magerr_alert",
+                "maglim_alert",
+                "fid_alert",
+                "magzp_alert",
+                "magzp_err_alert",
+            ],
+        )
+        mag = np.asarray(query["mag_alert"][0])
+        jd_obs = np.asarray(query["jdobs_alert"][0])
         mjd_obs = np.asarray(jd_obs) - 2400000.5
-        mag_err = np.asarray(query[0]["alert_data"]["magerr"])
-        maglim = query[0]["alert_data"]["maglim"]
-        band = query[0]["alert_data"]["fid"]
-        magzp = np.asarray(query[0]["alert_data"]["magzp"])
-        magzp_err = np.asarray(query[0]["alert_data"]["magzp_err"])
+        mag_err = np.asarray(query["magerr_alert"][0])
+        maglim = np.asarray(query["maglim_alert"][0])
+        band = query["fid_alert"][0]
+        magzp = np.asarray(query["magzp_alert"][0])
+        magzp_err = np.asarray(query["magzp_err_alert"][0])
 
         # Das geht besser!
         band_p48 = []
@@ -352,7 +361,7 @@ class SaltFit:
         )
 
         # Plot
-        fig = sncosmo.plot_lc(
+        fig, pulls = sncosmo.plot_lc(
             self.lightcurve_sncosmo,
             model=self.fitted_model,
             errors=self.fitresult.errors,
@@ -365,6 +374,15 @@ class SaltFit:
             ),
         )
 
+        if self.alertfit:
+            pickle.dump(
+                pulls,
+                open(os.path.join("pulls_for_leopold", f"{self.name}_alert.p"), "wb"),
+            )
+        else:
+            pickle.dump(
+                pulls, open(os.path.join("pulls_for_leopold", f"{self.name}.p"), "wb")
+            )
         plotdir = os.path.join(pipeline.PLOTDATA, "salt")
         if not os.path.exists(plotdir):
             os.makedirs(plotdir)

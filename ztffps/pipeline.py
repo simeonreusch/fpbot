@@ -294,6 +294,7 @@ class ForcedPhotometryPipeline:
                         "fid_alert": result[8],
                         "magzp_alert": result[10],
                         "magzp_err_alert": result[11],
+                        "coords_per_filter": result[12],
                     },
                 )
                 progress_bar.update(index)
@@ -392,7 +393,8 @@ class ForcedPhotometryPipeline:
             nprocess = self.nprocess
 
         query = database.read_database(
-            self.object_list, ["ra", "dec", "jdmin", "jdmax", "lastobs", "lastfit"]
+            self.object_list,
+            ["ra", "dec", "jdmin", "jdmax", "lastobs", "lastfit", "coords_per_filter"],
         )
 
         for i, name in enumerate(self.object_list):
@@ -403,6 +405,7 @@ class ForcedPhotometryPipeline:
             jdmax = query["jdmax"][i]
             lastobs = query["lastobs"][i]
             lastfit = query["lastfit"][i]
+            coords_per_filter = query["coords_per_filter"][i]
 
             if lastfit is None:
                 do_fit = True
@@ -413,8 +416,22 @@ class ForcedPhotometryPipeline:
                     do_fit = True
 
             if do_fit:
+                # Check if there are different centroids for the
+                # different filters
+                # If a filter is missing, replace with total (all filters)
+                # median ra/dec
+                coords_per_filter[0] = np.nan_to_num(
+                    x=coords_per_filter[0], nan=ra
+                ).tolist()
+                coords_per_filter[1] = np.nan_to_num(
+                    x=coords_per_filter[1], nan=dec
+                ).tolist()
                 fp = forcephotometry.ForcePhotometry.from_coords(
-                    ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
+                    ra=coords_per_filter[0],
+                    dec=coords_per_filter[1],
+                    jdmin=jdmin,
+                    jdmax=jdmax,
+                    name=name,
                 )
                 fp.load_metadata()
                 fp.load_filepathes(filecheck=False)
@@ -426,7 +443,7 @@ class ForcedPhotometryPipeline:
                     nprocess=nprocess,
                     store=True,
                     force_refit=force_refit,
-                    no_badsub=True,
+                    no_badsub=False,
                 )
                 fig = plt.figure(dpi=300)
                 ax = fig.add_subplot(111)
