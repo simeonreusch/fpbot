@@ -11,7 +11,7 @@ from astropy.utils.console import ProgressBar
 from pymongo import MongoClient
 
 MONGO_DB = MongoClient("localhost", 27017).ztfhub
-METADATA_COLL = MONGO_DB.metadata_backup
+METADATA_COLL = MONGO_DB.metadata
 
 
 # def read_database(
