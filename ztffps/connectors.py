@@ -45,10 +45,7 @@ class AmpelInfo:
             with open(_ampel_pass, "wb") as f:
                 f.write(self.password.encode())
 
-        if socket.gethostname() == "wgs33.zeuthen.desy.de":
-            self.port = 5433
-        else:
-            self.port = 5432
+        self.port = 5432
 
         try:
             self.ampel_client = ArchiveDB(
@@ -62,7 +59,7 @@ class AmpelInfo:
                 "You can't access the archive database without first opening the port."
             )
             print("Open a new terminal and run the following command:")
-            print("ssh -L5432:localhost:5433 ztf-wgs.zeuthen.desy.de")
+            print("ssh -L5432:localhost:5432 ztf-wgs.zeuthen.desy.de")
             print("If that command doesn't work, you are either not a DESY user,")
             print("the credentials are wrong or your ssh-config is erroneous .")
             print(
