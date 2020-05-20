@@ -193,6 +193,7 @@ class ForcedPhotometryPipeline:
                 "jdmin": jdmin,
                 "jdmax": jdmax,
                 "entries": entries,
+                "coords_per_filter": [np.nan, np.nan, np.nan],
             },
         )
 
@@ -420,6 +421,7 @@ class ForcedPhotometryPipeline:
                 # different filters
                 # If a filter is missing, replace with total (all filters)
                 # median ra/dec
+
                 coords_per_filter[0] = np.nan_to_num(
                     x=coords_per_filter[0], nan=ra
                 ).tolist()
