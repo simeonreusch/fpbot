@@ -35,7 +35,47 @@ def run_on_event(data):
 
 def is_ztf_string(string):
     """ """
-    return re.match("^ZTF[1-2]\d[a-z]{7}$", string)
+    if re.match("^ZTF[1-2]\d[a-z]{7}$", string):
+        return True
+
+
+def post_error(channel_id, thread_ts, wc):
+    wc.chat_postMessage(
+        channel=channel_id,
+        text=f"You either need to provide a ZTFName (ZTF[YEAR YEAR][7 LETTERS], a list of ZTFNames ([ZTFblablab, ZTFbliblub]) or an arbitrary name followed by '-radec'",
+        thread_ts=thread_ts,
+        icon_emoji=":fp-emoji:",
+    )
+
+
+def post_request(channel_id, thread_ts, wc, name_or_list, radec=False):
+    if not radec:
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"You requested forced photometry for *{name_or_list}*. I'll get right to it. Depending on whether the image files need to be downloaded, this exitcan take a few minutes.",
+                },
+            }
+        ]
+    else:
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"You requested forced photometry for *{name_or_list}* based on ra and dec. I'll get right to it. Depending on whether the image files need to be downloaded, this exitcan take a few minutes.",
+                },
+            }
+        ]
+    wc.chat_postMessage(
+        channel=channel_id,
+        text=f"You requested forced photometry for {name_or_list}",
+        blocks=blocks,
+        thread_ts=thread_ts,
+        icon_emoji=":fp-emoji:",
+    )
 
 
 @RTMClient.run_on(event="message")
@@ -60,7 +100,7 @@ def say_hello(**payload):
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": f"Hi <@{user}>. This is a bot for forced photometry! Just type *@fpbot ZTFName* or *FP ZTFName*. This downloads images, fits them and plots the lightcurve.\n[Only giving a ZTF name as argument is equivalent to *FP ZTFName -download -fit -plot --snt 5*] \nIf you have no ZTFname, but a RA and DEC, please provide an arbitrary name, followed by '-radec RA DEC'\nOptional arguments:\n",
+                            "text": f"Hi <@{user}>. This is a bot for forced photometry! Just type *@fpbot ZTFName* or *FP ZTFName*. To analyze multiple objects, type *FP [ZTFName1, ZTFName2, ...]*  This downloads images, fits them and plots the lightcurve.\n[Only giving a ZTF name as argument is equivalent to *FP ZTFName -download -fit -plot --snt 5*] \nIf you have no ZTFname, but a RA and DEC, please provide an arbitrary name, followed by '-radec RA DEC'\nOptional arguments:\n",
                         },
                         "fields": [
                             {
@@ -109,70 +149,44 @@ def say_hello(**payload):
 
                 wc.chat_postMessage(
                     channel=channel_id,
-                    text=f"Hi <@{user}> This is a bot for forced photometry! Just type @fpbot ZTFName and it will download images from IPAC, perform a PSF fit and plot the lightcurve.\n[Only giving a ZTF name as argument is equivalent to *FP ZTFName -download -fit -plot --snt 5*]\nIf you have no ZTFname, but a RA and DEC, please provide an arbitrary name, followed by '-radec RA DEC'\nOptional arguments\n-downnload: only plots the lightcurve\n-fit: only does the fit\n-plot: only plots the lightcurve\n-thumbnails: Generates thumbnails for the specified timerange. Caution: Be precise in defining time, images use A LOT of space!\n--sendmail: send the output to the mailadress provided. This will include the lightcurve-plot and the dataframe as csv\n--daysago: only data from [daysago] to now is considered; default is start of ZTF operations (April 2018)\n--df: upload the dataframe of the lightcurve to Slack\n--daysuntil: only data till [daysuntil] is considered; default is today\n--snt: signal to noise threshold; default is 5.0\n--magrange: for plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag\n--quiet: makes the bot less talkative",
+                    text=f"Hi <@{user}> This is a bot for forced photometry! Just type @fpbot ZTFName or [ZTFName1, ZTFName2, ...] and it will download images from IPAC, perform a PSF fit and plot the lightcurve(s).\n[Only giving a ZTF name as argument is equivalent to *FP ZTFName -download -fit -plot --snt 5*]\nIf you have no ZTFname, but a RA and DEC, please provide an arbitrary name, followed by '-radec RA DEC'\nOptional arguments\n-downnload: only plots the lightcurve\n-fit: only does the fit\n-plot: only plots the lightcurve\n-thumbnails: Generates thumbnails for the specified timerange. Caution: Be precise in defining time, images use A LOT of space!\n--sendmail: send the output to the mailadress provided. This will include the lightcurve-plot and the dataframe as csv\n--daysago: only data from [daysago] to now is considered; default is start of ZTF operations (April 2018)\n--df: upload the dataframe of the lightcurve to Slack\n--daysuntil: only data till [daysuntil] is considered; default is today\n--snt: signal to noise threshold; default is 5.0\n--magrange: for plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag\n--quiet: makes the bot less talkative",
                     blocks=blocks,
                     thread_ts=thread_ts,
                     icon_emoji=":fp-emoji:",
                 )
 
             else:
-                if is_ztf_string(split_message[1]):
+                if "[" in slacktext and "]" in slacktext:
+                    object_list = slacktext.split("[")[1].split("]")[0].split(",")
+                    names = []
+                    checklist = []
+
+                    for item in object_list:
+                        item = item.strip(" ")
+                        names.append(item)
+                        checklist.append(is_ztf_string(item))
+                    if all(checklist):
+                        ztf_names = names
+                        post_request(channel_id, thread_ts, wc, ztf_names)
+                        run_on_event(data)
+                    else:
+                        post_error(channel_id, thread_ts, wc)
+
+                elif is_ztf_string(split_message[1]):
                     ztf_name = split_message[1]
-                    blocks = [
-                        {
-                            "type": "section",
-                            "text": {
-                                "type": "mrkdwn",
-                                "text": f"You requested forced photometry for *{ztf_name}*. I'll get right to it. Depending on whether the image files need to be downloaded, this can take a few minutes.",
-                            },
-                        }
-                    ]
-                    wc.chat_postMessage(
-                        channel=channel_id,
-                        text=f"You requested forced photometry for {ztf_name}",
-                        blocks=blocks,
-                        thread_ts=thread_ts,
-                        icon_emoji=":fp-emoji:",
-                    )
+                    post_request(channel_id, thread_ts, wc, ztf_name)
                     run_on_event(data)
 
                 else:
                     if len(split_message) < 3:
-                        wc.chat_postMessage(
-                            channel=channel_id,
-                            text=f"You either need to provide a ZTFName (ZTF[YEAR YEAR][7 LETTERS] or an arbitrary name followed by '-radec'",
-                            thread_ts=thread_ts,
-                            icon_emoji=":fp-emoji:",
-                        )
-
-                    # TODO: Make more general
+                        post_error(channel_id, thread_ts, wc)
 
                     elif split_message[2] == "-radec" or split_message[2] == "--radec":
                         name = split_message[1]
-                        blocks = [
-                            {
-                                "type": "section",
-                                "text": {
-                                    "type": "mrkdwn",
-                                    "text": f"You requested forced photometry for *{name}* based on RA and DEC. I'll get right to it. Depending on whether the image files need to be downloaded, this can take a few minutes.",
-                                },
-                            }
-                        ]
-                        wc.chat_postMessage(
-                            channel=channel_id,
-                            text=f"You requested forced photometry for *{name}* based on RA and DEC. I'll get right to it. Depending on whether the image files need to be downloaded, this can take a few minutes.",
-                            blocks=blocks,
-                            thread_ts=thread_ts,
-                            icon_emoji=":fp-emoji:",
-                        )
+                        post_request(channel_id, thread_ts, wc, name, radec=True)
                         run_on_event(data)
                     else:
-                        wc.chat_postMessage(
-                            channel=channel_id,
-                            text=f"You either need to provide a ZTFName (ZTF[YEAR YEAR][7 LETTERS] or an arbitrary name followed by '-radec'",
-                            thread_ts=thread_ts,
-                            icon_emoji=":fp-emoji:",
-                        )
+                        post_error(channel_id, thread_ts, wc)
 
 
 print("Starting realtime Slackbot for forced photometry")
