@@ -334,12 +334,14 @@ def run_on_event(thread_id, channel_id, verbose=False):
                         tar.add(filepath_csv, arcname=os.path.basename(filepath_csv))
                 filepath = tarball_path
                 filename = f"dataframe_SNT_{snt}.tar.gz"
+                title = "The dataframes. Note: These are the dataframes as created by the last fit command with the timerange then set. If you want the full dataset, issue 'FP [ZTFname1, ZTFName2, ...] --df'"
 
             else:
                 filepath = os.path.join(
                     pipeline.PLOT_DATAFRAMES, f"{ztf_names[0]}_SNT_{snt}.csv",
                 )
                 filename = f"{ztf_names[0]}_SNT_{snt}.csv"
+                title = "The dataframe. Note: This is the dataframe as created by the last fit command with the timerange then set. If you want the full dataset, issue 'FP ZTFname --df'"
 
             file = open(filepath, "rb")
             wc.files_upload(
@@ -347,7 +349,7 @@ def run_on_event(thread_id, channel_id, verbose=False):
                 filename=filename,
                 channels=channel_id,
                 thread_ts=thread_id,
-                title="The dataframe(s). Note: This is the dataframe as created by the last fit command with the timerange then set. If you want the full dataset, issue 'FP ZTFname --df'",
+                title=title,
                 icon_emoji=":fp-emoji:",
             )
         except:
