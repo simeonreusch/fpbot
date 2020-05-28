@@ -313,45 +313,45 @@ def run_on_event(thread_id, channel_id, verbose=False):
             )
 
     if upload_dataframe:
-        # try:
-        wc = WebClient(token=bot_token)
-        # Create tarball with dataframes if we have more than 1 object
-        if len(ztf_names) > 1:
-            tarball_path = os.path.join(
-                pipeline.PLOT_DATAFRAMES, f"dataframe_SNT_{snt}.tar.gz"
-            )
-            with tarfile.open(tarball_path, "w:gz") as tar:
-                for name in ztf_names:
-                    filepath_csv = os.path.join(
-                        pipeline.PLOT_DATAFRAMES, f"{name}_SNT_{snt}.csv",
-                    )
-                    print(filepath_csv)
-                    tar.add(filepath_csv, arcname=os.path.basename(filepath_csv))
-            filepath = tarball_path
-            filename = f"dataframe_SNT_{snt}.tar.gz"
+        try:
+            wc = WebClient(token=bot_token)
+            # Create tarball with dataframes if we have more than 1 object
+            if len(ztf_names) > 1:
+                tarball_path = os.path.join(
+                    pipeline.PLOT_DATAFRAMES, f"dataframe_SNT_{snt}.tar.gz"
+                )
+                with tarfile.open(tarball_path, "w:gz") as tar:
+                    for name in ztf_names:
+                        filepath_csv = os.path.join(
+                            pipeline.PLOT_DATAFRAMES, f"{name}_SNT_{snt}.csv",
+                        )
+                        print(filepath_csv)
+                        tar.add(filepath_csv, arcname=os.path.basename(filepath_csv))
+                filepath = tarball_path
+                filename = f"dataframe_SNT_{snt}.tar.gz"
 
-        else:
-            filepath = os.path.join(
-                pipeline.PLOT_DATAFRAMES, f"{ztf_names[0]}_SNT_{snt}.csv",
-            )
-            filename = f"{ztf_names[0]}_SNT_{snt}.csv"
+            else:
+                filepath = os.path.join(
+                    pipeline.PLOT_DATAFRAMES, f"{ztf_names[0]}_SNT_{snt}.csv",
+                )
+                filename = f"{ztf_names[0]}_SNT_{snt}.csv"
 
-        file = open(filepath, "rb")
-        wc.files_upload(
-            file=file,
-            filename=filename,
-            channels=channel_id,
-            thread_ts=thread_id,
-            title="The dataframe(s). Note: This is the dataframe as created by the last fit command with the timerange then set. If you want the full dataset, issue 'FP ZTFname --df'",
-            icon_emoji=":fp-emoji:",
-        )
-        # except:
-        #     wc.chat_postMessage(
-        #         channel=channel_id,
-        #         text=f"Error: Sorry, I have run into a problem while uploading the dataframe of your lightcurve.",
-        #         thread_ts=thread_id,
-        #         icon_emoji=":fp-emoji:",
-        #     )
+            file = open(filepath, "rb")
+            wc.files_upload(
+                file=file,
+                filename=filename,
+                channels=channel_id,
+                thread_ts=thread_id,
+                title="The dataframe(s). Note: This is the dataframe as created by the last fit command with the timerange then set. If you want the full dataset, issue 'FP ZTFname --df'",
+                icon_emoji=":fp-emoji:",
+            )
+        except:
+            wc.chat_postMessage(
+                channel=channel_id,
+                text=f"Error: Sorry, I have run into a problem while uploading the dataframe of your lightcurve.",
+                thread_ts=thread_id,
+                icon_emoji=":fp-emoji:",
+            )
 
     if do_thumbnails:
         try:
