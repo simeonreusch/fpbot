@@ -199,6 +199,11 @@ def run_on_event(thread_id, channel_id, verbose=False):
         do_plot = True
         do_fit = True
 
+    if len(ztf_names) > 1:
+        nprocess = 16
+    else:
+        nprocess = 8
+
     pl = pipeline.ForcedPhotometryPipeline(
         file_or_name=ztf_names,
         daysago=daysago,
@@ -207,7 +212,7 @@ def run_on_event(thread_id, channel_id, verbose=False):
         mag_range=mag_range,
         ra=ra,
         dec=dec,
-        nprocess=8,
+        nprocess=nprocess,
         update_enforce=True,
         sciimg=sciimg,
         update_disable=noupdate,
