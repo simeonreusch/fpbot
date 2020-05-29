@@ -81,6 +81,7 @@ def run_on_event(thread_id, channel_id, verbose=False):
     dec = None
     sciimg = False
     noupdate = False
+    refit_psf = False
 
     def fuzzy_parameters(param_list):
         """ """
@@ -106,6 +107,9 @@ def run_on_event(thread_id, channel_id, verbose=False):
         if item in fuzzy_parameters(["thumbnails", "thumbnail", "cutouts", "stamps"]):
             do_thumbnails = True
             sciimg = True
+        if item in fuzzy_parameters(["refit", "fit", "do_fit"]):
+            do_fit = True
+            refit_psf = True
 
     for i, parameter in enumerate(split_message):
         if parameter in fuzzy_parameters(
@@ -240,7 +244,7 @@ def run_on_event(thread_id, channel_id, verbose=False):
                 icon_emoji=":fp-emoji:",
             )
         try:
-            pl.psffit()
+            pl.psffit(force_refit=refit_psf)
         except:
             wc.chat_postMessage(
                 channel=channel_id,
