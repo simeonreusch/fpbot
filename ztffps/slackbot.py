@@ -334,7 +334,6 @@ def run_on_event(thread_id, channel_id, verbose=False):
                         filepath_csv = os.path.join(
                             pipeline.PLOT_DATAFRAMES, f"{name}_SNT_{snt}.csv",
                         )
-                        print(filepath_csv)
                         tar.add(filepath_csv, arcname=os.path.basename(filepath_csv))
                 filepath = tarball_path
                 filename = f"dataframe_SNT_{snt}.tar.gz"

@@ -9,6 +9,7 @@ import sys
 import re
 import logging
 import argparse
+import tarfile
 from ztflc import forcephotometry
 from ztflc.io import LOCALDATA
 import numpy as np
@@ -629,7 +630,7 @@ class ForcedPhotometryPipeline:
             f"\n{len(fitresult_df)} of {object_count} fits were performed successfully\n"
         )
 
-    def sendmail(self, send_to):
+    def sendmail(self, send_to, tarball=False):
         """ """
         print("\nSending mail")
         import smtplib
@@ -676,39 +677,77 @@ class ForcedPhotometryPipeline:
 
         msg.attach(MIMEText(text))
 
-        # attach plots
-        for name in self.object_list or []:
-            filepath_plot = os.path.join(
-                PLOTDATA, "images", f"{name}_SNT_{self.snt}.png",
+        if tarball:
+            filepath_tarball = os.path.join(
+                PLOT_DATAFRAMES, f"dataframes_SNT_{snt}.tar.gz"
             )
-            if os.path.exists(filepath_plot):
-                with open(filepath_plot, "rb") as plot:
-                    part = MIMEApplication(plot.read(), Name=f"Plot_{name}")
-                part[
-                    "Content-Disposition"
-                ] = f'attachment; filename="{name}_SNT_{self.snt}.png"'
+            with tarfile.open(filepath_tarball, "w:gz") as tar:
+                for name in self.object_list or []:
+                    filepath_csv = os.path.join(
+                        PLOT_DATAFRAMES, f"{name}_SNT_{snt}.csv",
+                    )
+                    filepath_plot = os.path.join(
+                        PLOTDATA, "images", f"{name}_SNT_{self.snt}.png",
+                    )
+                    filepath_thumbnails = os.path.join(
+                        THUMBNAILS, f"{name}_thumbnails.zip"
+                    )
+                    if os.path.exists(filepath_csv):
+                        tar.add(filepath_csv, arcname=os.path.basename(filepath_csv))
+                    if os.path.exists(filepath_plot):
+                        tar.add(filepath_plot, arcname=os.path.basename(filepath_plot))
+                    if os.path.exists(filepath_thumbnails):
+                        tar.add(
+                            filepath_thumbnails,
+                            arcname=os.path.basename(filepath_thumbnails),
+                        )
+
+            with open(filepath_tarball, "rb") as tarball:
+                part = MIMEApplication(tarball.read(), Name=f"forced_photometry.tar.gz")
+            part[
+                "Content-Disposition"
+            ] = f'attachment; filename="forced_photometry.tar.gz"'
             msg.attach(part)
 
-        # attach dataframes
-        for name in self.object_list or []:
-            filepath_csv = os.path.join(PLOT_DATAFRAMES, f"{name}_SNT_{self.snt}.csv",)
-            if os.path.exists(filepath_csv):
-                with open(filepath_csv, "rb") as csv:
-                    part = MIMEApplication(csv.read(), Name=f"Dataframe_{name}")
-                part[
-                    "Content-Disposition"
-                ] = f'attachment; filename="{name}_SNT_{self.snt}.csv"'
+        else:
+            # Attach all the stuff individually
+            # attach plots
+            for name in self.object_list or []:
+                filepath_plot = os.path.join(
+                    PLOTDATA, "images", f"{name}_SNT_{self.snt}.png",
+                )
+                if os.path.exists(filepath_plot):
+                    with open(filepath_plot, "rb") as plot:
+                        part = MIMEApplication(plot.read(), Name=f"Plot_{name}")
+                    part[
+                        "Content-Disposition"
+                    ] = f'attachment; filename="{name}_SNT_{self.snt}.png"'
                 msg.attach(part)
 
-        for name in self.object_list or []:
-            filepath_thumbnails = os.path.join(THUMBNAILS, f"{name}_thumbnails.zip")
-            if os.path.exists(filepath_thumbnails):
-                with open(filepath_thumbnails, "rb") as thumbnails:
-                    part = MIMEApplication(thumbnails.read(), Name=f"Thumbnails_{name}")
-                part[
-                    "Content-Disposition"
-                ] = f'attachment; filename="{name}_thumbnails.zip"'
-                msg.attach(part)
+            # attach dataframes
+            for name in self.object_list or []:
+                filepath_csv = os.path.join(
+                    PLOT_DATAFRAMES, f"{name}_SNT_{self.snt}.csv",
+                )
+                if os.path.exists(filepath_csv):
+                    with open(filepath_csv, "rb") as csv:
+                        part = MIMEApplication(csv.read(), Name=f"Dataframe_{name}")
+                    part[
+                        "Content-Disposition"
+                    ] = f'attachment; filename="{name}_SNT_{self.snt}.csv"'
+                    msg.attach(part)
+
+            for name in self.object_list or []:
+                filepath_thumbnails = os.path.join(THUMBNAILS, f"{name}_thumbnails.zip")
+                if os.path.exists(filepath_thumbnails):
+                    with open(filepath_thumbnails, "rb") as thumbnails:
+                        part = MIMEApplication(
+                            thumbnails.read(), Name=f"Thumbnails_{name}"
+                        )
+                    part[
+                        "Content-Disposition"
+                    ] = f'attachment; filename="{name}_thumbnails.zip"'
+                    msg.attach(part)
 
         smtp = smtplib.SMTP(server, port)
         smtp.starttls()
@@ -946,7 +985,7 @@ if __name__ == "__main__":
         pl.saltfit(quality_checks=True, alertfit=True)
         pl.saltfit(quality_checks=True, alertfit=False)
     if targetmail:
-        pl.sendmail(targetmail)
+        pl.sendmail(targetmail, tarball=True)
     if thumbnails:
         pl.generate_thumbnails()
 
