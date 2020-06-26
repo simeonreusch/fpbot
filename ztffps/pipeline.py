@@ -411,6 +411,8 @@ class ForcedPhotometryPipeline:
 
             if lastfit is None:
                 do_fit = True
+            elif lastobs is None:
+                do_fit = True
             else:
                 if lastfit >= lastobs and not force_refit:
                     do_fit = False
