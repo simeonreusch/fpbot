@@ -115,7 +115,10 @@ class ForcedPhotometryPipeline:
             self.dec = np.float(
                 coords.dec.to_string(decimal=True, unit=u.deg, precision=8)
             )
-            self.object_list = [self.file_or_name]
+            if isinstance(self.file_or_name, list):
+                self.object_list = self.file_or_name
+            else:
+                self.object_list = [self.file_or_name]
             self.update_database_with_given_radec()
 
         elif (ra is None and dec is not None) or (ra is not None and dec is None):

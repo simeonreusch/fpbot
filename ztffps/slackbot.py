@@ -53,7 +53,7 @@ def run_on_event(thread_id, channel_id, verbose=False):
     user = data["user"]
     message = data["text"].replace("*", "")
     split_message = message.split()
-    # split_message = message.split(" ")
+
     if "[" in message and "]" in message:
         object_list = message.split("[")[1].split("]")[0].split(",")
         names = [item.strip(" ") for item in object_list]
@@ -230,10 +230,15 @@ def run_on_event(thread_id, channel_id, verbose=False):
                 text=f"Checking if all files are present and downloading missing ones. This might take a few minutes.",
                 thread_ts=thread_id,
             )
-        # try:
-        pl.download()
-        # except:
-        # 	wc.chat_postMessage(channel=channel_id, text=f"Error: Sorry, I have run into a problem while downloading the image files. Please contact <@UAQTC7L73>.", thread_ts=thread_id, icon_emoji=':fp-emoji:')
+        try:
+            pl.download()
+        except:
+            wc.chat_postMessage(
+                channel=channel_id,
+                text=f"Error: Sorry, I have run into a problem while downloading the image files. Please contact <@UAQTC7L73>.",
+                thread_ts=thread_id,
+                icon_emoji=":fp-emoji:",
+            )
 
     if do_fit:
         if verbose:
@@ -261,27 +266,27 @@ def run_on_event(thread_id, channel_id, verbose=False):
                 thread_ts=thread_id,
                 icon_emoji=":fp-emoji:",
             )
-        try:
+            # try:
             pl.plot()
-            wc = WebClient(token=bot_token)
-            for name in ztf_names:
-                imgpath = os.path.join(lc_plotdir, "images", f"{name}_SNT_{snt}.png")
-                imgdata = open(imgpath, "rb")
-                wc.files_upload(
-                    file=imgdata,
-                    filename=imgpath,
-                    channels=channel_id,
-                    thread_ts=thread_id,
-                    title=f"{name} lightcurve",
-                    icon_emoji=":fp-emoji:",
-                )
-        except:
-            wc.chat_postMessage(
-                channel=channel_id,
-                text=f"Error: Sorry, I have run into a problem while plotting the lightcurve(s). Please contact <@UAQTC7L73>.",
+        wc = WebClient(token=bot_token)
+        for name in ztf_names:
+            imgpath = os.path.join(lc_plotdir, "images", f"{name}_SNT_{snt}.png")
+            imgdata = open(imgpath, "rb")
+            wc.files_upload(
+                file=imgdata,
+                filename=imgpath,
+                channels=channel_id,
                 thread_ts=thread_id,
+                title=f"{name} lightcurve",
                 icon_emoji=":fp-emoji:",
             )
+        # except:
+        #     wc.chat_postMessage(
+        #         channel=channel_id,
+        #         text=f"Error: Sorry, I have run into a problem while plotting the lightcurve(s). Please contact <@UAQTC7L73>.",
+        #         thread_ts=thread_id,
+        #         icon_emoji=":fp-emoji:",
+        #     )
 
     if do_thumbnails:
         if verbose:
