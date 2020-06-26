@@ -65,7 +65,7 @@ def post_request(channel_id, thread_ts, wc, name_or_list, radec=False):
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"You requested forced photometry for *{name_or_list}* based on ra and dec. I'll get right to it. Depending on whether the image files need to be downloaded, this exitcan take a few minutes.",
+                    "text": f"You requested forced photometry for *{name_or_list}* based on ra and dec. I'll get right to it. Depending on whether the image files need to be downloaded, this can take a few minutes.",
                 },
             }
         ]
