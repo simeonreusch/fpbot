@@ -17,3 +17,5 @@ tinydb
 iminuit
 sfdmap
 pymongo
+fastapi
+uvicorn

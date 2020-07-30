@@ -785,6 +785,25 @@ class ForcedPhotometryPipeline:
                 logger=self.logger,
             )
 
+    def read_metadata(self):
+        query = database.read_database(self.object_list)
+        return query
+
+    def read_fitresults(self):
+        return_dict = {}
+        for ztf_object in self.object_list:
+            path = os.path.join(FORCEPHOTODATA, f"{ztf_object}.csv")
+            df = pd.read_csv(path)
+            df = df.filter(items=["ampl", "ampl.err", "filter", "obsmjd"])
+            df.rename(
+                columns={"ampl": "flux", "ampl.err": "flux_err", "obsmjd": "mjd"},
+                inplace=True,
+            )
+            df_as_dict = df.to_dict()
+            update_dict = {ztf_object: df_as_dict}
+            return_dict.update(update_dict)
+        return return_dict
+
 
 if __name__ == "__main__":
 

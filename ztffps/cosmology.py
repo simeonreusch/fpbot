@@ -39,7 +39,7 @@ class Cosmology:
         if self.alert:
             self.salt_path = os.path.join(self.salt_dir, "SALT_FIT_alert.csv")
         else:
-            self.salt_path = os.path.join(self.salt_dir, "SALT_FIT.csv")
+            self.salt_path = os.path.join(self.salt_dir, "SALT_FIT_RCF_Leopold.csv")
         self.cosmology_dir = pipeline.COSMODATA
         if not os.path.exists(pipeline.COSMODATA):
             os.makedirs(pipeline.COSMODATA)
@@ -55,7 +55,7 @@ class Cosmology:
         self.pull_cut_sne_to_inspect = 5
         self.residual_cut_sne_to_inspect = 2
         self.annotation_threshold = (
-            2  # residual in mag above which object name will be plotted
+            0.5  # residual in mag above which object name will be plotted
         )
         self.hard_peak_abs_mag_cut_lower = -25
         self.hard_peak_abs_mag_cut_upper = -10
