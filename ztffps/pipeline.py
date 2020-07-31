@@ -343,7 +343,7 @@ class ForcedPhotometryPipeline:
 
             if do_download:
                 self.logger.info(
-                    f"\n{name} ({i} of {number_of_objects}) Starting download"
+                    f"\n{name} ({i+1} of {number_of_objects}) Starting download"
                 )
                 query = database.read_database(name, ["ra", "dec", "jdmin", "jdmax"])
                 ra = query["ra"][0]
@@ -354,7 +354,7 @@ class ForcedPhotometryPipeline:
                     ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
                 )
                 self.logger.info(
-                    f"\n{name} ({i} of {number_of_objects}) Downloading data"
+                    f"\n{name} ({i+1} of {number_of_objects}) Downloading data"
                 )
                 if not os.path.exists(
                     os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
