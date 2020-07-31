@@ -342,9 +342,9 @@ class ForcedPhotometryPipeline:
                 do_download = True
 
             if do_download:
-                self.logger.info(
-                    f"\n{name} ({i+1} of {number_of_objects}) Starting download"
-                )
+                # self.logger.info(
+                # f"\n{name} ({i+1} of {number_of_objects}) Starting download"
+                # )
                 query = database.read_database(name, ["ra", "dec", "jdmin", "jdmax"])
                 ra = query["ra"][0]
                 dec = query["dec"][0]
@@ -593,7 +593,7 @@ class ForcedPhotometryPipeline:
             else:
                 print(f"\n{name} performing SALT fit for forced photometry")
 
-            try:
+                # try:
                 fitresult, fitted_model = fit_salt(
                     name=name,
                     snt=snt,
@@ -605,10 +605,10 @@ class ForcedPhotometryPipeline:
                     progress_bar.update(index)
                 fitresults.append(fitresult)
                 fitted_models.append(fitted_model)
-            except:
-                print(f"\n{name} Error while fitting")
-                if progress_bar is not None:
-                    progress_bar.update(index)
+            # except:
+            #     print(f"\n{name} Error while fitting")
+            #     if progress_bar is not None:
+            #         progress_bar.update(index)
 
         if progress_bar is not None:
             progress_bar.update(object_count)
