@@ -325,7 +325,8 @@ class ForcedPhotometryPipeline:
 
     def download(self):
         """ """
-        for name in self.object_list:
+        numer_of_objects = len(self.object_list)
+        for i, name in enumerate(self.object_list):
             query = database.read_database(name, ["lastdownload"])
 
             # In case download_newest option is passed: Download only if it has never been downloaded before
@@ -341,7 +342,9 @@ class ForcedPhotometryPipeline:
                 do_download = True
 
             if do_download:
-                self.logger.info(f"\n{name} Starting download")
+                self.logger.info(
+                    f"\n{name} ({i} of {number_of_objects}) Starting download"
+                )
                 query = database.read_database(name, ["ra", "dec", "jdmin", "jdmax"])
                 ra = query["ra"][0]
                 dec = query["dec"][0]
@@ -350,7 +353,9 @@ class ForcedPhotometryPipeline:
                 fp = forcephotometry.ForcePhotometry.from_coords(
                     ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
                 )
-                self.logger.info(f"\n{name} Downloading data")
+                self.logger.info(
+                    f"\n{name} ({i} of {number_of_objects}) Downloading data"
+                )
                 if not os.path.exists(
                     os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
                 ):
