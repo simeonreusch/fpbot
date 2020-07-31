@@ -325,7 +325,7 @@ class ForcedPhotometryPipeline:
 
     def download(self):
         """ """
-        numer_of_objects = len(self.object_list)
+        number_of_objects = len(self.object_list)
         for i, name in enumerate(self.object_list):
             query = database.read_database(name, ["lastdownload"])
 
