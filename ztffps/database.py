@@ -10,7 +10,11 @@ from astropy.utils.console import ProgressBar
 
 from pymongo import MongoClient
 
-MONGO_DB = MongoClient("localhost", 27017).ztfhub
+if "MONGO_DB_LOCATION" in os.environ:
+    MONGO_DB = MongoClient(os.getenv("MONGO_DB_LOCATION"), 27017).ztfhub
+else:
+    MONGO_DB = MongoClient("localhost", 27017).ztfhub
+
 METADATA_COLL = MONGO_DB.metadata
 
 
