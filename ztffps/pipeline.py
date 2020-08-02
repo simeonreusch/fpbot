@@ -271,7 +271,6 @@ class ForcedPhotometryPipeline:
         if not (marshal_failed and ampel_failed):
             print("\nUpdating metadata database")
             progress_bar = ProgressBar(len(connector.queryresult))
-
             for index, result in enumerate(connector.queryresult):
                 if self.daysago is None:
                     jdmin = 2458209
@@ -350,6 +349,7 @@ class ForcedPhotometryPipeline:
                 dec = query["dec"][0]
                 jdmin = query["jdmin"][0]
                 jdmax = query["jdmax"][0]
+
                 fp = forcephotometry.ForcePhotometry.from_coords(
                     ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
                 )

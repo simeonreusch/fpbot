@@ -171,6 +171,7 @@ class MarshalInfo:
         for ztf_name in ztf_names:
             url = MARSHAL_BASEURL + ztf_name
             urls.append(url)
+
         object_count = len(ztf_names)
         auth_ = [auth] * object_count
         from astropy.utils.console import ProgressBar

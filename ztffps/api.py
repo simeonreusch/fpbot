@@ -22,6 +22,16 @@ async def read_item(
 
     mjd_now = Time(time.time(), format="unix", scale="utc").mjd
 
+    if daysago:
+        mjdmin = mjd_now - daysago
+    else:
+        mjdmin = ZTF_START
+
+    if daysuntil:
+        mjdmax = mjd_now - daysuntil
+    else:
+        mjdmax = mjd_now
+
     if not daysago and not daysuntil:
 
         if mjdmin is None and mjdmax is None:
@@ -77,6 +87,7 @@ async def read_item(
         update_disable=False,
         download_newest=True,
     )
+
     try:
         pl.download()
     except:
@@ -85,6 +96,7 @@ async def read_item(
             detail="Something went wrong while downloading the files",
             headers={"Download error": "Maybe IPAC had a timeout"},
         )
+
     try:
         pl.psffit(force_refit=False)
     except:
