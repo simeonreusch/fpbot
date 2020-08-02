@@ -33,8 +33,6 @@ Make sure that ztfquery and ztflc are installed with the latest version.
 
 In case way too few images are downloaded, check your Marshal and IRSA credentials. These are stored in ```~.ztfquery```. If there is a problem with these, ztfquery will not complain but simply only download publicly accessable images.
 
-In this case also make sure to delete the database-file, otherwise no new downloads will be attempted. The file is located at ```ZTFDATA/forcephotometry/meta/meta_database.json```.
-
 ## Usage
 
 The basic file is pipeline.py, which can be run using different flags. Alternatively, the pipeline class can be imported from this file.

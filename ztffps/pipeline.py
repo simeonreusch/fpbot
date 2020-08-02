@@ -404,7 +404,16 @@ class ForcedPhotometryPipeline:
 
         query = database.read_database(
             self.object_list,
-            ["ra", "dec", "jdmin", "jdmax", "lastobs", "lastfit", "coords_per_filter"],
+            [
+                "ra",
+                "dec",
+                "jdmin",
+                "jdmax",
+                "lastobs",
+                "lastfit",
+                "coords_per_filter",
+                "fitted_datapoints",
+            ],
         )
 
         for i, name in enumerate(self.object_list):
@@ -416,38 +425,38 @@ class ForcedPhotometryPipeline:
             lastobs = query["lastobs"][i]
             lastfit = query["lastfit"][i]
             coords_per_filter = query["coords_per_filter"][i]
+            fitted_datapoints = query["fitted_datapoints"][i]
 
-            if lastfit is None:
-                do_fit = True
-            elif lastobs is None:
-                do_fit = True
-            else:
-                if lastfit >= lastobs and not force_refit:
-                    do_fit = False
-                else:
-                    do_fit = True
+            # Check if there are different centroids for the
+            # different filters
+            # If a filter is missing, replace with total (all filters)
+            # median ra/dec
 
-            if do_fit:
-                # Check if there are different centroids for the
-                # different filters
-                # If a filter is missing, replace with total (all filters)
-                # median ra/dec
+            coords_per_filter[0] = np.nan_to_num(
+                x=coords_per_filter[0], nan=ra
+            ).tolist()
+            coords_per_filter[1] = np.nan_to_num(
+                x=coords_per_filter[1], nan=dec
+            ).tolist()
+            fp = forcephotometry.ForcePhotometry.from_coords(
+                ra=coords_per_filter[0],
+                dec=coords_per_filter[1],
+                jdmin=jdmin,
+                jdmax=jdmax,
+                name=name,
+            )
+            fp.load_metadata()
+            fp.load_filepathes(filecheck=False)
 
-                coords_per_filter[0] = np.nan_to_num(
-                    x=coords_per_filter[0], nan=ra
-                ).tolist()
-                coords_per_filter[1] = np.nan_to_num(
-                    x=coords_per_filter[1], nan=dec
-                ).tolist()
-                fp = forcephotometry.ForcePhotometry.from_coords(
-                    ra=coords_per_filter[0],
-                    dec=coords_per_filter[1],
-                    jdmin=jdmin,
-                    jdmax=jdmax,
-                    name=name,
-                )
-                fp.load_metadata()
-                fp.load_filepathes(filecheck=False)
+            # Check how many forced photometry datapoints
+            # there SHOULD exist for this object
+            number_of_fitted_datapoints_expected = len(fp.filepathes)
+
+            if fitted_datapoints is None:
+                fitted_datapoints = 0
+
+            # Compare to number of fitted datapoints from database
+            if number_of_fitted_datapoints_expected > fitted_datapoints:
                 print(f"\n{name} Fitting PSF")
                 import matplotlib.pyplot as plt
 
@@ -466,16 +475,15 @@ class ForcedPhotometryPipeline:
 
                 lastfit = Time(time.time(), format="unix", scale="utc").jd
 
-                database.update_database(name, {"lastfit": lastfit})
+                database.update_database(
+                    name,
+                    {
+                        "lastfit": lastfit,
+                        "fitted_datapoints": number_of_fitted_datapoints_expected,
+                    },
+                )
             else:
                 print(f"\n{name} No new data to fit, skipping PSF fit")
-
-            # print(f"\n{name} Plotting lightcurve")
-            # from plot import plot_lightcurve
-            # plot_lightcurve(
-            #     name, snt=self.snt, daysago=self.daysago, daysuntil=self.daysuntil
-            # )
-            # print(f"\n{name} successfully fitted and plotted")
 
     def plot(self, nprocess=4, progress=True):
         """ """

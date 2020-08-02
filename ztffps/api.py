@@ -2,6 +2,7 @@ import time
 import pipeline
 from fastapi import FastAPI, HTTPException
 import pandas as pd
+import numpy as np
 from astropy.time import Time
 
 ZTF_START = 58209
@@ -100,6 +101,7 @@ async def read_item(
     fitresults_df = pd.DataFrame.from_dict(fitresults)
     querystring = f"mjd > {mjdmin} and mjd < {mjdmax}"
     fitresults_df.query(querystring, inplace=True)
+    fitresults_df = fitresults_df.dropna()
     fitresults_as_dict = fitresults_df.to_dict()
 
     return {
