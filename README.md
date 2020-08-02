@@ -19,6 +19,15 @@ If you want AMPEL for alert data (you don't have to!), you have to install the A
 
 ```pip3 install -r ampel_requirements.txt```
 
+## ALTERNATIVE: Use Docker container
+ztffps comes shipped with a Dockerfile and a docker-compose.yml. Use them to build the docker container (this includes all dependencies as well as a MongoDB instance). Note: You have to provide a .ztfquery file containing access data for ztfquery (see [here](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery) for details). The container can be built by issuing
+
+```docker-compose build```
+
+in the directory containing 1) the Dockerfile, 2) the docker-compose.yml and 3) .ztfquery credentials file and run with
+
+```docker-compose run -p 8000:8000 ztffps```. This exposes the web API to port 8000 of your local machine.
+
 ### Troubleshooting
 Make sure that ztfquery and ztflc are installed with the latest version.
 
