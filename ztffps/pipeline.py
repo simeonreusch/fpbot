@@ -23,6 +23,7 @@ import requests.exceptions
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 import database
+from plot import calculate_magnitudes
 
 try:
     ZTFDATA = os.getenv("ZTFDATA")
@@ -806,14 +807,27 @@ class ForcedPhotometryPipeline:
         return_dict = {}
         for ztf_object in self.object_list:
             path = os.path.join(FORCEPHOTODATA, f"{ztf_object}.csv")
-            df = pd.read_csv(path)
-            df = df.filter(items=["ampl", "ampl.err", "filter", "obsmjd"])
-            df.rename(
+            lc = pd.read_csv(path)
+            lc = calculate_magnitudes(lc, self.snt)
+            lc = lc.filter(
+                items=[
+                    "obsmjd",
+                    "ampl",
+                    "ampl.err",
+                    "mag",
+                    "mag_err",
+                    "filter",
+                    "maglim",
+                ]
+            )
+            lc.rename(
                 columns={"ampl": "flux", "ampl.err": "flux_err", "obsmjd": "mjd"},
                 inplace=True,
             )
-            df_as_dict = df.to_dict()
-            update_dict = {ztf_object: df_as_dict}
+            lc.sort_values(by="mjd", inplace=True)
+            lc = lc.reset_index(drop=True)
+            lc_as_dict = lc.to_dict()
+            update_dict = {ztf_object: lc_as_dict}
             return_dict.update(update_dict)
         return return_dict
 

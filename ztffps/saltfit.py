@@ -374,10 +374,19 @@ class SaltFit:
             ),
         )
 
+        if not os.path.exists("pulls_for_leopold"):
+            os.makedirs("pulls_for_leopold")
+
+        if not os.path.exists("pulls_for_leopold_alert"):
+            os.makedirs("pulls_for_leopold_alert")
+
         if self.alertfit:
             pickle.dump(
                 pulls,
-                open(os.path.join("pulls_for_leopold", f"{self.name}_alert.p"), "wb"),
+                open(
+                    os.path.join("pulls_for_leopold_alert", f"{self.name}_alert.p"),
+                    "wb",
+                ),
             )
         else:
             pickle.dump(

@@ -88,37 +88,39 @@ async def read_item(
         download_newest=True,
     )
 
-    try:
-        pl.download()
-    except:
-        raise HTTPException(
-            status_code=400,
-            detail="Something went wrong while downloading the files",
-            headers={"Download error": "Maybe IPAC had a timeout"},
-        )
+    # try:
+    #     pl.download()
+    # except:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail="Something went wrong while downloading the files",
+    #         headers={"Download error": "Maybe IPAC had a timeout"},
+    #     )
 
-    try:
-        pl.psffit(force_refit=False)
-    except:
-        raise HTTPException(
-            status_code=400,
-            detail="Something went wrong while fitting the files",
-            headers={"Fit error": "PSF fit did not succeed"},
-        )
+    # try:
+    #     pl.psffit(force_refit=False)
+    # except:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail="Something went wrong while fitting the files",
+    #         headers={"Fit error": "PSF fit did not succeed"},
+    #     )
 
     metadata = pl.read_metadata()
     fitresults = pl.read_fitresults()
     fitresults = fitresults[ztf_id]
 
-    fitresults_df = pd.DataFrame.from_dict(fitresults)
+    lc = pd.DataFrame.from_dict(fitresults)
     querystring = f"mjd > {mjdmin} and mjd < {mjdmax}"
-    fitresults_df.query(querystring, inplace=True)
-    fitresults_df = fitresults_df.dropna()
-    fitresults_as_dict = fitresults_df.to_dict()
+    lc.query(querystring, inplace=True)
+
+    lc = lc.dropna()
+
+    lc_as_dict = lc.to_dict()
 
     return {
         "ztf_id": ztf_id,
         "ra": metadata["ra"][0],
         "dec": metadata["dec"][0],
-        "fitresults": fitresults_as_dict,
+        "fitresults": lc_as_dict,
     }
