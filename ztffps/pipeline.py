@@ -23,7 +23,7 @@ import requests.exceptions
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 import database
-from plot import calculate_magnitudes
+from utils import calculate_magnitudes
 
 try:
     ZTFDATA = os.getenv("ZTFDATA")
