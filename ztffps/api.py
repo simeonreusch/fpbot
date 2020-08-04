@@ -88,23 +88,23 @@ async def read_item(
         download_newest=True,
     )
 
-    # try:
-    #     pl.download()
-    # except:
-    #     raise HTTPException(
-    #         status_code=400,
-    #         detail="Something went wrong while downloading the files",
-    #         headers={"Download error": "Maybe IPAC had a timeout"},
-    #     )
+    try:
+        pl.download()
+    except:
+        raise HTTPException(
+            status_code=400,
+            detail="Something went wrong while downloading the files",
+            headers={"Download error": "Maybe IPAC had a timeout"},
+        )
 
-    # try:
-    #     pl.psffit(force_refit=False)
-    # except:
-    #     raise HTTPException(
-    #         status_code=400,
-    #         detail="Something went wrong while fitting the files",
-    #         headers={"Fit error": "PSF fit did not succeed"},
-    #     )
+    try:
+        pl.psffit(force_refit=False)
+    except:
+        raise HTTPException(
+            status_code=400,
+            detail="Something went wrong while fitting the files",
+            headers={"Fit error": "PSF fit did not succeed"},
+        )
 
     metadata = pl.read_metadata()
     fitresults = pl.read_fitresults()
