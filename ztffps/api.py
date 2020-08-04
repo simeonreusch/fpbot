@@ -10,7 +10,7 @@ ZTF_START = 58209
 ztffps_api = FastAPI()
 
 
-@ztffps_api.get("/objects/{ztf_id}")
+@ztffps_api.get("/{ztf_id}")
 async def read_item(
     ztf_id,
     mjdmin: float = None,
