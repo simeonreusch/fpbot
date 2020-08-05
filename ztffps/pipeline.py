@@ -104,6 +104,8 @@ class ForcedPhotometryPipeline:
         self.ampel = ampel
         self.download_newest = download_newest
 
+        self.convert_daysago_to_jd()
+
         # parse different formats of ra and dec
         if ra is not None and dec is not None:
             if str(ra)[2] == ":" or str(ra)[2] == "h":
@@ -144,6 +146,19 @@ class ForcedPhotometryPipeline:
         """ """
         return re.match("^ZTF[1-2]\d[a-z]{7}$", name)
 
+    def convert_daysago_to_jd(self):
+        """ """
+        now = Time(time.time(), format="unix", scale="utc").jd
+
+        if self.daysago is None:
+            self.jdmin = 2458209
+        else:
+            self.jdmin = now - self.daysago
+        if self.daysuntil is None:
+            self.jdmax = now
+        else:
+            self.jdmax = now - self.daysuntil
+
     def use_if_ztf(self):
         """ """
         if self.is_ztf_name(self.file_or_name):
@@ -174,29 +189,14 @@ class ForcedPhotometryPipeline:
     def update_database_with_given_radec(self):
         """ """
         name = self.object_list[0]
-        now = Time(time.time(), format="unix", scale="utc").jd
-
-        ra = self.ra
-        dec = self.dec
-        entries = -1
-
-        if self.daysago is None:
-            jdmin = 2458209
-        else:
-            jdmin = now - self.daysago
-        if self.daysuntil is None:
-            jdmax = now
-        else:
-            jdmax = now - self.daysuntil
-
         database.update_database(
             name,
             {
                 "name": name,
                 "ra": ra,
                 "dec": dec,
-                "jdmin": jdmin,
-                "jdmax": jdmax,
+                "jdmin": self.jdmin,
+                "jdmax": self.jdmax,
                 "entries": entries,
                 "coords_per_filter": [np.nan, np.nan, np.nan],
             },
@@ -278,14 +278,6 @@ class ForcedPhotometryPipeline:
             print("\nUpdating metadata database")
             progress_bar = ProgressBar(len(connector.queryresult))
             for index, result in enumerate(connector.queryresult):
-                if self.daysago is None:
-                    jdmin = 2458209
-                else:
-                    jdmin = now - self.daysago
-                if self.daysuntil is None:
-                    jdmax = now
-                else:
-                    jdmax = now - self.daysuntil
 
                 database.update_database(
                     result[0],
@@ -293,8 +285,8 @@ class ForcedPhotometryPipeline:
                         "_id": result[0],
                         "ra": result[1],
                         "dec": result[2],
-                        "jdmin": jdmin,
-                        "jdmax": jdmax,
+                        "jdmin": self.jdmin,
+                        "jdmax": self.jdmax,
                         "entries": result[3],
                         "lastobs": result[9],
                         "jdobs_alert": result[4],
@@ -353,8 +345,10 @@ class ForcedPhotometryPipeline:
                 query = database.read_database(name, ["ra", "dec", "jdmin", "jdmax"])
                 ra = query["ra"][0]
                 dec = query["dec"][0]
-                jdmin = query["jdmin"][0]
-                jdmax = query["jdmax"][0]
+                # jdmin = query["jdmin"][0]
+                # jdmax = query["jdmax"][0]
+                jdmin = self.jdmin
+                jdmax = self.jdmax
 
                 fp = forcephotometry.ForcePhotometry.from_coords(
                     ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
@@ -426,8 +420,10 @@ class ForcedPhotometryPipeline:
 
             ra = query["ra"][i]
             dec = query["dec"][i]
-            jdmin = query["jdmin"][i]
-            jdmax = query["jdmax"][i]
+            # jdmin = query["jdmin"][i]
+            # jdmax = query["jdmax"][i]
+            jdmin = self.jdmin
+            jdmax = self.jdmax
             lastobs = query["lastobs"][i]
             lastfit = query["lastfit"][i]
             coords_per_filter = query["coords_per_filter"][i]
