@@ -265,7 +265,12 @@ class ForcedPhotometryPipeline:
         if self.daysago is None:
             print("\nNo 'daysago' given, full timerange used")
         else:
-            print(f"\nData from {self.daysago:.2f} days ago till today is used")
+            if self.daysuntil is None:
+                print(f"\nData from {self.daysago:.2f} days ago till today is used")
+            else:
+                print(
+                    f"\nData from {self.daysago:.2f} days ago till {self.daysuntil:.2f} days ago is used"
+                )
 
         now = Time(time.time(), format="unix", scale="utc").jd
 
