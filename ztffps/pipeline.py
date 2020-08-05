@@ -457,7 +457,7 @@ class ForcedPhotometryPipeline:
                 fitted_datapoints = 0
 
             # Compare to number of fitted datapoints from database
-            if number_of_fitted_datapoints_expected > fitted_datapoints:
+            if number_of_fitted_datapoints_expected > fitted_datapoints or force_refit:
                 print(f"\n{name} Fitting PSF")
                 import matplotlib.pyplot as plt
 
