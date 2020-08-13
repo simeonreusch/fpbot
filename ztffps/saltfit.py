@@ -348,16 +348,16 @@ class SaltFit:
             band="p48g", magsys="ab"
         )
         peak_abs_mag = peak_mag - cosmo.distmod(self.z).value
-        peak_abs_mag_corrected = peak_abs_mag + ALPHA_JLA * x1 - BETA_JLA * c
+        peak_abs_mag_corrected = peak_abs_mag + self.alpha * x1 - BETA_JLA * c
 
         # Calculate error for corrected peak absolute magnitude
         peak_abs_mag_corrected_err = np.sqrt(
             ((1.17882 * x0_err ** 2) / x0 ** 2)
-            + (ALPHA_JLA ** 2 * x1_err ** 2)
-            + (BETA_JLA ** 2 * c_err ** 2)
-            - (2 * ALPHA_JLA * BETA_JLA * cov_x1_c)
-            + ((2.17147 * BETA_JLA * cov_x0_c) / x0)
-            - ((2.17147 * ALPHA_JLA * cov_x0_x1) / x0)
+            + (self.alpha ** 2 * x1_err ** 2)
+            + (self.beta ** 2 * c_err ** 2)
+            - (2 * self.alpha * self.beta * cov_x1_c)
+            + ((2.17147 * self.beta * cov_x0_c) / x0)
+            - ((2.17147 * self.alpha * cov_x0_x1) / x0)
         )
 
         # Plot
