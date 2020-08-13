@@ -473,7 +473,9 @@ class ForcedPhotometryPipeline:
                 # ax = fig.add_subplot(111)
                 # fp.show_lc(ax=ax)
                 # database.update_database(name, {"forced_photometry": fp._data_forcefit})
+                print("storing")
                 fp.store()
+                print("stored")
 
                 lastfit = Time(time.time(), format="unix", scale="utc").jd
 
