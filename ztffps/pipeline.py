@@ -449,7 +449,8 @@ class ForcedPhotometryPipeline:
             )
             print(f"\n{name} loading metadata")
             fp.load_metadata()
-            print(f"\n{name} loaded")
+            print(f"\n{name} metadata loaded")
+            print(f"\n{name} loading paths to files")
             fp.load_filepathes(filecheck=False)
             print(f"\n{name} paths to files loaded")
             # Check how many forced photometry datapoints
