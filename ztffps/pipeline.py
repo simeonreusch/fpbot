@@ -447,11 +447,11 @@ class ForcedPhotometryPipeline:
                 jdmax=jdmax,
                 name=name,
             )
-            print("\n loading metadata")
+            print(f"\n{name} loading metadata")
             fp.load_metadata()
-            print("\n loaded")
+            print(f"\n{name} loaded")
             fp.load_filepathes(filecheck=False)
-
+            print(f"\n{name} paths to files loaded")
             # Check how many forced photometry datapoints
             # there SHOULD exist for this object
             number_of_fitted_datapoints_expected = len(fp.filepathes)
@@ -462,7 +462,6 @@ class ForcedPhotometryPipeline:
             # Compare to number of fitted datapoints from database
             if number_of_fitted_datapoints_expected > fitted_datapoints or force_refit:
                 print(f"\n{name} Fitting PSF ({i+1} of {len(self.object_list)})")
-                import matplotlib.pyplot as plt
 
                 fp.run_forcefit(
                     verbose=False,
