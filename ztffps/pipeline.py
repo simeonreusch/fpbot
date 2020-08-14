@@ -151,7 +151,7 @@ class ForcedPhotometryPipeline:
         now = Time(time.time(), format="unix", scale="utc").jd
 
         if self.daysago is None:
-            self.jdmin = 2458209
+            self.jdmin = 2458100
         else:
             self.jdmin = now - self.daysago
         if self.daysuntil is None:
