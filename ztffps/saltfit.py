@@ -39,7 +39,8 @@ FIELD_REFERENCE = os.path.join(os.getcwd(), "data", "reference.csv")
 # SPECTROSCOPIC_REFERENCE = os.path.join(
 #     os.getcwd(), "data", "ztf_host_w_redshift_20190510.csv"
 # )
-SPECTROSCOPIC_REFERENCE = os.path.join(os.getcwd(), "data", "rcf_2020_03_12.csv")
+# SPECTROSCOPIC_REFERENCE = os.path.join(os.getcwd(), "data", "rcf_2020_03_12.csv")
+SPECTROSCOPIC_REFERENCE = os.path.join(os.getcwd(), "data", "bts_redshifts_paper.csv")
 FILTER_TRANSLATION = {"p48r": 0, "p48g": 1, "p48i": 2}
 
 
@@ -54,11 +55,11 @@ class SaltFit:
             self.logger = logging.getLogger()
         else:
             self.logger = logger
-        if alpha is not None:
+        if alpha is None:
             self.alpha = ALPHA_JLA
         else:
             self.alpha = alpha
-        if beta is not None:
+        if beta is None:
             self.beta = BETA_JLA
         else:
             self.beta = beta
@@ -102,14 +103,32 @@ class SaltFit:
                 "magzp_err_alert",
             ],
         )
-        mag = np.asarray(query["mag_alert"][0])
-        jd_obs = np.asarray(query["jdobs_alert"][0])
-        mjd_obs = np.asarray(jd_obs) - 2400000.5
-        mag_err = np.asarray(query["magerr_alert"][0])
-        maglim = np.asarray(query["maglim_alert"][0])
-        band = query["fid_alert"][0]
-        magzp = np.asarray(query["magzp_alert"][0])
-        magzp_err = np.asarray(query["magzp_err_alert"][0])
+
+        mag = np.asarray(query["mag_alert"][0], dtype="float")
+        jd_obs = np.asarray(query["jdobs_alert"][0], dtype="float")
+        mjd_obs = np.asarray(jd_obs, dtype="float") - 2400000.5
+        mag_err = np.asarray(query["magerr_alert"][0], dtype="float")
+        maglim = np.asarray(query["maglim_alert"][0], dtype="float")
+        band = np.asarray(query["fid_alert"][0], dtype="float")
+        magzp = np.asarray(query["magzp_alert"][0], dtype="float")
+        magzp_err = np.asarray(query["magzp_err_alert"][0], dtype="float")
+
+        magzp_temp = magzp
+        del_indices = []
+
+        for index, value in enumerate(magzp_temp):
+            if np.isnan(value):
+                del_indices.append(index)
+
+        mag = np.delete(mag, del_indices)
+        jd_obs = np.delete(jd_obs, del_indices)
+        mjd_obs = np.delete(mjd_obs, del_indices)
+        mag_err = np.delete(mag_err, del_indices)
+        maglim = np.delete(maglim, del_indices)
+        magzp = np.delete(magzp, del_indices)
+        magzp_err = np.delete(magzp_err, del_indices)
+        band = np.delete(band, del_indices)
+        band = list(band)
 
         # Das geht besser!
         band_p48 = []
@@ -130,6 +149,7 @@ class SaltFit:
         Fratio = ampl / F0
         Fratio_err = mag_err * np.log(10) / 2.5 * Fratio
         ampl_err = np.sqrt(Fratio_err ** 2 - (ampl * F0_err / F0 ** 2) ** 2) * F0
+
         data = {
             "mag": mag,
             "mjd": mjd_obs,
@@ -161,6 +181,7 @@ class SaltFit:
         self.lightcurve.replace(
             ["ZTF r", "ZTF g", "ZTF i"], ["p48r", "p48g", "p48i"], inplace=True
         )
+
         self.lightcurve["flux_err"] = self.lightcurve["ampl.err"]
         self.lightcurve["flux"] = self.lightcurve["ampl"]
         self.lightcurve["zp"] = self.lightcurve["magzp"]
@@ -185,8 +206,8 @@ class SaltFit:
     def load_ztf_filters():
         """Add ZTF filters from file to SNCosmo"""
         bands = {
-            "p48r": "data/ztfr_eff.dat",
             "p48g": "data/ztfg_eff.dat",
+            "p48r": "data/ztfr_eff.dat",
             "p48i": "data/ztfi_eff.dat",
         }
         for bandname in bands.keys():
@@ -228,30 +249,42 @@ class SaltFit:
         """ """
         spectroscopic_redshifts = pd.read_csv(SPECTROSCOPIC_REFERENCE)
         # reference_object = spectroscopic_redshifts.query(f'sn_name == "{self.name}"')
-        reference_object = spectroscopic_redshifts.query(f'ZTF_Name == "{self.name}"')
+        # reference_object = spectroscopic_redshifts.query(f'ZTF_Name == "{self.name}"')
+        reference_object = spectroscopic_redshifts.query(f'ZTF == "{self.name}"')
 
+        nospectro = True
         if not reference_object.empty:
-            # self.z = reference_object["sn_redshift"].values[0]
-            z_recheck = reference_object["z_host_recheck"].values[0]
-            z_snid = reference_object["z_snid"].values[0]
-            if z_recheck != 100:
-                self.z = reference_object["z_host_recheck"].values[0]
-                self.logger.info(f"{self.name} Spectroscopic redshift found")
+            ## self.z = reference_object["sn_redshift"].values[0]
+            # z_recheck = reference_object["z_host_recheck"].values[0]
+            # z_snid = reference_object["z_snid"].values[0]
+            # if z_recheck != 100:
+            #     self.z = reference_object["z_host_recheck"].values[0]
+            #     self.logger.info(f"{self.name} Spectroscopic redshift found")
+            #     self.quality_info.update(z_spectro=True)
+            # else:
+            #     if z_snid != "nan" and ~np.isnan(z_snid):
+            #         self.z = z_snid
+            #         self.logger.info(f"{self.name} Spectroscopic redshift found")
+            #         self.quality_info.update(z_spectro=True)
+            #     else:
+            #         self.logger.info(f"{self.name} No spectroscopic redshift found")
+            #         self.quality_info.update(z_spectro=False)
+            #         try:
+            #             digits = self.get_digit_count(str(self.z))
+            #         except AttributeError:
+            #             digits = 0
+            #         self.quality_info.update(z_precision=digits)
+            z_host = reference_object["z-host"].values[0]
+
+            if not np.isnan(z_host):
+                self.z = z_host
+                self.logger.info(
+                    f"{self.name} Spectroscopic redshift found: {self.z:.5f}"
+                )
+                nospectro = False
                 self.quality_info.update(z_spectro=True)
-            else:
-                if z_snid != "nan" and ~np.isnan(z_snid):
-                    self.z = z_snid
-                    self.logger.info(f"{self.name} Spectroscopic redshift found")
-                    self.quality_info.update(z_spectro=True)
-                else:
-                    self.logger.info(f"{self.name} No spectroscopic redshift found")
-                    self.quality_info.update(z_spectro=False)
-                    try:
-                        digits = self.get_digit_count(str(self.z))
-                    except AttributeError:
-                        digits = 0
-                    self.quality_info.update(z_precision=digits)
-        else:
+
+        if nospectro:
             self.logger.info(f"{self.name} No spectroscopic redshift found")
             self.quality_info.update(z_spectro=False)
             try:
@@ -287,6 +320,7 @@ class SaltFit:
         # self.lightcurve = self.lightcurve.query(
         #     "chi2 > 0 and Fratio > (Fratio_unc * @self.snt) and filter != 'p48i'"
         # )
+
         if quality_checks:
             self.check_redshift_precision()
             self.count_observations()
@@ -335,9 +369,10 @@ class SaltFit:
         )
 
         # Crosscorrelation terms
-        cov_x0_x1 = self.fitresult["covariance"][1][2]
-        cov_x0_c = self.fitresult["covariance"][1][3]
-        cov_x1_c = self.fitresult["covariance"][2][3]
+        if self.fitresult["covariance"] is not None:
+            cov_x0_x1 = self.fitresult["covariance"][1][2]
+            cov_x0_c = self.fitresult["covariance"][1][3]
+            cov_x1_c = self.fitresult["covariance"][2][3]
 
         #  Calculate corrected peak absolute magnitude
         ab = sncosmo.get_magsystem("ab")
@@ -348,17 +383,21 @@ class SaltFit:
             band="p48g", magsys="ab"
         )
         peak_abs_mag = peak_mag - cosmo.distmod(self.z).value
-        peak_abs_mag_corrected = peak_abs_mag + self.alpha * x1 - BETA_JLA * c
+        peak_abs_mag_corrected = peak_abs_mag + self.alpha * x1 - self.beta * c
 
         # Calculate error for corrected peak absolute magnitude
-        peak_abs_mag_corrected_err = np.sqrt(
-            ((1.17882 * x0_err ** 2) / x0 ** 2)
-            + (self.alpha ** 2 * x1_err ** 2)
-            + (self.beta ** 2 * c_err ** 2)
-            - (2 * self.alpha * self.beta * cov_x1_c)
-            + ((2.17147 * self.beta * cov_x0_c) / x0)
-            - ((2.17147 * self.alpha * cov_x0_x1) / x0)
-        )
+
+        if self.fitresult["covariance"] is not None:
+            peak_abs_mag_corrected_err = np.sqrt(
+                ((1.17882 * x0_err ** 2) / x0 ** 2)
+                + (self.alpha ** 2 * x1_err ** 2)
+                + (self.beta ** 2 * c_err ** 2)
+                - (2 * self.alpha * self.beta * cov_x1_c)
+                + ((2.17147 * self.beta * cov_x0_c) / x0)
+                - ((2.17147 * self.alpha * cov_x0_x1) / x0)
+            )
+        else:
+            peak_abs_mag_corrected_err = np.nan
 
         # Plot
         fig, pulls = sncosmo.plot_lc(
