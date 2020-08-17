@@ -310,11 +310,10 @@ class ForcedPhotometryPipeline:
 
         query = database.read_database(self.object_list, ["name", "entries"])
         not_found = []
-        del_indices = []
+
         for index, entry in enumerate(query["entries"]):
             if entry == None:
                 not_found.append(self.object_list[index])
-                # del self.object_list[index]
 
         for index in sorted(del_indices, reverse=True):
             del self.object_list[index]
