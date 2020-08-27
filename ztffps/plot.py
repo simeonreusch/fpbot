@@ -134,7 +134,7 @@ def plot_lightcurve(
     fig.suptitle(f"{name}", fontweight="bold")
     ax.grid(b=True, axis="y")
     ax.set_xlabel("MJD")
-    ax.set_ylabel("magnitude [AB]")
+    ax.set_ylabel("Magnitude [AB]")
     ax.set_xlim([axis_min, axis_max])
     ax2.set_xlim([ax.get_xlim()[0] - now, ax.get_xlim()[1] - now])
     # ax3 = ax.twinx()
