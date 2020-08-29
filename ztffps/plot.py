@@ -130,7 +130,12 @@ def plot_lightcurve(
     fig, ax = plt.subplots(1, 1, figsize=[10, 4.2])
     fig.subplots_adjust(top=0.8)
     ax2 = ax.secondary_xaxis("top", functions=(t0_dist, t0_to_mjd))
-    ax2.set_xlabel(f"Days from {date.today()}")
+    # Get time now as UTC time
+    ts = time.time()
+    utc_now = datetime.utcfromtimestamp(ts)
+    utc_string = utc_now.strftime("%Y-%m-%d %H:%M")
+    ax2.set_xlabel(f"Days from {utc_string} UT")
+
     fig.suptitle(f"{name}", fontweight="bold")
     ax.grid(b=True, axis="y")
     ax.set_xlabel("MJD")
