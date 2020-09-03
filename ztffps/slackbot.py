@@ -266,11 +266,26 @@ def run_on_event(thread_id, channel_id, verbose=False):
                 thread_ts=thread_id,
                 icon_emoji=":fp-emoji:",
             )
-            # try:
-            pl.plot()
+            try:
+                pl.plot()
+            except FileNotFoundError:
+                wc.chat_postMessage(
+                    channel=channel_id,
+                    text=f"Sorry, there is no lightcurve available. MOST LIKELY this is caused by the fact that there are no forced photometry datapoints in the requested time range.",
+                    thread_ts=thread_id,
+                    icon_emoji=":fp-emoji:",
+                )
+            except:
+                wc.chat_postMessage(
+                    channel=channel_id,
+                    text=f"Error: Sorry, I have run into a problem while plotting the lightcurve. Please contact <@UAQTC7L73>.",
+                    thread_ts=thread_id,
+                    icon_emoji=":fp-emoji:",
+                )
         wc = WebClient(token=bot_token)
         for name in ztf_names:
             imgpath = os.path.join(lc_plotdir, "images", f"{name}_SNT_{snt}.png")
+            print(imgpath)
             imgdata = open(imgpath, "rb")
             wc.files_upload(
                 file=imgdata,
