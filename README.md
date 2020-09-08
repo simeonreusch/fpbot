@@ -55,6 +55,8 @@ optionally:
 
 `-plot`     Plots the lightcurve(s).
 
+`-plotflux`     Plots the lightcurve(s), but with flux instead of magnitude.
+
 `-saltfit`   Fits the lightcurve using SALT2 as provided by [sncosmo](https://github.com/sncosmo/).
 
 `-sciimg`  Experimental: Also downloads the science images from IPAC (note: to create thumbnails if specified)
