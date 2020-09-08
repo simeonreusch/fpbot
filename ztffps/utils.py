@@ -32,7 +32,7 @@ def abmag_err_to_flux_err(abmag, abmag_err, magzp=None, magzp_err=None):
         sigma_f = 3.39059e-20 * np.exp(-0.921034 * abmag) * abmag_err
     else:
         del_f = 0.921034 * np.exp(0.921034 * (magzp - abmag))
-        sigma_f = np.sqrt(del_f ** 2 * (abmag_err + magzp_err))
+        sigma_f = np.sqrt(del_f ** 2 * (abmag_err + magzp_err) ** 2)
     return sigma_f
 
 
