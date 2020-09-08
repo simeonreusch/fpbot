@@ -17,17 +17,17 @@ def flux_err_to_abmag_err(fluxnu, fluxerr_nu):
 
 
 def abmag_to_flux(abmag, magzp=48.585):
-    magzp = np.asarray(magzp)
-    abmag = np.asarray(abmag)
+    magzp = np.asarray(magzp, dtype=float)
+    abmag = np.asarray(abmag, dtype=float)
     return np.power(10, ((magzp - abmag) / 2.5))
 
 
 def abmag_err_to_flux_err(abmag, abmag_err, magzp=None, magzp_err=None):
-    abmag = np.asarray(abmag)
-    abmag_err = np.asarray(abmag_err)
+    abmag = np.asarray(abmag, dtype=float)
+    abmag_err = np.asarray(abmag_err, dtype=float)
     if magzp is not None:
-        magzp = np.asarray(magzp)
-        magzp_err = np.asarray(magzp_err)
+        magzp = np.asarray(magzp, dtype=float)
+        magzp_err = np.asarray(magzp_err, dtype=float)
     if magzp is None and magzp_err is None:
         sigma_f = 3.39059e-20 * np.exp(-0.921034 * abmag) * abmag_err
     else:

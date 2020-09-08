@@ -54,6 +54,23 @@ def plot_lightcurve(
         alert_zp_err = query["magzp_err_alert"][0]
         alert_mjd = np.asarray(alert_jd) - 2400000.5
         if plot_flux:
+            # Cut values where magzp is NaN as no flux can be extracted
+            alert_fid = np.asarray(alert_fid, dtype=int)
+            alert_mjd = np.asarray(alert_mjd, dtype=float)
+            alert_mag = np.asarray(alert_mag, dtype=float)
+            alert_mag_err = np.asarray(alert_magerr, dtype=float)
+            alert_zp = np.asarray(alert_zp, dtype=float)
+            alert_zp_err = np.asarray(alert_zp_err, dtype=float)
+            alert_zp = np.ma.masked_invalid(alert_zp)
+            mask = np.ma.getmask(alert_zp)
+            alert_zp = np.ma.compressed(alert_zp)
+            alert_zp_err = np.ma.compressed(np.ma.masked_where(mask, alert_zp_err))
+            alert_mjd = np.ma.compressed(np.ma.masked_where(mask, alert_mjd))
+            alert_mag = np.ma.compressed(np.ma.masked_where(mask, alert_mag))
+            alert_magerr = np.ma.compressed(np.ma.masked_where(mask, alert_magerr))
+            alert_fid = np.ma.compressed(np.ma.masked_where(mask, alert_fid))
+
+            # and now we calculate the flux
             alert_flux = abmag_to_flux(alert_mag, alert_zp)
             alert_flux_err = abmag_err_to_flux_err(
                 alert_mag, alert_magerr, alert_zp, alert_zp_err
