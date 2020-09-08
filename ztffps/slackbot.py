@@ -69,6 +69,7 @@ def run_on_event(thread_id, channel_id, verbose=False):
     verbose = True
     do_fit = False
     do_plot = False
+    do_fluxplot = False
     do_thumbnails = False
     upload_dataframe = False
     target_address = None
@@ -96,6 +97,8 @@ def run_on_event(thread_id, channel_id, verbose=False):
     for item in split_message:
         if item in fuzzy_parameters(["plot", "PLOT", "do_plot"]):
             do_plot = True
+        if item in fuzzy_parameters(["flux", "fluxplot", "plotflux"]):
+            do_fluxplot = True
         if item in fuzzy_parameters(["quiet"]):
             verbose = False
         if item in fuzzy_parameters(["df", "dataframe", "csv", "file"]):
@@ -295,13 +298,44 @@ def run_on_event(thread_id, channel_id, verbose=False):
                 title=f"{name} lightcurve",
                 icon_emoji=":fp-emoji:",
             )
-        # except:
-        #     wc.chat_postMessage(
-        #         channel=channel_id,
-        #         text=f"Error: Sorry, I have run into a problem while plotting the lightcurve(s). Please contact <@UAQTC7L73>.",
-        #         thread_ts=thread_id,
-        #         icon_emoji=":fp-emoji:",
-        #     )
+
+    if do_fluxplot:
+        if verbose:
+            wc.chat_postMessage(
+                channel=channel_id,
+                text=f"Plotting flux lightcurve(s).",
+                thread_ts=thread_id,
+                icon_emoji=":fp-emoji:",
+            )
+            try:
+                pl.plot(plot_flux=True)
+            except FileNotFoundError:
+                wc.chat_postMessage(
+                    channel=channel_id,
+                    text=f"Sorry, there is no flux lightcurve available. MOST LIKELY this is caused by the fact that there are no forced photometry datapoints in the requested time range.",
+                    thread_ts=thread_id,
+                    icon_emoji=":fp-emoji:",
+                )
+            except:
+                wc.chat_postMessage(
+                    channel=channel_id,
+                    text=f"Error: Sorry, I have run into a problem while plotting the flux lightcurve. Please contact <@UAQTC7L73>.",
+                    thread_ts=thread_id,
+                    icon_emoji=":fp-emoji:",
+                )
+        wc = WebClient(token=bot_token)
+        for name in ztf_names:
+            imgpath = os.path.join(lc_plotdir, "images", f"{name}_flux.png")
+            print(imgpath)
+            imgdata = open(imgpath, "rb")
+            wc.files_upload(
+                file=imgdata,
+                filename=imgpath,
+                channels=channel_id,
+                thread_ts=thread_id,
+                title=f"{name} flux lightcurve",
+                icon_emoji=":fp-emoji:",
+            )
 
     if do_thumbnails:
         if verbose:

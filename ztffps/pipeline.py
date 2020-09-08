@@ -496,7 +496,7 @@ class ForcedPhotometryPipeline:
                     f"\n{name} ({i+1} of {objects_total}) No new data to fit, skipping PSF fit"
                 )
 
-    def plot(self, nprocess=4, progress=True):
+    def plot(self, nprocess=4, progress=True, plot_flux=False):
         """ """
         self.logger.info("\nPlotting")
         object_count = len(self.object_list)
@@ -504,6 +504,7 @@ class ForcedPhotometryPipeline:
         daysago = [self.daysago] * object_count
         daysuntil = [self.daysuntil] * object_count
         mag_range = [self.mag_range] * object_count
+        plot_flux = [plot_flux] * object_count
 
         if progress:
             progress_bar = ProgressBar(object_count)
@@ -513,7 +514,9 @@ class ForcedPhotometryPipeline:
             for j, result in enumerate(
                 p.imap_unordered(
                     self._plot_multiprocessing_,
-                    zip(self.object_list, snt, daysago, daysuntil, mag_range),
+                    zip(
+                        self.object_list, snt, daysago, daysuntil, mag_range, plot_flux
+                    ),
                 )
             ):
                 if progress_bar is not None:
@@ -534,11 +537,16 @@ class ForcedPhotometryPipeline:
     @staticmethod
     def _plot_multiprocessing_(args):
         """ """
-        name, snt, daysago, daysuntil, mag_range = args
+        name, snt, daysago, daysuntil, mag_range, plot_flux = args
         from plot import plot_lightcurve
 
         plot_lightcurve(
-            name, snt=snt, daysago=daysago, daysuntil=daysuntil, mag_range=mag_range
+            name,
+            snt=snt,
+            daysago=daysago,
+            daysuntil=daysuntil,
+            mag_range=mag_range,
+            plot_flux=plot_flux,
         )
         print(f"\n{name} plotted")
 
@@ -718,6 +726,9 @@ class ForcedPhotometryPipeline:
                     filepath_plot = os.path.join(
                         PLOTDATA, "images", f"{name}_SNT_{self.snt}.png",
                     )
+                    filepath_fluxplot = os.path.join(
+                        PLOTDATA, "images", f"{name}_flux.png",
+                    )
                     filepath_thumbnails = os.path.join(
                         THUMBNAILS, f"{name}_thumbnails.zip"
                     )
@@ -725,6 +736,11 @@ class ForcedPhotometryPipeline:
                         tar.add(filepath_csv, arcname=os.path.basename(filepath_csv))
                     if os.path.exists(filepath_plot):
                         tar.add(filepath_plot, arcname=os.path.basename(filepath_plot))
+                    if os.path.exists(filepath_plot):
+                        tar.add(
+                            filepath_fluxplot,
+                            arcname=os.path.basename(filepath_fluxplot),
+                        )
                     if os.path.exists(filepath_thumbnails):
                         tar.add(
                             filepath_thumbnails,
@@ -740,8 +756,8 @@ class ForcedPhotometryPipeline:
 
         else:
             # Attach all the stuff individually
-            # attach plots
             for name in self.object_list or []:
+                # attach plots
                 filepath_plot = os.path.join(
                     PLOTDATA, "images", f"{name}_SNT_{self.snt}.png",
                 )
@@ -753,8 +769,21 @@ class ForcedPhotometryPipeline:
                     ] = f'attachment; filename="{name}_SNT_{self.snt}.png"'
                 msg.attach(part)
 
-            # attach dataframes
-            for name in self.object_list or []:
+                # attach fluxplot
+                filepath_fluxplot = os.path.join(
+                    PLOTDATA, "images", f"{name}_flux.png",
+                )
+                if os.path.exists(filepath_fluxplot):
+                    with open(filepath_fluxplot, "rb") as fluxplot:
+                        partflux = MIMEApplication(
+                            fluxplot.read(), Name=f"Plot_flux_{name}"
+                        )
+                    partflux[
+                        "Content-Disposition"
+                    ] = f'attachment; filename="{name}_flux.png"'
+                msg.attach(partflux)
+
+                # attach dataframes
                 filepath_csv = os.path.join(
                     PLOT_DATAFRAMES, f"{name}_SNT_{self.snt}.csv",
                 )
@@ -766,7 +795,7 @@ class ForcedPhotometryPipeline:
                     ] = f'attachment; filename="{name}_SNT_{self.snt}.csv"'
                     msg.attach(part)
 
-            for name in self.object_list or []:
+                # attach thumbnails
                 filepath_thumbnails = os.path.join(THUMBNAILS, f"{name}_thumbnails.zip")
                 if os.path.exists(filepath_thumbnails):
                     with open(filepath_thumbnails, "rb") as thumbnails:
@@ -790,7 +819,6 @@ class ForcedPhotometryPipeline:
 
         # Note: Currently when run at DESY, this generates distorted plot headings
         # when multiprocessed. Therefore nprocess is set to 1.
-
         query = database.read_database(self.object_list, ["ra", "dec"])
 
         for index, name in enumerate(self.object_list):
@@ -869,7 +897,17 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-plot",
+        "-magplot",
+        "-plotmag",
         "-p",
+        action="store_true",
+        help="Plot the lightcurve. Note: '-fit' always also plots.",
+    )
+    parser.add_argument(
+        "-plotflux",
+        "-fluxplot",
+        "-flux",
+        "-pf",
         action="store_true",
         help="Plot the lightcurve. Note: '-fit' always also plots.",
     )
@@ -988,6 +1026,7 @@ if __name__ == "__main__":
     daysuntil = commandline_args.daysuntil
     mag_range = commandline_args.magrange
     do_plot = commandline_args.plot
+    do_fluxplot = commandline_args.plotflux
     do_download = commandline_args.dl
     do_psffit = commandline_args.fit
     do_saltfit = commandline_args.saltfit
@@ -1042,6 +1081,8 @@ if __name__ == "__main__":
         pl.psffit(force_refit=force_refit)
     if do_plot:
         pl.plot()
+    if do_fluxplot:
+        pl.plot(plot_flux=True)
     if do_saltfit:
         pl.saltfit(quality_checks=True, alertfit=True)
         pl.saltfit(quality_checks=True, alertfit=False)
