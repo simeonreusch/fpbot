@@ -141,7 +141,7 @@ def say_hello(**payload):
                             },
                             {
                                 "type": "mrkdwn",
-                                "text": "*--magrange*: For plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag",
+                                "text": "*--magrange/--fluxrange*: For plotting only; defines range of y-axis. Example: --magrange 17 20 to plot from 17 to 20 mag or --fluxrange 600 -400. Note that order is irrelevant",
                             },
                         ],
                     }
