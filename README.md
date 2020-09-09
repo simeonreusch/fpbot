@@ -75,6 +75,8 @@ optionally:
 
 `--magrange [float float]` Defines upper and lower magnitude bound for plotting the lightcurves. Order is irrelevant.
 
+`--fluxrange [float float]` Defines lower and upper flux bound for plotting the flux lightcurves. Order is irrelevant.
+
 #### Examples
 
 `./pipeline.py ZTF19abimkwn -dl -fit -saltfit --nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.

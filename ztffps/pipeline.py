@@ -65,6 +65,7 @@ class ForcedPhotometryPipeline:
         daysuntil=None,
         snt=5.0,
         mag_range=None,
+        flux_range=None,
         ra=None,
         dec=None,
         nprocess=4,
@@ -96,6 +97,7 @@ class ForcedPhotometryPipeline:
         self.daysuntil = daysuntil
         self.snt = snt
         self.mag_range = mag_range
+        self.flux_range = flux_range
         self.reprocess = reprocess
         self.nprocess = nprocess
         self.sciimg = sciimg
@@ -504,6 +506,7 @@ class ForcedPhotometryPipeline:
         daysago = [self.daysago] * object_count
         daysuntil = [self.daysuntil] * object_count
         mag_range = [self.mag_range] * object_count
+        flux_range = [self.flux_range] * object_count
         plot_flux = [plot_flux] * object_count
 
         if progress:
@@ -515,7 +518,13 @@ class ForcedPhotometryPipeline:
                 p.imap_unordered(
                     self._plot_multiprocessing_,
                     zip(
-                        self.object_list, snt, daysago, daysuntil, mag_range, plot_flux
+                        self.object_list,
+                        snt,
+                        daysago,
+                        daysuntil,
+                        mag_range,
+                        flux_range,
+                        plot_flux,
                     ),
                 )
             ):
@@ -537,7 +546,7 @@ class ForcedPhotometryPipeline:
     @staticmethod
     def _plot_multiprocessing_(args):
         """ """
-        name, snt, daysago, daysuntil, mag_range, plot_flux = args
+        name, snt, daysago, daysuntil, mag_range, flux_range, plot_flux = args
         from plot import plot_lightcurve
 
         plot_lightcurve(
@@ -546,6 +555,7 @@ class ForcedPhotometryPipeline:
             daysago=daysago,
             daysuntil=daysuntil,
             mag_range=mag_range,
+            flux_range=flux_range,
             plot_flux=plot_flux,
         )
         print(f"\n{name} plotted")
@@ -957,8 +967,16 @@ if __name__ == "__main__":
         "--magrange",
         nargs=2,
         type=float,
-        metavar=("magnitude bound 1", "magnitude limit 2"),
+        metavar=("lower magnitude bound", "upper magnitude bound"),
         help="Provide two magnitudes which limit the plot's y-axis range.",
+    )
+    parser.add_argument(
+        "-fluxrange",
+        "--fluxrange",
+        nargs=2,
+        type=float,
+        metavar=("lower flux bound", "uper flux bound"),
+        help="Provide two fluxes which limit the plot's y-axis range.",
     )
     parser.add_argument(
         "--sendmail",
@@ -1025,6 +1043,7 @@ if __name__ == "__main__":
     daysago = commandline_args.daysago
     daysuntil = commandline_args.daysuntil
     mag_range = commandline_args.magrange
+    flux_range = commandline_args.fluxrange
     do_plot = commandline_args.plot
     do_fluxplot = commandline_args.plotflux
     do_download = commandline_args.dl
@@ -1063,6 +1082,7 @@ if __name__ == "__main__":
         daysago=daysago,
         daysuntil=daysuntil,
         mag_range=mag_range,
+        flux_range=flux_range,
         snt=snt,
         nprocess=nprocess,
         ra=ra,

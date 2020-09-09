@@ -14,7 +14,7 @@ plot_colors = {"g": "green", "r": "red", "i": "orange"}
 plot_labels = {"g": "FP g", "r": "FP r", "i": "FP i"}
 bandnames = {"g": "ZTF_g", "r": "ZTF_r", "i": "ZTF_i"}
 
-name = "ZTF18aaxtcdm"
+name = "ZTF18aamsgjq"
 
 lc_path = os.path.join(pipeline.FORCEPHOTODATA, f"{name}.csv")
 
@@ -44,6 +44,7 @@ for band in bands:
     median_total = np.median(medians)
     baselines.update({band: median_total})
 
+print(f"baselines are: {baselines}")
 
 fig, ax = plt.subplots(1, 1, figsize=[10, 4.2])
 for band in bands:
@@ -58,7 +59,7 @@ for band in bands:
         mec="black",
         mew=0.5,
     )
-plt.savefig(f"before_correction.png")
+plt.savefig(f"before_correction.png", dpi=300)
 plt.close()
 
 fig, ax = plt.subplots(1, 1, figsize=[10, 4.2])
@@ -74,5 +75,5 @@ for band in bands:
         mec="black",
         mew=0.5,
     )
-plt.savefig(f"after_correction.png")
+plt.savefig(f"after_correction.png", dpi=300)
 plt.close()

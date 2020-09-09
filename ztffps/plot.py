@@ -25,6 +25,7 @@ def plot_lightcurve(
     daysago=None,
     daysuntil=None,
     mag_range=None,
+    flux_range=None,
     logger=None,
     plot_flux=False,
 ):
@@ -261,9 +262,10 @@ def plot_lightcurve(
         if mag_range is None:
             ax.set_ylim([23, 15])
         else:
-            ax.set_ylim([mag_range[1], mag_range[0]])
-    # else:
-    # ax.set_ylim([0, 1000])
+            ax.set_ylim([np.max(mag_range), np.min(mag_range)])
+    else:
+        if flux_range is not None:
+            ax.set_ylim([np.min(flux_range), np.max(flux_range)])
 
     if not plot_flux:
         ax.legend(

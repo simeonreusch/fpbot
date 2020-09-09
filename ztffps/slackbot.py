@@ -78,6 +78,7 @@ def run_on_event(thread_id, channel_id, verbose=False):
     daysuntil = None
     snt = 5.0
     mag_range = None
+    flux_range = None
     ra = None
     dec = None
     sciimg = False
@@ -172,6 +173,22 @@ def run_on_event(thread_id, channel_id, verbose=False):
                 return
 
     for i, parameter in enumerate(split_message):
+        if parameter in fuzzy_parameters(["fluxrange", "flux_range"]):
+            try:
+                flux_range_array = np.asarray(
+                    [float(split_message[i + 1]), float(split_message[i + 2])]
+                )
+                flux_range = [np.min(flux_range_array), np.max(flux_range_array)]
+            except ValueError:
+                wc.chat_postMessage(
+                    channel=channel_id,
+                    text=f"Error: --fluxrange has to be two floats. E.g. --fluxrange -100 800",
+                    thread_ts=thread_id,
+                    icon_emoji=":fp-emoji:",
+                )
+                return
+
+    for i, parameter in enumerate(split_message):
         if parameter in fuzzy_parameters(["radec", "ra_dec", "RADEC", "RA_DEC"]):
             if (
                 split_message[i + 1][2] == "h"
@@ -217,6 +234,7 @@ def run_on_event(thread_id, channel_id, verbose=False):
         daysuntil=daysuntil,
         snt=snt,
         mag_range=mag_range,
+        flux_range=flux_range,
         ra=ra,
         dec=dec,
         nprocess=nprocess,
