@@ -98,7 +98,11 @@ class AmpelInfo:
             dec_g = []
             dec_r = []
             dec_i = []
+            isdiffpos = []
             for res in query_res:
+                _isdiffpos = res["candidate"]["isdiffpos"]
+                if _isdiffpos == "f":
+                    continue
                 ra = res["candidate"]["ra"]
                 dec = res["candidate"]["dec"]
                 jd = res["candidate"]["jd"]

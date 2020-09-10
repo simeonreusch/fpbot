@@ -54,6 +54,7 @@ def plot_lightcurve(
         alert_zp = query["magzp_alert"][0]
         alert_zp_err = query["magzp_err_alert"][0]
         alert_mjd = np.asarray(alert_jd) - 2400000.5
+
         if plot_flux:
             # Cut values where magzp is NaN as no flux can be extracted
             alert_fid = np.asarray(alert_fid, dtype=int)
