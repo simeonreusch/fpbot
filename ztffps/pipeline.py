@@ -746,7 +746,7 @@ class ForcedPhotometryPipeline:
                         tar.add(filepath_csv, arcname=os.path.basename(filepath_csv))
                     if os.path.exists(filepath_plot):
                         tar.add(filepath_plot, arcname=os.path.basename(filepath_plot))
-                    if os.path.exists(filepath_plot):
+                    if os.path.exists(filepath_fluxplot):
                         tar.add(
                             filepath_fluxplot,
                             arcname=os.path.basename(filepath_fluxplot),
