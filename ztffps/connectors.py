@@ -220,11 +220,17 @@ class MarshalInfo:
             magzp_err = np.zeros(ndet)
 
             for i in range(ndet):
+                isdiffpos = True
                 try:
                     line = mtb.values[i][0].split(",")
                 except:
                     print(mtb.values[i][0])
                 for j in range(len(line)):
+                    if line[j][:14] == '  "isdiffpos":':
+                        print(line[j].split(":"))
+                        isdiffpos = str(line[j].split(":")[1])
+                        if isdiffpos[2:-1] == "f":
+                            isdiffpos = False
                     if line[j][:7] == '  "ra":':
                         ra[i] = float(line[j].split(":")[1])
                     elif line[j][:8] == '  "dec":':
@@ -243,6 +249,11 @@ class MarshalInfo:
                         magzp[i] = float(line[j].split(":")[1])
                     elif line[j][:15] == '  "magzpsciunc"':
                         magzp_err[i] = float(line[j].split(":")[1])
+
+                # Throw away all alert datapoints
+                # with negative diff images
+                if isdiffpos == False:
+                    ra[i] = 0
 
             ras = ra[ra != 0]
             decs = dec[ra != 0]
