@@ -31,7 +31,7 @@ in the directory containing 1) the Dockerfile, 2) the docker-compose.yml and 3) 
 ### Troubleshooting
 Make sure that ztfquery and ztflc are installed with the latest version.
 
-In case way too few images are downloaded, check your Marshal and IRSA credentials. These are stored in ```~.ztfquery```. If there is a problem with these, ztfquery will not complain but simply only download publicly accessable images.
+In case way too few images are downloaded, check your Marshal and IRSA credentials. These are stored in ```~.ztfquery```. If there is a problem with these, ztfquery will not complain but simply only download publicly accessible images.
 
 ## Usage
 
