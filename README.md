@@ -13,7 +13,7 @@ All required packages should be installed by issuing:
 
 Note that libpq-dev needs to be present. On Debian/Ubuntu, issue ```sudo apt install libpq-dev```
 
-If MongoDB is not present, it can easily be installed. On Debian/Ubuntu, run ```sudo apt install mongodb```. This also takes care of the demon running in the background. On MacOS, make sure brew is present and issue first ```brew tap mongodb/brew``` ```and then brew install mongodb-community@4.2```. Lastly, start the demon with ```mongod --config /usr/local/etc/mongod.conf --fork```.
+If MongoDB is not present, it can easily be installed. On Debian/Ubuntu, run ```sudo apt install mongodb```. This also takes care of the demon running in the background. On MacOS, make sure brew is present and issue first ```brew tap mongodb/brew``` ```and then brew install mongodb-community@4.2```. Lastly, for Ubuntu, start the demon with ```mongod --config /usr/local/etc/mongod.conf --fork```.
 
 If you want AMPEL for alert data (you don't have to!), you have to install the AMPEL requirements (and of course have credentials for AMPEL) with
 
