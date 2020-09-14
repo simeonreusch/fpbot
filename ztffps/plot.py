@@ -5,9 +5,9 @@
 import os, time, sys, logging
 import numpy as np
 import pandas as pd
+from astropy.time import Time
 from astropy.table import Table
 from astropy.io import fits
-from astropy.time import Time
 import matplotlib.pyplot as plt
 from datetime import datetime, date
 import pipeline
@@ -55,28 +55,27 @@ def plot_lightcurve(
         alert_zp_err = query["magzp_err_alert"][0]
         alert_mjd = np.asarray(alert_jd) - 2400000.5
 
-        if plot_flux:
-            # Cut values where magzp is NaN as no flux can be extracted
-            alert_fid = np.asarray(alert_fid, dtype=int)
-            alert_mjd = np.asarray(alert_mjd, dtype=float)
-            alert_mag = np.asarray(alert_mag, dtype=float)
-            alert_mag_err = np.asarray(alert_magerr, dtype=float)
-            alert_zp = np.asarray(alert_zp, dtype=float)
-            alert_zp_err = np.asarray(alert_zp_err, dtype=float)
-            alert_zp = np.ma.masked_invalid(alert_zp)
-            mask = np.ma.getmask(alert_zp)
-            alert_zp = np.ma.compressed(alert_zp)
-            alert_zp_err = np.ma.compressed(np.ma.masked_where(mask, alert_zp_err))
-            alert_mjd = np.ma.compressed(np.ma.masked_where(mask, alert_mjd))
-            alert_mag = np.ma.compressed(np.ma.masked_where(mask, alert_mag))
-            alert_magerr = np.ma.compressed(np.ma.masked_where(mask, alert_magerr))
-            alert_fid = np.ma.compressed(np.ma.masked_where(mask, alert_fid))
+        # Cut values where magzp is NaN as no flux can be extracted
+        alert_fid = np.asarray(alert_fid, dtype=int)
+        alert_mjd = np.asarray(alert_mjd, dtype=float)
+        alert_mag = np.asarray(alert_mag, dtype=float)
+        alert_mag_err = np.asarray(alert_magerr, dtype=float)
+        alert_zp = np.asarray(alert_zp, dtype=float)
+        alert_zp_err = np.asarray(alert_zp_err, dtype=float)
+        alert_zp = np.ma.masked_invalid(alert_zp)
+        mask = np.ma.getmask(alert_zp)
+        alert_zp = np.ma.compressed(alert_zp)
+        alert_zp_err = np.ma.compressed(np.ma.masked_where(mask, alert_zp_err))
+        alert_mjd = np.ma.compressed(np.ma.masked_where(mask, alert_mjd))
+        alert_mag = np.ma.compressed(np.ma.masked_where(mask, alert_mag))
+        alert_magerr = np.ma.compressed(np.ma.masked_where(mask, alert_magerr))
+        alert_fid = np.ma.compressed(np.ma.masked_where(mask, alert_fid))
 
-            # and now we calculate the flux
-            alert_flux = abmag_to_flux(alert_mag, alert_zp)
-            alert_flux_err = abmag_err_to_flux_err(
-                alert_mag, alert_magerr, alert_zp, alert_zp_err
-            )
+        # and now we calculate the flux
+        alert_flux = abmag_to_flux(alert_mag, alert_zp)
+        alert_flux_err = abmag_err_to_flux_err(
+            alert_mag, alert_magerr, alert_zp, alert_zp_err
+        )
 
     ### apply time-range cut:
     now = Time(time.time(), format="unix", scale="utc").mjd
@@ -104,32 +103,29 @@ def plot_lightcurve(
 
     # Create Dataframe for Alert data / Rounding is neccessary because Alert and Forced Photometry MJDs are not consistent
     if has_alertdata:
-        if not plot_flux:
-            alert_df = pd.DataFrame(
-                data={
-                    "obsmjd": np.around(alert_mjd, decimals=4),
-                    "mag": alert_mag,
-                    "mag_err": alert_magerr,
-                    "fid": alert_fid,
-                }
-            )
-        else:
-            alert_df = pd.DataFrame(
-                data={
-                    "obsmjd": np.around(alert_mjd, decimals=4),
-                    "mag": alert_mag,
-                    "mag_err": alert_magerr,
-                    "flux": alert_flux,
-                    "flux_err": alert_flux_err,
-                    "fid": alert_fid,
-                }
-            )
+        alert_df = pd.DataFrame(
+            data={
+                "obsmjd": np.around(alert_mjd, decimals=4),
+                "filter_id": alert_fid,
+                "flux": alert_flux,
+                "flux_err": alert_flux_err,
+                "mag": alert_mag,
+                "mag_err": alert_magerr,
+                "magzp": alert_zp,
+                "magzp_err": alert_zp_err,
+            }
+        )
+
         alert_df = alert_df[
             ~alert_df["obsmjd"].isin(np.around(lc.obsmjd.values, decimals=4))
         ]
-        alert_g = alert_df.query("fid == 1")
-        alert_r = alert_df.query("fid == 2")
-        alert_i = alert_df.query("fid == 3")
+        alert_df = alert_df.reset_index()
+        alert_df.drop(columns=["index"], inplace=True)
+        print(alert_df)
+        alert_df.to_csv(os.path.join(lc_plotted_dir, f"{name}_alert.csv"))
+        alert_g = alert_df.query("filter_id == 1")
+        alert_r = alert_df.query("filter_id == 2")
+        alert_i = alert_df.query("filter_id == 3")
 
     # Create filterspecific dataframes
     len_before_sn_cut = len(lc)
