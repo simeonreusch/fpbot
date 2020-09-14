@@ -13,18 +13,18 @@ All required packages should be installed by issuing:
 
 Note that libpq-dev needs to be present. On Debian/Ubuntu, issue ```sudo apt install libpq-dev```
 
-If MongoDB is not present, it can easily be installed. On Debian/Ubuntu, run ```sudo apt install mongodb```. This also takes care of the demon running in the background. On MacOS, make sure brew is present and issue first ```brew tap mongodb/brew``` ```and then brew install mongodb-community@4.2```. Lastly, for Ubuntu, start the demon with ```mongod --config /usr/local/etc/mongod.conf --fork```.
+If MongoDB is not present, it can easily be installed. On Debian/Ubuntu, run ```sudo apt install mongodb```. This should also take care of the demon running in the background (but you can check with ```sudo systemctl status mongodb```). On MacOS, make sure brew is present and issue first ```brew tap mongodb/brew``` and then ```brew install mongodb-community@4.2```.
 
 If you want AMPEL for alert data (you don't have to!), you have to install the AMPEL requirements (and of course have credentials for AMPEL) with
 
 ```pip3 install -r ampel_requirements.txt```
 
 ## ALTERNATIVE: Use Docker container
-ztffps comes shipped with a Dockerfile and a docker-compose.yml. Use them to build the docker container (this includes all dependencies as well as a MongoDB instance). Note: You have to provide a .ztfquery file containing access data for ztfquery (see [here](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery) for details). The container can be built by issuing
+ztffps comes shipped with a Dockerfile and a docker-compose.yml. Use them to build the docker container (this includes all dependencies as well as a MongoDB instance). Note: You have to provide a .ztfquery file in the ztffps directory containing access data for ztfquery (see [here](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery) for details). The container can be built by issuing
 
 ```docker-compose build```
 
-in the directory containing 1) the Dockerfile, 2) the docker-compose.yml and 3) .ztfquery credentials file and run with
+in the directory containing 1) the Dockerfile, 2) the docker-compose.yml and 3) the .ztfquery credentials file and run with
 
 ```docker-compose run -p 8000:8000 ztffps```. This exposes the web API to port 8000 of your local machine.
 
@@ -37,7 +37,7 @@ In case way too few images are downloaded, check your Marshal and IRSA credentia
 
 The basic file is pipeline.py, which can be run using different flags. Alternatively, the pipeline class can be imported from this file.
 
-### By command
+### By command (./pipeline ZTFname -operations --options)
 
 Always:
 
@@ -67,21 +67,21 @@ optionally:
 
 `--nprocess [int]`  Specifies the number of processes spawned for parallel computing. Default is 4. Note: download is always performed with 32 processes in parallel, as IPAC upload-speed is the bottleneck there.
 
-`--daysago [int]`  Determines how old the photometric data should be. Default uses all datapoints available.
+`--daysago [int]`  Determines how old the photometric data should be. Default: all.
 
-`--daysuntil [int]`  Determines how new the photometric data should be. Default uses all datapoints available.
+`--daysuntil [int]`  Determines how new the photometric data should be. Default: all.
 
 `--snt [float]` Specifies the signal-to-noise ratio for plotting and SALT-fitting.
 
-`--magrange [float float]` Defines upper and lower magnitude bound for plotting the lightcurves. Order is irrelevant.
+`--magrange [float float]` Defines upper and lower magnitude bound for plotting the lightcurves; order is irrelevant.
 
-`--fluxrange [float float]` Defines lower and upper flux bound for plotting the flux lightcurves. Order is irrelevant.
+`--fluxrange [float float]` Defines lower and upper flux bound for plotting the flux lightcurves; order is irrelevant.
 
 #### Examples
 
 `./pipeline.py ZTF19abimkwn -dl -fit -saltfit --nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
 
-`./pipeline.py supernovae.txt -dl` Downloads all difference images for ZTF transients found in supernovae.txt. Note: Downloading the images usually takes a considerable amount of time.
+`./pipeline.py supernovae.txt -dl` Downloads all difference images for ZTF transients found in supernovae.txt, each line a ZTFname. To get a cool example of ZTF lightcurves, issue: example_download.txt Note: Downloading the images usually takes a considerable amount of time.
 
 `./pipeline.py this_looks_interesting -radec 143.3123 66.42342 -dl -fit -plot --daysago 10 -magrange 18 20` Downloads all images of the last ten days of the location given in ra and dec, performs PSF-fits and plots the lightcurve in the 18--20 magnitude range.
 
