@@ -97,6 +97,10 @@ def plot_lightcurve(
     del lc["index"]
 
     lc = calculate_magnitudes(lc, snt)
+    lc.sort_values(by=["obsmjd"], inplace=True)
+    lc.reset_index(inplace=True)
+    lc.drop(columns=["index"], inplace=True)
+    print(lc.obsmjd)
 
     # Save this version of the dataframe for later analysis (and to be sent by mail)
     lc.to_csv(os.path.join(lc_plotted_dir, f"{name}_SNT_{snt}.csv"))
