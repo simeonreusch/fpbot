@@ -78,8 +78,9 @@ optionally:
 `--fluxrange [float float]` Defines lower and upper flux bound for plotting the flux lightcurves; order is irrelevant.
 
 #### Examples
-`./pipeline.py example_download.dat -dl -fit -plot` downloads the two lightcurves in the file `example_download.dat`, fits and plots them.
+`./pipeline.py ZTF19aatubsj` downloads this ZTF object, does forced photometry, plots it and saves it to the default directory in "forcephotometry" (ZTFDATA, located at $ZTFDATA in your .bashrc/.zshrc/..., see ztfquery doc).
 
+`./pipeline.py example_download.dat -dl -fit` downloads the two lightcurves in the file `example_download.dat`, fits, but does not plots them.
 
 `./pipeline.py ZTF19abimkwn -dl -fit -saltfit --nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
 

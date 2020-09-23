@@ -1044,10 +1044,10 @@ if __name__ == "__main__":
     daysuntil = commandline_args.daysuntil
     mag_range = commandline_args.magrange
     flux_range = commandline_args.fluxrange
-    do_plot = commandline_args.plot
-    do_fluxplot = commandline_args.plotflux
     do_download = commandline_args.dl
     do_psffit = commandline_args.fit
+    do_plot = commandline_args.plot
+    do_fluxplot = commandline_args.plotflux
     do_saltfit = commandline_args.saltfit
     do_filecheck = commandline_args.filecheck
     targetmail = commandline_args.sendmail
@@ -1061,6 +1061,11 @@ if __name__ == "__main__":
 
     # if thumbnails:
     #     sciimg = True
+
+    if len(sys.argv) == 2:
+        do_download = True
+        do_psffit = True
+        do_plot = True
 
     # WARNING: This parsing is bullshit
     if radec:
