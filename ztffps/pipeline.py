@@ -33,6 +33,10 @@ except (TypeError, NameError):
         "You have to export the environment variable ZTFDATA in your bash profile; e.g. export ZTFDATA='ABSOLUTE/PATH/TO/ZTFDATA'"
     )
 
+# Define servers
+MAILSERVER = "smtp-auth.desy.de"
+MAILPORT = 587
+
 # Define and create directories
 METADATA = os.path.join(FORCEPHOTODATA, "meta")
 COSMODATA = os.path.join(ZTFDATA, "cosmology")
@@ -163,6 +167,8 @@ class ForcedPhotometryPipeline:
 
     def use_if_ztf(self):
         """ """
+        errormessage = "\nYou have to provide a either a ZTF name (a string adhering to the ZTF naming scheme), an ascii file containing ZTF names (1 per line) in the same directory or an arbitrary name if using the radec option.\n"
+
         if self.is_ztf_name(self.file_or_name):
             self.object_list = [self.file_or_name]
         else:
@@ -174,14 +180,16 @@ class ForcedPhotometryPipeline:
                     if self.is_ztf_name(line):
                         self.object_list.append(line)
             except FileNotFoundError as error:
-                print(
-                    "\nYou have to provide either a ZTF name or a file containing ZTF names (1 per line) or an arbitrary name if using the radec option.\n"
-                )
+                print(errormessage)
                 raise error
             assert (
                 self.object_list[0][:3] == "ZTF" and len(self.object_list[0]) == 12
-            ), "You have to provide either a ZTF name or a file containing ZTF names (1 per line)"
-        print(f"Doing forced photometry for {len(self.object_list)} SNe")
+            ), errormessage
+        # Grammar check
+        if len(self.object_list) == 1:
+            print(f"Doing forced photometry for {len(self.object_list)} transient")
+        else:
+            print(f"Doing forced photometry for {len(self.object_list)} transients")
         print("Logs are stored in log")
 
     def check_for_duplicates(self):
@@ -213,7 +221,7 @@ class ForcedPhotometryPipeline:
         needs_external_database = []
 
         if self.update_enforce:
-            print("\nForced updating of alert data from Marshal/AMPEL")
+            print("\nForced update of alert data data from Marshal/AMPEL")
 
         query = database.read_database(self.object_list, ["_id", "entries", "ra"])
 
@@ -265,7 +273,7 @@ class ForcedPhotometryPipeline:
             )
 
         if self.daysago is None:
-            print("\nNo 'daysago' given, full timerange used")
+            print("\nNo 'daysago' given, full timerange since ZTF operations used")
         else:
             if self.daysuntil is None:
                 print(f"\nData from {self.daysago:.2f} days ago till today is used")
@@ -277,7 +285,7 @@ class ForcedPhotometryPipeline:
         now = Time(time.time(), format="unix", scale="utc").jd
 
         if not (marshal_failed and ampel_failed):
-            print("\nUpdating metadata database")
+            print("\nUpdating local database")
             progress_bar = ProgressBar(len(connector.queryresult))
             for index, result in enumerate(connector.queryresult):
 
@@ -308,7 +316,7 @@ class ForcedPhotometryPipeline:
         """Check for which objects there are infos available
         Delete from object-list if no info is available"""
 
-        print("\nChecking if alert data is present in metadata database")
+        print("\nChecking if alert data is present in the local database")
 
         query = database.read_database(self.object_list, ["name", "entries"])
         not_found = []
@@ -460,6 +468,7 @@ class ForcedPhotometryPipeline:
             print(f"\n{name} ({i+1} of {objects_total}) loading paths to files")
             fp.load_filepathes(filecheck=False)
             print(f"\n{name} ({i+1} of {objects_total}) paths to files loaded")
+
             # Check how many forced photometry datapoints
             # there SHOULD exist for this object
             number_of_fitted_datapoints_expected = len(fp.filepathes)
@@ -495,7 +504,7 @@ class ForcedPhotometryPipeline:
                 )
             else:
                 print(
-                    f"\n{name} ({i+1} of {objects_total}) No new data to fit, skipping PSF fit"
+                    f"\n{name} ({i+1} of {objects_total}) No new images to fit, skipping PSF fit"
                 )
 
     def plot(self, nprocess=4, progress=True, plot_flux=False):
@@ -536,7 +545,7 @@ class ForcedPhotometryPipeline:
     def global_filecheck(self):
         """ """
         print(
-            "Running filecheck. This can take several hours, depending on the size of your ZTDFATA folder."
+            "Running filecheck. This can take several hours, depending on the size of your $ZTDFATA folder."
         )
         badfiles = ztfquery.io.run_full_filecheck(
             erasebad=True, nprocess=self.nprocess, redownload=True
@@ -574,7 +583,9 @@ class ForcedPhotometryPipeline:
 
         objectcount = len(self.cleaned_object_list)
         progress_bar = ProgressBar(objectcount)
-        print("\nChecking if all mwebv-data is present and compute if not")
+        print(
+            "\nChecking if the mwebv Milky Way dust map value is present and compute it if not"
+        )
 
         for index, name in enumerate(self.cleaned_object_list):
             ra = query["ra"][index]
@@ -711,9 +722,6 @@ class ForcedPhotometryPipeline:
             subject = f"Forced Photometry for {objectnumber} objects"
             text = f"Here is your forced photometry output for {objectnumber} objects."
 
-        server = "smtp-auth.desy.de"
-        port = 587
-
         assert isinstance(send_to, str)
 
         msg = MIMEMultipart()
@@ -817,7 +825,7 @@ class ForcedPhotometryPipeline:
                     ] = f'attachment; filename="{name}_thumbnails.zip"'
                     msg.attach(part)
 
-        smtp = smtplib.SMTP(server, port)
+        smtp = smtplib.SMTP(MAILSERVER, MAILPORT)
         smtp.starttls()
         smtp.ehlo()
         smtp.login(send_from, _smtp_pass)
