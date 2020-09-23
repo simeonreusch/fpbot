@@ -907,7 +907,7 @@ if __name__ == "__main__":
         type=str,
         nargs=2,
         default=None,
-        help="If this is entered, you have to provide ra and dec; e.g. '-radec 161.2 -35.4' or '-radec 14:33:57.01 +40:14:37.5'. This loosens the requirement on the name provided, it can be arbitrary, not only a ZTF name -- but one must be provided.",
+        help="If this option is chosen, you have to provide ra and dec value; e.g. '-radec 161.2 -35.4' or '-radec 14:33:57.01 +40:14:37.5'. This loosens the requirement on the name provided: It can be a name of your choise, not only a ZTF name -- but one must be provided.",
     )
     parser.add_argument("-dl", action="store_true", help="Download the files from IPAC")
     parser.add_argument(
