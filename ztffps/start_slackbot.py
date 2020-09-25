@@ -5,7 +5,7 @@
 import os, io, argparse, re
 from slack import RTMClient, WebClient
 from ztflc.io import LOCALDATA
-from slackbot import bot_token, user_token
+from ztffps.slackbot import bot_token, user_token
 
 parser = argparse.ArgumentParser(description="This is a realtime slackbot")
 parser.add_argument("-debug", action="store_true", help="Debug mode")
@@ -26,9 +26,9 @@ def run_on_event(data):
     channel = data["channel"]
     sid = int(float(ts) * 1.0e6)
     if _DEBUG_ or _DEBUGDESY_:
-        cmd = f"bash {os.path.dirname(os.path.realpath(__file__))}/slackbot_spawn_screen_session_debug.sh {channel} {ts}"
+        cmd = f"bash {os.path.dirname(os.path.realpath(__file__))}/ztffps/slackbot_spawn_screen_session_debug.sh {channel} {ts}"
     else:
-        cmd = f"bash {os.path.dirname(os.path.realpath(__file__))}/slackbot_spawn_screen_session.sh {channel} {ts}"
+        cmd = f"bash {os.path.dirname(os.path.realpath(__file__))}/ztffps/slackbot_spawn_screen_session.sh {channel} {ts}"
     print(cmd)
     os.system(cmd)
 

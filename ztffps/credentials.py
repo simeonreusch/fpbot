@@ -21,6 +21,16 @@ def get_user_and_password(service: str = None):
     return username, password
 
 
+def get_user(service: str = None):
+    username = keyring.get_password(service, f"{service}_user")
+
+    if username is None:
+        username = input(f"Enter your {service} login: ")
+        keyring.set_password(service, f"{service}_user", username)
+
+    return username
+
+
 def get_password(service: str = None):
     """ """
     password = keyring.get_password(service, f"{service}_password")

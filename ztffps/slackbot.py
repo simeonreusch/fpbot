@@ -4,8 +4,8 @@
 
 import time, os, getpass, re, tarfile
 from slack import RTMClient, WebClient
-import pipeline
 import numpy as np
+from ztffps import pipeline
 from ztffps.pipeline import FORCEPHOTODATA
 from ztffps import credentials
 
@@ -384,7 +384,8 @@ def run_on_event(thread_id, channel_id, verbose=False):
                 with tarfile.open(tarball_path, "w:gz") as tar:
                     for name in ztf_names:
                         filepath_csv = os.path.join(
-                            pipeline.PLOT_DATAFRAMES, f"{name}_SNT_{snt}.csv",
+                            pipeline.PLOT_DATAFRAMES,
+                            f"{name}_SNT_{snt}.csv",
                         )
                         tar.add(filepath_csv, arcname=os.path.basename(filepath_csv))
                 filepath = tarball_path
@@ -393,7 +394,8 @@ def run_on_event(thread_id, channel_id, verbose=False):
 
             else:
                 filepath = os.path.join(
-                    pipeline.PLOT_DATAFRAMES, f"{ztf_names[0]}_SNT_{snt}.csv",
+                    pipeline.PLOT_DATAFRAMES,
+                    f"{ztf_names[0]}_SNT_{snt}.csv",
                 )
                 filename = f"{ztf_names[0]}_SNT_{snt}.csv"
                 title = "The dataframe. Note: This is the dataframe as created by the last fit command with the timerange then set. If you want the full dataset, issue 'FP ZTFname --df'"
@@ -450,7 +452,10 @@ if __name__ == "__main__":
     parser.add_argument("-channel", "--channel", type=str, help="Slack Channel ID")
     parser.add_argument("-thread", "--thread", type=str, help="Slack Thread ID")
     parser.add_argument(
-        "--verbose", "-verbose", action="store_true", help="Run in verbose mode",
+        "--verbose",
+        "-verbose",
+        action="store_true",
+        help="Run in verbose mode",
     )
 
     commandline_args = parser.parse_args()
