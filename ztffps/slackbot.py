@@ -6,33 +6,13 @@ import time, os, getpass, re, tarfile
 from slack import RTMClient, WebClient
 import pipeline
 import numpy as np
-from pipeline import FORCEPHOTODATA
-
-bot_token_file = (
-    f"{os.path.dirname(os.path.realpath(__file__))}/.slack_bot_access_token.cred"
-)
-user_token_file = (
-    f"{os.path.dirname(os.path.realpath(__file__))}/.slack_access_token.cred"
-)
+from ztffps.pipeline import FORCEPHOTODATA
+from ztffps import credentials
 
 lc_dir = FORCEPHOTODATA
 
-
-try:
-    with open(bot_token_file, "r") as f:
-        bot_token = f.read()
-except FileNotFoundError:
-    bot_token = getpass.getpass(prompt="Slack Bot Access Token: ", stream=None)
-with open(bot_token_file, "wb") as f:
-    f.write(bot_token.encode())
-
-try:
-    with open(user_token_file, "r") as f:
-        user_token = f.read()
-except FileNotFoundError:
-    user_token = getpass.getpass(prompt="Slack User Token: ", stream=None)
-with open(user_token_file, "wb") as f:
-    f.write(user_token.encode())
+bot_token = credentials.get_password("ZTFHUB_Slack_Bot_Token")
+user_token = credentials.get_password("ZTFHUB_Slack_User_Token")
 
 
 def run_on_event(thread_id, channel_id, verbose=False):

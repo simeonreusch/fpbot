@@ -32,7 +32,7 @@ def read_database(
     do invidual queries in a loop, as the database has to be loaded
     for each individual query
     """
-    from pipeline import METADATA
+    from ztffps.pipeline import METADATA
 
     if logger is None:
         logger = logging.getLogger("database")
@@ -88,7 +88,7 @@ def update_database(
     """
     Updates metadata database for all ztf_objects given with data in data_to_update (must be a list of dictionaries or single dictionary if only one object is given)
     """
-    from pipeline import METADATA
+    from ztffps.pipeline import METADATA
 
     if logger is None:
         logger = logging.getLogger("database")

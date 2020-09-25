@@ -13,9 +13,9 @@ lxml
 html5lib
 bs4
 psycopg2
-tinydb
 iminuit
 sfdmap
 pymongo
 fastapi
 uvicorn
+keyring

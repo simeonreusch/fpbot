@@ -2,12 +2,12 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de); MarshalConnector based on code by Nora Linn Strotjohann (nora.linn.strotjohann@gmail.com)
 # License: BSD-3-Clause
 
-import os, getpass, socket, sqlalchemy, logging, time, multiprocessing
-
+import os, getpass, socket, sqlalchemy, logging, time, multiprocessing, keyring
 import numpy as np
 from itertools import product
 from astropy.time import Time
 import ztfquery
+from ztffps import credentials
 
 MARSHAL_BASEURL = "http://skipper.caltech.edu:8080/cgi-bin/growth/view_avro.cgi?name="
 
@@ -16,6 +16,7 @@ class AmpelInfo:
     """ """
 
     def __init__(self, ztf_names, nprocess=16, logger=None):
+        """ """
         if logger is None:
             logging.basicConfig(level=logging.INFO)
             self.logger = logging.getLogger("cosmology")
@@ -27,23 +28,9 @@ class AmpelInfo:
         self.ztf_names = ztf_names
         self.nprocess = nprocess
 
-        _ampel_user = ".AMPEL_user.cred"
-        _ampel_pass = ".AMPEL_pass.cred"
-
-        try:
-            with open(_ampel_user, "r") as f:
-                self.username = f.read()
-        except FileNotFoundError:
-            self.username = getpass.getpass(prompt="Username: ", stream=None)
-            with open(_ampel_user, "wb") as f:
-                f.write(self.username.encode())
-        try:
-            with open(_ampel_pass, "r") as f:
-                self.password = f.read()
-        except FileNotFoundError:
-            self.password = getpass.getpass(prompt="Password: ", stream=None)
-            with open(_ampel_pass, "wb") as f:
-                f.write(self.password.encode())
+        self.username, self.password = credentials.get_user_and_password(
+            "AMPEL_ArchiveDB"
+        )
 
         self.port = 5432
 
