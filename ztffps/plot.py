@@ -10,9 +10,7 @@ from astropy.table import Table
 from astropy.io import fits
 import matplotlib.pyplot as plt
 from datetime import datetime, date
-import pipeline
-from database import read_database
-
+from ztffps import pipeline, database
 from ztffps.utils import calculate_magnitudes, abmag_err_to_flux_err, abmag_to_flux
 
 
@@ -27,8 +25,6 @@ def plot_lightcurve(
     plot_flux=False,
 ):
     """ """
-    import database
-
     if logger is None:
         logging.basicConfig(level=logging.INFO)
         logger = logging.getLogger()
