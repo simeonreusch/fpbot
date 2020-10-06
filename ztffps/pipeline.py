@@ -725,13 +725,13 @@ class ForcedPhotometryPipeline:
 
         if tarball:
             filepath_tarball = os.path.join(
-                PLOT_DATAFRAMES, f"dataframes_SNT_{snt}.tar.gz"
+                PLOT_DATAFRAMES, f"dataframes_SNT_{self.snt}.tar.gz"
             )
             with tarfile.open(filepath_tarball, "w:gz") as tar:
                 for name in self.object_list or []:
                     filepath_csv = os.path.join(
                         PLOT_DATAFRAMES,
-                        f"{name}_SNT_{snt}.csv",
+                        f"{name}_SNT_{self.snt}.csv",
                     )
                     filepath_plot = os.path.join(
                         PLOTDATA,
