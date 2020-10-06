@@ -12,7 +12,7 @@ Note: Requires Python >= 3.6. Also requires a MongoDB instance for storing the m
 
 2) All required packages should be installed by issuing:
 
-```pip3 install -r requirements.txt```
+```pip3 install git+https://github.com/simeonreusch/ztffps```
 
 3) If MongoDB is not present, it can easily be installed.
 On Debian/Ubuntu, just follow this [instruction set](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-debian/#install-mongodb-community-edition). After this, make sure the demon runs. Issue  ```sudo systemctl start mongod``` and ```sudo systemctl enable mongod```.
