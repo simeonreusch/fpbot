@@ -15,7 +15,7 @@ Note: Requires Python >= 3.6. Also requires a MongoDB instance for storing the m
 ```pip3 install -r requirements.txt```
 
 3) If MongoDB is not present, it can easily be installed.
-On Debian/Ubuntu, just follow this [instruction set](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-debian/#install-mongodb-community-edition). This should also take care of the demon running in the background (but you can check with ```sudo systemctl status mongod```). In case it's not running, issue  ```sudo systemctl enable mongod```
+On Debian/Ubuntu, just follow this [instruction set](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-debian/#install-mongodb-community-edition). After this, make sure the demon runs. Issue  ```sudo systemctl start mongod``` and ```sudo systemctl enable mongod```.
 On MacOS, make sure brew is present follow [this tutorial](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/).
 
 4) If you want AMPEL for alert data (you don't have to!), you have to install the AMPEL requirements (and of course have credentials for AMPEL) with
