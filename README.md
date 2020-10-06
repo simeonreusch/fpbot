@@ -46,7 +46,7 @@ In case way too few images are downloaded, check your Marshal and IRSA credentia
 
 The basic file is pipeline.py, which can be run using different flags. Alternatively, the pipeline class can be imported from this file.
 
-### By command (./pipeline ZTFname -operations --options)
+### By command (forcedphotometry ZTFname -operations --options)
 
 Always:
 
@@ -99,6 +99,22 @@ optionally:
 
 ### By importing class
 All functionality of the command-line tool is present in the class. Just call it according to the commands available in the pipeline.py file.
+
+For example:
+
+```python
+from ztffps import ForcedPhotometryPipeline
+
+pl = ForcedPhotometryPipeline(
+    file_or_name="ZTF19aatubsj",
+    daysago=90,
+    nprocess=24
+)
+
+pl.download()
+pl.psffit(force_refit=force_refit)
+pl.plot()
+```
 
 ## Requirements
 - [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC.
