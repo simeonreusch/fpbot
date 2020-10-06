@@ -20,7 +20,9 @@ On MacOS, make sure brew is present follow [this tutorial](https://docs.mongodb.
 
 4) If you want AMPEL for alert data (you don't have to!), you have to install the AMPEL requirements (and of course have credentials for AMPEL) with
 
-```pip3 install -r ampel_requirements.txt```
+```git clone https://github.com/simeonreusch/ztffps``` and then
+
+```cd ztffps``` as well as ```pip3 install . -r ampel_requirements.txt```
 
 ## ALTERNATIVE: Use Docker container
 ztffps comes shipped with a Dockerfile and a docker-compose.yml. Use them to build the docker container (this includes all dependencies as well as a MongoDB instance). Note: You have to provide a .ztfquery file in the ztffps directory containing access data for ztfquery (see [ztfquery](https://github.com/mickaelrigault/ztfquery) or [ztflc](https://github.com/mickaelrigault/ztfquery) for details).
