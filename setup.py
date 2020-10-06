@@ -24,94 +24,127 @@ def check_dependencies():
     install_requires = []
 
     # Make sure dependencies exist. This is ongoing
-    try:
-        import astropy
-    except ImportError:
-        install_requires.append("astropy")
-    try:
-        import numpy
-    except ImportError:
-        install_requires.append("numpy")
-    try:
-        import sncosmo
-    except ImportError:
-        install_requires.append("sncosmo")
-    try:
-        import extinction
-    except ImportError:
-        install_requires.append("extinction")
-    try:
-        import pandas
-    except ImportError:
-        install_requires.append("pandas")
-    try:
-        import matplotlib
-    except ImportError:
-        install_requires.append("matplotlib")
-    try:
-        import scipy
-    except ImportError:
-        install_requires.append("scipy")
-    try:
-        import slackclient
-    except ImportError:
-        install_requires.append("slackclient")
-    try:
-        import sqlalchemy
-    except ImportError:
-        install_requires.append("sqlalchemy")
-    try:
-        import requests
-    except ImportError:
-        install_requires.append("requests")
-    try:
-        import lxml
-    except ImportError:
-        install_requires.append("lxml")
-    try:
-        import html5lib
-    except ImportError:
-        install_requires.append("html5lib")
-    try:
-        import bs4
-    except ImportError:
-        install_requires.append("bs4")
-    try:
-        import psycopg2
-    except ImportError:
-        install_requires.append("psycopg2")
-    try:
-        import iminuit
-    except ImportError:
-        install_requires.append("iminuit")
-    try:
-        import sfdmap
-    except ImportError:
-        install_requires.append("sfdmap")
-    try:
-        import pymongo
-    except ImportError:
-        install_requires.append("pymongo")
-    try:
-        import fastapi
-    except ImportError:
-        install_requires.append("fastapi")
-    try:
-        import uvicorn
-    except ImportError:
-        install_requires.append("uvicorn")
-    try:
-        import keyring
-    except ImportError:
-        install_requires.append("keyring")
-    try:
-        import ztflc
-    except ImportError:
-        install_requires.append("ztflc")
-    try:
-        import ztfquery
-    except ImportError:
-        install_requires.append("ztfquery")
+    deps = [
+        astropy,
+        numpy,
+        sncosmo,
+        extinction,
+        pandas,
+        matplotlib,
+        scipy,
+        slackclient,
+        sqlalchemy,
+        requests,
+        lxml,
+        html5lib,
+        bs4,
+        psycopg2,
+        iminuit,
+        sfdmap,
+        pymongo,
+        fastapi,
+        uvicorn,
+        keyring,
+        ztflc,
+        ztfquery,
+    ]
+
+    for dep in deps:
+        try:
+            import dep
+        except ImportError:
+            install_requires.append(str(dep))
+
+    # try:
+    #     import astropy
+    # except ImportError:
+    #     install_requires.append("astropy")
+    # try:
+    #     import numpy
+    # except ImportError:
+    #     install_requires.append("numpy")
+    # try:
+    #     import sncosmo
+    # except ImportError:
+    #     install_requires.append("sncosmo")
+    # try:
+    #     import extinction
+    # except ImportError:
+    #     install_requires.append("extinction")
+    # try:
+    #     import pandas
+    # except ImportError:
+    #     install_requires.append("pandas")
+    # try:
+    #     import matplotlib
+    # except ImportError:
+    #     install_requires.append("matplotlib")
+    # try:
+    #     import scipy
+    # except ImportError:
+    #     install_requires.append("scipy")
+    # try:
+    #     import slackclient
+    # except ImportError:
+    #     install_requires.append("slackclient")
+    # try:
+    #     import sqlalchemy
+    # except ImportError:
+    #     install_requires.append("sqlalchemy")
+    # try:
+    #     import requests
+    # except ImportError:
+    #     install_requires.append("requests")
+    # try:
+    #     import lxml
+    # except ImportError:
+    #     install_requires.append("lxml")
+    # try:
+    #     import html5lib
+    # except ImportError:
+    #     install_requires.append("html5lib")
+    # try:
+    #     import bs4
+    # except ImportError:
+    #     install_requires.append("bs4")
+    # try:
+    #     import psycopg2
+    # except ImportError:
+    #     install_requires.append("psycopg2")
+    # try:
+    #     import iminuit
+    # except ImportError:
+    #     install_requires.append("iminuit")
+    # try:
+    #     import sfdmap
+    # except ImportError:
+    #     install_requires.append("sfdmap")
+    # try:
+    #     import pymongo
+    # except ImportError:
+    #     install_requires.append("pymongo")
+    # try:
+    #     import fastapi
+    # except ImportError:
+    #     install_requires.append("fastapi")
+    # try:
+    #     import uvicorn
+    # except ImportError:
+    #     install_requires.append("uvicorn")
+    # try:
+    #     import keyring
+    # except ImportError:
+    #     install_requires.append("keyring")
+    # try:
+    #     import ztflc
+    # except ImportError:
+    #     install_requires.append("ztflc")
+    # try:
+    #     import ztfquery
+    # except ImportError:
+    #     install_requires.append("ztfquery")
+
+    print(install_requires)
 
     return install_requires
 
