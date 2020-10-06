@@ -3,11 +3,7 @@
 # License: BSD-3-Clause
 import os, logging, collections
 from typing import Union, Any, Sequence, Tuple
-from tinydb import TinyDB, Query
-from tinydb.storages import JSONStorage
-from tinydb.middlewares import CachingMiddleware
 from astropy.utils.console import ProgressBar
-
 from pymongo import MongoClient
 
 if "MONGO_DB_LOCATION_DOCKER" in os.environ:
