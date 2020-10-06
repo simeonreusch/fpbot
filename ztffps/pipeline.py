@@ -20,8 +20,6 @@ from astropy.coordinates import SkyCoord
 from astropy import units as u
 from astropy.utils.console import ProgressBar
 import requests.exceptions
-from tinydb.storages import JSONStorage
-from tinydb.middlewares import CachingMiddleware
 from ztffps import database
 from ztffps.utils import calculate_magnitudes
 
@@ -591,7 +589,10 @@ class ForcedPhotometryPipeline:
             ra = query["ra"][index]
             dec = query["dec"][index]
             if query["mwebv"][index] is None:
-                mwebv = dustmap.ebv(ra, dec,)
+                mwebv = dustmap.ebv(
+                    ra,
+                    dec,
+                )
                 database.update_database(name, {"mwebv": mwebv})
             progress_bar.update(index)
 
@@ -729,13 +730,18 @@ class ForcedPhotometryPipeline:
             with tarfile.open(filepath_tarball, "w:gz") as tar:
                 for name in self.object_list or []:
                     filepath_csv = os.path.join(
-                        PLOT_DATAFRAMES, f"{name}_SNT_{snt}.csv",
+                        PLOT_DATAFRAMES,
+                        f"{name}_SNT_{snt}.csv",
                     )
                     filepath_plot = os.path.join(
-                        PLOTDATA, "images", f"{name}_SNT_{self.snt}.png",
+                        PLOTDATA,
+                        "images",
+                        f"{name}_SNT_{self.snt}.png",
                     )
                     filepath_fluxplot = os.path.join(
-                        PLOTDATA, "images", f"{name}_flux.png",
+                        PLOTDATA,
+                        "images",
+                        f"{name}_flux.png",
                     )
                     filepath_thumbnails = os.path.join(
                         THUMBNAILS, f"{name}_thumbnails.zip"
@@ -767,7 +773,9 @@ class ForcedPhotometryPipeline:
             for name in self.object_list or []:
                 # attach plots
                 filepath_plot = os.path.join(
-                    PLOTDATA, "images", f"{name}_SNT_{self.snt}.png",
+                    PLOTDATA,
+                    "images",
+                    f"{name}_SNT_{self.snt}.png",
                 )
                 if os.path.exists(filepath_plot):
                     with open(filepath_plot, "rb") as plot:
@@ -779,7 +787,9 @@ class ForcedPhotometryPipeline:
 
                 # attach fluxplot
                 filepath_fluxplot = os.path.join(
-                    PLOTDATA, "images", f"{name}_flux.png",
+                    PLOTDATA,
+                    "images",
+                    f"{name}_flux.png",
                 )
                 if os.path.exists(filepath_fluxplot):
                     with open(filepath_fluxplot, "rb") as fluxplot:
@@ -793,7 +803,8 @@ class ForcedPhotometryPipeline:
 
                 # attach dataframes
                 filepath_csv = os.path.join(
-                    PLOT_DATAFRAMES, f"{name}_SNT_{self.snt}.csv",
+                    PLOT_DATAFRAMES,
+                    f"{name}_SNT_{self.snt}.csv",
                 )
                 if os.path.exists(filepath_csv):
                     with open(filepath_csv, "rb") as csv:

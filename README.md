@@ -8,15 +8,17 @@ Note: Requires Python >= 3.6. Also requires a MongoDB instance for storing the m
 
 ## Installation
 
-All required packages should be installed by issuing:
+1) Note that libpq-dev needs to be present. On Debian/Ubuntu, issue ```sudo apt install libpq-dev```
+
+2) All required packages should be installed by issuing:
 
 ```pip3 install -r requirements.txt```
 
-Note that libpq-dev needs to be present. On Debian/Ubuntu, issue ```sudo apt install libpq-dev```
+3) If MongoDB is not present, it can easily be installed.
+On Debian/Ubuntu, just follow this [instruction set](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-debian/#install-mongodb-community-edition). This should also take care of the demon running in the background (but you can check with ```sudo systemctl status mongod```). In case it's not running, issue  ```sudo systemctl enable mongod```
+On MacOS, make sure brew is present follow [this tutorial](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/).
 
-If MongoDB is not present, it can easily be installed. On Debian/Ubuntu, run ```sudo apt install mongodb```. This should also take care of the demon running in the background (but you can check with ```sudo systemctl status mongodb```). On MacOS, make sure brew is present and issue first ```brew tap mongodb/brew``` and then ```brew install mongodb-community@4.2```.
-
-If you want AMPEL for alert data (you don't have to!), you have to install the AMPEL requirements (and of course have credentials for AMPEL) with
+4) If you want AMPEL for alert data (you don't have to!), you have to install the AMPEL requirements (and of course have credentials for AMPEL) with
 
 ```pip3 install -r ampel_requirements.txt```
 
