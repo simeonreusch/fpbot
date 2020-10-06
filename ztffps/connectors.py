@@ -214,7 +214,6 @@ class MarshalInfo:
                     print(mtb.values[i][0])
                 for j in range(len(line)):
                     if line[j][:14] == '  "isdiffpos":':
-                        print(line[j].split(":"))
                         isdiffpos = str(line[j].split(":")[1])
                         if isdiffpos[2:-1] == "f":
                             isdiffpos = False
