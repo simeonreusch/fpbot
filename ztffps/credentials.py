@@ -3,42 +3,68 @@
 # License: BSD-3-Clause
 
 import os, getpass, keyring
+from ztfquery import io
 
 
 def get_user_and_password(service: str = None):
     """ """
-    username = keyring.get_password(service, f"{service}_user")
-    password = keyring.get_password(service, f"{service}_password")
+    # Default: Try the systemwide keychain - fully encrypted
+    # (works at least on Debian, Ubuntu and Mac)
+    try:
+        username = keyring.get_password(service, f"{service}_user")
+        password = keyring.get_password(service, f"{service}_password")
 
-    if username is None:
-        username = input(f"Enter your {service} login: ")
-        password = getpass.getpass(
-            prompt=f"Enter your {service} password: ", stream=None
-        )
-        keyring.set_password(service, f"{service}_user", username)
-        keyring.set_password(service, f"{service}_password", password)
+        if username is None:
+            username = input(f"Enter your {service} login: ")
+            password = getpass.getpass(
+                prompt=f"Enter your {service} password: ", stream=None
+            )
+            keyring.set_password(service, f"{service}_user", username)
+            keyring.set_password(service, f"{service}_password", password)
 
-    return username, password
+        return username, password
+
+    # Some systems don't provide the luxury of a system-wide keychain
+    # Use workaround with base64 obfuscation
+    except keyring.errors.NoKeyringError:
+        username, password = io._load_id_(service)
+        return username, password
 
 
 def get_user(service: str = None):
-    username = keyring.get_password(service, f"{service}_user")
+    try:
+        username = keyring.get_password(service, f"{service}_user")
 
-    if username is None:
-        username = input(f"Enter your {service} login: ")
-        keyring.set_password(service, f"{service}_user", username)
+        if username is None:
+            username = input(f"Enter your {service} login: ")
+            keyring.set_password(service, f"{service}_user", username)
 
-    return username
+        return username
+
+    except keyring.errors.NoKeyringError:
+        print(
+            f"This is a workaround using base64 obfuscation. If it asks for input: Enter the {service} username and an arbitrary password."
+        )
+        username, _ = io._load_id_(service)
+        return username
 
 
 def get_password(service: str = None):
     """ """
-    password = keyring.get_password(service, f"{service}_password")
+    try:
+        password = keyring.get_password(service, f"{service}_password")
 
-    if password is None:
-        password = getpass.getpass(
-            prompt=f"Enter your {service} password: ", stream=None
+        if password is None:
+            password = getpass.getpass(
+                prompt=f"Enter your {service} password: ", stream=None
+            )
+            keyring.set_password(service, f"{service}_password", password)
+
+        return password
+
+    except keyring.errors.NoKeyringError:
+        print(
+            f"This is a workaround using base64 obfuscation. If it asks for input: Enter an arbitrary username and the {service} password."
         )
-        keyring.set_password(service, f"{service}_password", password)
-
-    return password
+        _, password = io._load_id_(service)
+        return password
