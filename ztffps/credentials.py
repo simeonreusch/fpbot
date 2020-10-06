@@ -10,25 +10,25 @@ def get_user_and_password(service: str = None):
     """ """
     # Default: Try the systemwide keychain - fully encrypted
     # (works at least on Debian, Ubuntu and Mac)
-    # try:
-    username = keyring.get_password(service, f"{service}_user")
-    password = keyring.get_password(service, f"{service}_password")
+    try:
+        username = keyring.get_password(service, f"{service}_user")
+        password = keyring.get_password(service, f"{service}_password")
 
-    if username is None:
-        username = input(f"Enter your {service} login: ")
-        password = getpass.getpass(
-            prompt=f"Enter your {service} password: ", stream=None
-        )
-        keyring.set_password(service, f"{service}_user", username)
-        keyring.set_password(service, f"{service}_password", password)
+        if username is None:
+            username = input(f"Enter your {service} login: ")
+            password = getpass.getpass(
+                prompt=f"Enter your {service} password: ", stream=None
+            )
+            keyring.set_password(service, f"{service}_user", username)
+            keyring.set_password(service, f"{service}_password", password)
 
-    return username, password
+        return username, password
 
     # Some systems don't provide the luxury of a system-wide keychain
     # Use workaround with base64 obfuscation
-    # except keyring.errors.NoKeyringError:
-    #     username, password = io._load_id_(service)
-    #     return username, password
+    except keyring.errors.NoKeyringError:
+        username, password = io._load_id_(service)
+        return username, password
 
 
 def get_user(service: str = None):
