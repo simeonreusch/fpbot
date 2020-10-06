@@ -23,7 +23,11 @@ On MacOS, make sure brew is present follow [this tutorial](https://docs.mongodb.
 ```pip3 install -r ampel_requirements.txt```
 
 ## ALTERNATIVE: Use Docker container
-ztffps comes shipped with a Dockerfile and a docker-compose.yml. Use them to build the docker container (this includes all dependencies as well as a MongoDB instance). Note: You have to provide a .ztfquery file in the ztffps directory containing access data for ztfquery (see [ztfquery](https://github.com/mickaelrigault/ztfquery) or [ztflc](https://github.com/mickaelrigault/ztfquery) for details). The container can be built by issuing
+ztffps comes shipped with a Dockerfile and a docker-compose.yml. Use them to build the docker container (this includes all dependencies as well as a MongoDB instance). Note: You have to provide a .ztfquery file in the ztffps directory containing access data for ztfquery (see [ztfquery](https://github.com/mickaelrigault/ztfquery) or [ztflc](https://github.com/mickaelrigault/ztfquery) for details).
+
+First, clone this project: ```git clone https://github.com/simeonreusch/ztffps```
+
+The container can be built by navigating to the just cloned directory and issuing
 
 ```docker-compose build```
 
