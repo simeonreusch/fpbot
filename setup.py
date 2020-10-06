@@ -107,11 +107,11 @@ def check_dependencies():
     try:
         import ztflc
     except ImportError:
-        install_requires.append("git+https://github.com/MickaelRigault/ztflc")
+        install_requires.append("ztflc")
     try:
         import ztfquery
     except ImportError:
-        install_requires.append("git+https://github.com/MickaelRigault/ztfquery")
+        install_requires.append("ztfquery")
 
     return install_requires
 
