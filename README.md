@@ -103,7 +103,7 @@ All functionality of the command-line tool is present in the class. Just call it
 For example:
 
 ```python
-from ztffps import ForcedPhotometryPipeline
+from ztffps.pipeline import ForcedPhotometryPipeline
 
 pl = ForcedPhotometryPipeline(
     file_or_name="ZTF19aatubsj",
