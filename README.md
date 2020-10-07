@@ -112,7 +112,7 @@ pl = ForcedPhotometryPipeline(
 )
 
 pl.download()
-pl.psffit(force_refit=force_refit)
+pl.psffit()
 pl.plot()
 ```
 
