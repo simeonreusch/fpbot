@@ -5,7 +5,10 @@
 import os, io, argparse, re
 from slack import RTMClient, WebClient
 from ztflc.io import LOCALDATA
-from ztffps.slackbot import bot_token, user_token
+from ztffps import credentials
+
+bot_token = credentials.get_password("ZTFHUB_Slack_Bot_Token")
+user_token = credentials.get_password("ZTFHUB_Slack_User_Token")
 
 parser = argparse.ArgumentParser(description="This is a realtime slackbot")
 parser.add_argument("-debug", action="store_true", help="Debug mode")
