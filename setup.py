@@ -139,7 +139,12 @@ if __name__ == "__main__":
         version=VERSION,
         download_url=DOWNLOAD_URL,
         install_requires=install_requires,
-        scripts=["forcedphotometry"],
+        scripts=[
+            "forcedphotometry",
+            "start_slackbot",
+            "slackbot_spawn_screen_session",
+            "slackbot_spawn_screen_session_debug",
+        ],
         packages=packages,
         package_data={
             "ztffps": [
