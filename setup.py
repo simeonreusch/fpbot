@@ -141,9 +141,10 @@ if __name__ == "__main__":
         install_requires=install_requires,
         scripts=[
             "forcedphotometry",
-            "start_slackbot",
-            "slackbot_spawn_screen_session",
-            "slackbot_spawn_screen_session_debug",
+            "fps_slackbot",
+            "fps_start_slackbot",
+            "fps_slackbot_spawn_screen_session",
+            "fps_slackbot_spawn_screen_session_debug",
         ],
         packages=packages,
         package_data={
