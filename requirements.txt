@@ -12,7 +12,6 @@ matplotlib
 lxml
 html5lib
 bs4
-psycopg2
 iminuit
 sfdmap
 pymongo

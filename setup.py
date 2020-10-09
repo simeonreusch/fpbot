@@ -77,10 +77,6 @@ def check_dependencies():
     except ImportError:
         install_requires.append("bs4")
     try:
-        import psycopg2
-    except ImportError:
-        install_requires.append("psycopg2")
-    try:
         import iminuit
     except ImportError:
         install_requires.append("iminuit")
