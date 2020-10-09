@@ -701,7 +701,7 @@ class ForcedPhotometryPipeline:
 
         from ztffps import credentials
 
-        _smtp_password = credentials.get_password("ZTFHUB_SMTP")
+        _smtp_password = credentials.get_password("ztfhub_smpt")
 
         send_from = "forcedphotometry@desy.de"
         objectnumber = len(self.object_list)

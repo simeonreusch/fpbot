@@ -29,7 +29,7 @@ class AmpelInfo:
         self.nprocess = nprocess
 
         self.username, self.password = credentials.get_user_and_password(
-            "AMPEL_ArchiveDB"
+            "ampel_archivedb"
         )
 
         self.port = 5432
