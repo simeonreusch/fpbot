@@ -21,8 +21,8 @@ if _DEBUG_:
     user_token = credentials.get_password("ztfhub_slack_user_token_debug")
 else:
     botuser = "UT462HHRR"
-    bot_token = credentials.get_password("ztfhub_slack_bot_token_debug")
-    user_token = credentials.get_password("ztfhub_slack_user_token_debug")
+    bot_token = credentials.get_password("ztfhub_slack_bot_token")
+    user_token = credentials.get_password("ztfhub_slack_user_token")
 
 
 def run_on_event(data):
