@@ -62,7 +62,7 @@ pl.psffit()
 pl.plot()
 ```
 
-### By command (forcedphotometry ZTFname -operations --options)
+### By systemwide command (forcedphotometry ZTFname -operations --options)
 
 Always:
 
