@@ -783,7 +783,7 @@ class ForcedPhotometryPipeline:
                     part[
                         "Content-Disposition"
                     ] = f'attachment; filename="{name}_SNT_{self.snt}.png"'
-                msg.attach(part)
+                    msg.attach(part)
 
                 # attach fluxplot
                 filepath_fluxplot = os.path.join(
@@ -799,7 +799,7 @@ class ForcedPhotometryPipeline:
                     partflux[
                         "Content-Disposition"
                     ] = f'attachment; filename="{name}_flux.png"'
-                msg.attach(partflux)
+                    msg.attach(partflux)
 
                 # attach dataframes
                 filepath_csv = os.path.join(
