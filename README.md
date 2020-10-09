@@ -17,9 +17,11 @@ On Debian/Ubuntu, just follow this [instruction set](https://docs.mongodb.com/ma
 
 4. ztffps requires an environment variable so it knows where to store the data. Include a line in your .bashrc or .zshrc like ```export ZTFDATA='/absolute/path/to/ZTF-data-folder/'```. If you don't need AMPEL access, you are done!
 
-5. If you are using an AMPEL connection and are planning to run ztffps on a headless system which does not provide the luxury of a systemwide keychain, please add ```export ZTFHUB_MODE='HEADLESS'``` to your .bashrc or .zshrc. The pipeline will then uses ztfquery's base64 obfuscated password storage.
+---
 
-6. If you want AMPEL for alert data (you don't have to!), you have to install the AMPEL requirements (and of course have credentials for AMPEL) with ```git clone https://github.com/simeonreusch/ztffps``` and then ```cd ztffps``` as well as ```pip3 install . -r ampel_requirements.txt```.
+5. If you want AMPEL for alert data (you don't have to!), you have to install the AMPEL requirements (and of course have credentials for AMPEL) with ```git clone https://github.com/simeonreusch/ztffps``` and then ```cd ztffps``` as well as ```pip3 install . -r ampel_requirements.txt```.
+
+6. If you are using an AMPEL connection and are planning to run ztffps on a headless system which does not provide the luxury of a systemwide keychain, please add ```export ZTFHUB_MODE='HEADLESS'``` to your .bashrc or .zshrc. The pipeline will then uses ztfquery's base64 obfuscated password storage.
 
 ## ALTERNATIVE: Use Docker container
 ztffps comes shipped with a Dockerfile and a docker-compose.yml. Use them to build the docker container (this includes all dependencies as well as a MongoDB instance). Note: You have to provide a .ztfquery file in the ztffps directory containing access data for ztfquery (see [ztfquery](https://github.com/mickaelrigault/ztfquery) or [ztflc](https://github.com/mickaelrigault/ztfquery) for details).
