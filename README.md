@@ -43,7 +43,24 @@ In case way too few images are downloaded, check your Marshal and IRSA credentia
 
 ## Usage
 
-The basic file is pipeline.py, which can be run using different flags. Alternatively, the pipeline class can be imported from this file.
+### By importing class
+All functionality of the command-line tool is present in the class. Just call it according to the commands available in the pipeline.py file.
+
+For example:
+
+```python
+from ztffps.pipeline import ForcedPhotometryPipeline
+
+pl = ForcedPhotometryPipeline(
+    file_or_name="ZTF19aatubsj",
+    daysago=90,
+    nprocess=24
+)
+
+pl.download()
+pl.psffit()
+pl.plot()
+```
 
 ### By command (forcedphotometry ZTFname -operations --options)
 
@@ -86,34 +103,15 @@ optionally:
 `--fluxrange [float float]` Defines lower and upper flux bound for plotting the flux lightcurves; order is irrelevant.
 
 #### Examples
-`./pipeline.py ZTF19aatubsj` downloads this ZTF object, does forced photometry, plots it and saves it to the default directory in "forcephotometry" (ZTFDATA, located at $ZTFDATA in your .bashrc/.zshrc/..., see ztfquery doc).
+`forcedphotometry ZTF19aatubsj` downloads this ZTF object, does forced photometry, plots it and saves it to the default directory in "forcephotometry" (ZTFDATA, located at $ZTFDATA in your .bashrc/.zshrc/..., see ztfquery doc).
 
-`./pipeline.py example_download.dat -dl -fit` downloads the two lightcurves in the file `example_download.dat`, fits, but does not plots them.
+`forcedphotometry example_download.dat -dl -fit` downloads the two lightcurves in the file `example_download.dat`, fits, but does not plots them.
 
-`./pipeline.py ZTF19abimkwn -dl -fit -saltfit --nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
+`forcedphotometry ZTF19abimkwn -dl -fit -saltfit --nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
 
-`./pipeline.py supernovae.txt -dl` Downloads all difference images for ZTF transients found in supernovae.txt, each line a ZTFname. To get a cool example of ZTF lightcurves, issue: example_download.txt Note: Downloading the images usually takes a considerable amount of time.
+`forcedphotometry supernovae.txt -dl` Downloads all difference images for ZTF transients found in supernovae.txt, each line a ZTFname. To get a cool example of ZTF lightcurves, issue: example_download.txt Note: Downloading the images usually takes a considerable amount of time.
 
-`./pipeline.py this_looks_interesting -radec 143.3123 66.42342 -dl -fit -plot --daysago 10 -magrange 18 20` Downloads all images of the last ten days of the location given in ra and dec, performs PSF-fits and plots the lightcurve in the 18--20 magnitude range.
-
-### By importing class
-All functionality of the command-line tool is present in the class. Just call it according to the commands available in the pipeline.py file.
-
-For example:
-
-```python
-from ztffps.pipeline import ForcedPhotometryPipeline
-
-pl = ForcedPhotometryPipeline(
-    file_or_name="ZTF19aatubsj",
-    daysago=90,
-    nprocess=24
-)
-
-pl.download()
-pl.psffit()
-pl.plot()
-```
+`forcedphotometry this_looks_interesting -radec 143.3123 66.42342 -dl -fit -plot --daysago 10 -magrange 18 20` Downloads all images of the last ten days of the location given in ra and dec, performs PSF-fits and plots the lightcurve in the 18--20 magnitude range.
 
 ## Requirements
 - [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC.
