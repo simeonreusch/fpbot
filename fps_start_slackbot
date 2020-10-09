@@ -7,12 +7,6 @@ from slack import RTMClient, WebClient
 from ztflc.io import LOCALDATA
 from ztffps import credentials
 
-if _DEBUG_:
-    bot_token = credentials.get_password("ztfhub_slack_bot_token_debug")
-    user_token = credentials.get_password("ztfhub_slack_user_token_debug")
-else:
-    bot_token = credentials.get_password("ztfhub_slack_bot_token_debug")
-    user_token = credentials.get_password("ztfhub_slack_user_token_debug")
 
 parser = argparse.ArgumentParser(description="This is a realtime slackbot")
 parser.add_argument("-debug", action="store_true", help="Debug mode")
@@ -23,8 +17,12 @@ _DEBUGDESY_ = commandline_args.debugdesy
 
 if _DEBUG_:
     botuser = "UTF38HMFZ"
+    bot_token = credentials.get_password("ztfhub_slack_bot_token_debug")
+    user_token = credentials.get_password("ztfhub_slack_user_token_debug")
 else:
     botuser = "UT462HHRR"
+    bot_token = credentials.get_password("ztfhub_slack_bot_token_debug")
+    user_token = credentials.get_password("ztfhub_slack_user_token_debug")
 
 
 def run_on_event(data):
