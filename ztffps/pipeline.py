@@ -147,11 +147,15 @@ class ForcedPhotometryPipeline:
             self.check_if_present_in_metadata()
 
     def is_ztf_name(self, name):
-        """ """
+        """
+        Checks if a string adheres to the ZTF naming scheme
+        """
         return re.match("^ZTF[1-2]\d[a-z]{7}$", name)
 
     def convert_daysago_to_jd(self):
-        """ """
+        """
+        Converts a integer (days since now) to a Julian date
+        """
         now = Time(time.time(), format="unix", scale="utc").jd
 
         if self.daysago is None:
@@ -164,7 +168,12 @@ class ForcedPhotometryPipeline:
             self.jdmax = now - self.daysuntil
 
     def use_if_ztf(self):
-        """ """
+        """
+        Checks if name argument is a ZTF name (must fit ZTF naming convention),
+        an ascii file containing ZTF names (1 per line) in the program
+        directory or an arbitrary name if -radec argument to the
+        pipeline class
+        """
         errormessage = "\nYou have to provide a either a ZTF name (a string adhering to the ZTF naming scheme), an ascii file containing ZTF names (1 per line) in the same directory or an arbitrary name if using the radec option.\n"
 
         if self.is_ztf_name(self.file_or_name):
@@ -191,28 +200,33 @@ class ForcedPhotometryPipeline:
         print("Logs are stored in log")
 
     def check_for_duplicates(self):
-        """ """
+        """
+        Removes duplicates from the list of ZTF objects
+        """
         self.object_list = list(dict.fromkeys(self.object_list))
 
     def update_database_with_given_radec(self):
-        """ """
+        """
+        Updates the MongoDB entry of the first entry in the object
+        list with -radec passed to pipeline class
+        """
         name = self.object_list[0]
         database.update_database(
             name,
             {
                 "name": name,
-                "ra": ra,
-                "dec": dec,
+                "ra": self.ra,
+                "dec": self.dec,
                 "jdmin": self.jdmin,
                 "jdmax": self.jdmax,
-                "entries": entries,
+                "entries": 0,
                 "coords_per_filter": [np.nan, np.nan, np.nan],
             },
         )
 
     def get_position_and_timerange(self):
         """
-        Check for entry in database and update with AMPEL or Marshal
+        Check for entry in Mongo database and update it via AMPEL or Marshal
         """
         print("\nChecking database")
         progress_bar = ProgressBar(len(self.object_list))
@@ -311,8 +325,10 @@ class ForcedPhotometryPipeline:
             progress_bar.update(len(connector.queryresult))
 
     def check_if_present_in_metadata(self):
-        """Check for which objects there are infos available
-        Delete from object-list if no info is available"""
+        """
+        Check for which objects there are infos available
+        Delete from object-list if no info is available
+        """
 
         print("\nChecking if alert data is present in the local database")
 
@@ -333,7 +349,10 @@ class ForcedPhotometryPipeline:
             )
 
     def download(self):
-        """ """
+        """
+        Download the requested objects in self.object_list from
+        IPAC using ztfquery
+        """
         number_of_objects = len(self.object_list)
         for i, name in enumerate(self.object_list):
             query = database.read_database(name, ["lastdownload"])
@@ -400,7 +419,10 @@ class ForcedPhotometryPipeline:
                 database.update_database(name, {"lastdownload": last_download})
 
     def check_if_psf_data_exists(self):
-        """ """
+        """
+        Checks if a csv file containing PSF fit results
+        exists for each element in self.cleaned_object_list
+        """
         self.cleaned_object_list = []
         for name in self.object_list:
             try:
@@ -410,7 +432,9 @@ class ForcedPhotometryPipeline:
                 pass
 
     def psffit(self, nprocess=None, force_refit=False):
-        """ """
+        """
+        Perform the PSF fit using ztflc
+        """
         if nprocess is None:
             nprocess = self.nprocess
 
@@ -433,8 +457,6 @@ class ForcedPhotometryPipeline:
             objects_total = len(self.object_list)
             ra = query["ra"][i]
             dec = query["dec"][i]
-            # jdmin = query["jdmin"][i]
-            # jdmax = query["jdmax"][i]
             jdmin = self.jdmin
             jdmax = self.jdmax
             lastobs = query["lastobs"][i]
@@ -506,7 +528,10 @@ class ForcedPhotometryPipeline:
                 )
 
     def plot(self, nprocess=4, progress=True, plot_flux=False):
-        """ """
+        """
+        Plots the lightcurve (uses PSF fitted datapoints if available and
+        checks for alert photometry otherwise)
+        """
         self.logger.info("\nPlotting")
         object_count = len(self.object_list)
         snt = [self.snt] * object_count
@@ -541,7 +566,9 @@ class ForcedPhotometryPipeline:
                 progress_bar.update(object_count)
 
     def global_filecheck(self):
-        """ """
+        """
+        Check if each image downloaded from IPAC with ztfquery can be opened
+        """
         print(
             "Running filecheck. This can take several hours, depending on the size of your $ZTDFATA folder."
         )
@@ -552,7 +579,9 @@ class ForcedPhotometryPipeline:
 
     @staticmethod
     def _plot_multiprocessing_(args):
-        """ """
+        """
+        Plots with multiprocessing
+        """
         name, snt, daysago, daysuntil, mag_range, flux_range, plot_flux = args
         from ztffps.plot import plot_lightcurve
 
@@ -568,7 +597,9 @@ class ForcedPhotometryPipeline:
         print(f"\n{name} plotted")
 
     def saltfit(self, snt=5, quality_checks=False, progress=True, alertfit=False):
-        """ """
+        """
+        Performs a saltfit
+        """
         self.check_if_psf_data_exists()
         import sfdmap
         from astropy.utils.console import ProgressBar
