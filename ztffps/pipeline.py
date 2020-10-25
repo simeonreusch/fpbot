@@ -126,6 +126,7 @@ class ForcedPhotometryPipeline:
                 self.object_list = self.file_or_name
             else:
                 self.object_list = [self.file_or_name]
+
             self.update_database_with_given_radec()
 
         elif (ra is None and dec is not None) or (ra is not None and dec is None):
@@ -300,27 +301,27 @@ class ForcedPhotometryPipeline:
             print("\nUpdating local database")
             progress_bar = ProgressBar(len(connector.queryresult))
             for index, result in enumerate(connector.queryresult):
-
-                database.update_database(
-                    result[0],
-                    {
-                        "_id": result[0],
-                        "ra": result[1],
-                        "dec": result[2],
-                        "jdmin": self.jdmin,
-                        "jdmax": self.jdmax,
-                        "entries": result[3],
-                        "lastobs": result[9],
-                        "jdobs_alert": result[4],
-                        "mag_alert": result[5],
-                        "magerr_alert": result[6],
-                        "maglim_alert": result[7],
-                        "fid_alert": result[8],
-                        "magzp_alert": result[10],
-                        "magzp_err_alert": result[11],
-                        "coords_per_filter": result[12],
-                    },
-                )
+                if result is not None:
+                    database.update_database(
+                        result[0],
+                        {
+                            "_id": result[0],
+                            "ra": result[1],
+                            "dec": result[2],
+                            "jdmin": self.jdmin,
+                            "jdmax": self.jdmax,
+                            "entries": result[3],
+                            "lastobs": result[9],
+                            "jdobs_alert": result[4],
+                            "mag_alert": result[5],
+                            "magerr_alert": result[6],
+                            "maglim_alert": result[7],
+                            "fid_alert": result[8],
+                            "magzp_alert": result[10],
+                            "magzp_err_alert": result[11],
+                            "coords_per_filter": result[12],
+                        },
+                    )
                 progress_bar.update(index)
             progress_bar.update(len(connector.queryresult))
 

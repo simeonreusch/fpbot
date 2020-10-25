@@ -86,6 +86,7 @@ class AmpelInfo:
             dec_r = []
             dec_i = []
             isdiffpos = []
+
             for res in query_res:
                 _isdiffpos = res["candidate"]["isdiffpos"]
                 if _isdiffpos == "f":
@@ -117,34 +118,37 @@ class AmpelInfo:
                 fids.append(fid)
                 magzps.append(magzp)
                 magzps_err.append(magzp_err)
-            ra = np.median(ras)
-            dec = np.median(decs)
-            ra_g = np.median(ra_g)
-            ra_r = np.median(ra_r)
-            ra_i = np.median(ra_i)
-            dec_g = np.median(dec_g)
-            dec_r = np.median(dec_r)
-            dec_i = np.median(dec_i)
-            coords_per_filter = [[ra_g, ra_r, ra_i], [dec_g, dec_r, dec_i]]
-            entries = len(ras)
-            lastobs = np.max(jd)
-            result = [
-                ztf_name,
-                ra,
-                dec,
-                entries,
-                jds,
-                mags,
-                magerrs,
-                maglims,
-                fids,
-                lastobs,
-                magzps,
-                magzps_err,
-                coords_per_filter,
-            ]
-            queryresult.append(result)
-            bar.update(index)
+            if len(ras) > 0:
+                ra = np.median(ras)
+                dec = np.median(decs)
+                ra_g = np.median(ra_g)
+                ra_r = np.median(ra_r)
+                ra_i = np.median(ra_i)
+                dec_g = np.median(dec_g)
+                dec_r = np.median(dec_r)
+                dec_i = np.median(dec_i)
+                coords_per_filter = [[ra_g, ra_r, ra_i], [dec_g, dec_r, dec_i]]
+                entries = len(ras)
+                lastobs = np.max(jds)
+                result = [
+                    ztf_name,
+                    ra,
+                    dec,
+                    entries,
+                    jds,
+                    mags,
+                    magerrs,
+                    maglims,
+                    fids,
+                    lastobs,
+                    magzps,
+                    magzps_err,
+                    coords_per_filter,
+                ]
+                queryresult.append(result)
+                bar.update(index)
+            else:
+                queryresult.append(None)
         bar.update(object_count)
 
         return queryresult
@@ -242,39 +246,43 @@ class MarshalInfo:
                     ra[i] = 0
 
             ras = ra[ra != 0]
-            decs = dec[ra != 0]
-            jds = jd[ra != 0]
-            mags = mag[ra != 0]
-            magerrs = magerr[ra != 0]
-            maglims = maglim[ra != 0]
-            fids = fid[ra != 0]
-            ind = np.argsort(jds)
-            entries = len(ras)
-            lastobs = np.max(jds)
-            magzps = magzp[ra != 0]
-            magzps_err = magzp_err[ra != 0]
-            ra_median = np.median(ras[ind])
-            dec_median = np.median(decs[ind])
-            ra_g = np.median(ras[fids == 1])
-            ra_r = np.median(ras[fids == 2])
-            ra_i = np.median(ras[fids == 3])
-            dec_g = np.median(decs[fids == 1])
-            dec_r = np.median(decs[fids == 2])
-            dec_i = np.median(decs[fids == 3])
-            coords_per_filter = [[ra_g, ra_r, ra_i], [dec_g, dec_r, dec_i]]
 
-        return [
-            ztf_name,
-            ra_median,
-            dec_median,
-            entries,
-            jds.tolist(),
-            mags.tolist(),
-            magerrs.tolist(),
-            maglims.tolist(),
-            fids.tolist(),
-            lastobs,
-            magzps.tolist(),
-            magzps_err.tolist(),
-            coords_per_filter,
-        ]
+            if len(ras) > 0:
+                decs = dec[ra != 0]
+                jds = jd[ra != 0]
+                mags = mag[ra != 0]
+                magerrs = magerr[ra != 0]
+                maglims = maglim[ra != 0]
+                fids = fid[ra != 0]
+                ind = np.argsort(jds)
+                entries = len(ras)
+                lastobs = np.max(jds)
+                magzps = magzp[ra != 0]
+                magzps_err = magzp_err[ra != 0]
+                ra_median = np.median(ras[ind])
+                dec_median = np.median(decs[ind])
+                ra_g = np.median(ras[fids == 1])
+                ra_r = np.median(ras[fids == 2])
+                ra_i = np.median(ras[fids == 3])
+                dec_g = np.median(decs[fids == 1])
+                dec_r = np.median(decs[fids == 2])
+                dec_i = np.median(decs[fids == 3])
+                coords_per_filter = [[ra_g, ra_r, ra_i], [dec_g, dec_r, dec_i]]
+
+                return [
+                    ztf_name,
+                    ra_median,
+                    dec_median,
+                    entries,
+                    jds.tolist(),
+                    mags.tolist(),
+                    magerrs.tolist(),
+                    maglims.tolist(),
+                    fids.tolist(),
+                    lastobs,
+                    magzps.tolist(),
+                    magzps_err.tolist(),
+                    coords_per_filter,
+                ]
+            else:
+                return None
