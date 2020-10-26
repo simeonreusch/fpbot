@@ -322,6 +322,4 @@ def get_irsa_filecount(
 
         progress_bar.update(len(ras))
 
-    print(irsa_filecount)
-
     return irsa_filecount
