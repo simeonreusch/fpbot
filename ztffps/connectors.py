@@ -291,16 +291,18 @@ class MarshalInfo:
 
 def get_irsa_multiprocessing(args):
     """ """
-    ra, dec = args
+    ztf_name, ra, dec = args
     zquery = ztfquery.query.ZTFQuery()
     zquery.load_metadata(radec=[ra, dec], size=0.01)
     mt = zquery.metatable
-    return len(mt)
+    return {ztf_name: len(mt)}
 
 
-def get_irsa_filecount(ras: list, decs: list, nprocess: int = 16) -> list:
+def get_irsa_filecount(
+    ztf_names: list, ras: list, decs: list, nprocess: int = 16
+) -> dict:
     """ """
-    irsa_filecount = []
+    irsa_filecount = {}
 
     progress_bar = ProgressBar(len(ras))
 
@@ -309,14 +311,17 @@ def get_irsa_filecount(ras: list, decs: list, nprocess: int = 16) -> list:
             p.imap_unordered(
                 get_irsa_multiprocessing,
                 zip(
+                    ztf_names,
                     ras,
                     decs,
                 ),
             )
         ):
             progress_bar.update(j)
-            irsa_filecount.append(result)
+            irsa_filecount.update(result)
 
         progress_bar.update(len(ras))
+
+    print(irsa_filecount)
 
     return irsa_filecount

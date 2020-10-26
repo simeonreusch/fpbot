@@ -380,12 +380,12 @@ class ForcedPhotometryPipeline:
 
         from ztffps.connectors import get_irsa_filecount
 
-        irsa_filecounts = get_irsa_filecount(ras, decs, nprocess=16)
+        irsa_filecounts = get_irsa_filecount(download_requested, ras, decs, nprocess=16)
 
         for index, name in enumerate(download_requested):
             if local_filecounts[index] is None:
                 local_filecounts[index] = 0
-            if local_filecounts[index] < irsa_filecounts[index]:
+            if local_filecounts[index] < irsa_filecounts[name]:
                 download_needed.append(name)
 
         self.logger.info(
@@ -437,7 +437,7 @@ class ForcedPhotometryPipeline:
 
             last_download = Time(time.time(), format="unix", scale="utc").jd
 
-            local_filecount = irsa_filecounts[i]
+            local_filecount = irsa_filecounts[name]
 
             database.update_database(
                 name,
