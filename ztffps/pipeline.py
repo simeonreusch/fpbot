@@ -371,53 +371,79 @@ class ForcedPhotometryPipeline:
                 do_download = True
 
             if do_download:
-                # self.logger.info(
-                # f"\n{name} ({i+1} of {number_of_objects}) Starting download"
-                # )
-                query = database.read_database(name, ["ra", "dec", "jdmin", "jdmax"])
+
+                query = database.read_database(
+                    name, ["ra", "dec", "jdmin", "jdmax", "local_filecount"]
+                )
                 ra = query["ra"][0]
                 dec = query["dec"][0]
-                # jdmin = query["jdmin"][0]
-                # jdmax = query["jdmax"][0]
                 jdmin = self.jdmin
                 jdmax = self.jdmax
+                local_filecount = query["local_filecount"][0]
+                if local_filecount is None:
+                    local_filecount = 0
+
+                # Check if there are new files at all
+                zquery = ztfquery.query.ZTFQuery()
+                zquery.load_metadata(
+                    radec=[ra, dec],
+                    size=0.01,
+                    sql_query=f"obsjd>={jdmin} and obsjd<={jdmax}",
+                )
+
+                irsa_filecount = len(zquery.metatable[["obsjd"]])
 
                 fp = forcephotometry.ForcePhotometry.from_coords(
                     ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
                 )
-                self.logger.info(
-                    f"\n{name} ({i+1} of {number_of_objects}) Downloading data"
-                )
-                if not os.path.exists(
-                    os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
-                ):
-                    fp.io.update_marshal()
-                fp.load_metadata()
-                if self.sciimg:
-                    fp.io.download_data(
-                        nprocess=32,
-                        overwrite=False,
-                        show_progress=True,
-                        verbose=False,
-                        ignore_warnings=True,
-                        which=[
-                            "scimrefdiffimg.fits.fz",
-                            "diffimgpsf.fits",
-                            "sciimg.fits",
-                        ],
+
+                if irsa_filecount > local_filecount:
+
+                    self.logger.info(
+                        f"\n{name} ({i+1} of {number_of_objects}) Downloading data"
                     )
+                    if not os.path.exists(
+                        os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
+                    ):
+                        fp.io.update_marshal()
+                    fp.load_metadata()
+                    if self.sciimg:
+                        fp.io.download_data(
+                            nprocess=32,
+                            overwrite=False,
+                            show_progress=True,
+                            verbose=False,
+                            ignore_warnings=True,
+                            which=[
+                                "scimrefdiffimg.fits.fz",
+                                "diffimgpsf.fits",
+                                "sciimg.fits",
+                            ],
+                        )
+                    else:
+                        fp.io.download_data(
+                            nprocess=32,
+                            overwrite=False,
+                            show_progress=True,
+                            verbose=False,
+                            ignore_warnings=True,
+                        )
+
                 else:
-                    fp.io.download_data(
-                        nprocess=32,
-                        overwrite=False,
-                        show_progress=True,
-                        verbose=False,
-                        ignore_warnings=True,
+                    self.logger.info(
+                        f"\n{name} ({i+1} of {number_of_objects}) No new files at IRSA, skipping download"
                     )
 
                 last_download = Time(time.time(), format="unix", scale="utc").jd
 
                 database.update_database(name, {"lastdownload": last_download})
+                database.update_database(
+                    name,
+                    {
+                        "lastdownload": last_download,
+                        "local_filecount": irsa_filecount,
+                    },
+                )
 
     def check_if_psf_data_exists(self):
         """
