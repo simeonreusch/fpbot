@@ -6,6 +6,7 @@ import os, getpass, socket, sqlalchemy, logging, time, multiprocessing, keyring
 import numpy as np
 from itertools import product
 from astropy.time import Time
+from astropy.utils.console import ProgressBar
 import ztfquery
 from ztffps import credentials
 
@@ -286,3 +287,36 @@ class MarshalInfo:
                 ]
             else:
                 return None
+
+
+def get_irsa_multiprocessing(args):
+    """ """
+    ra, dec = args
+    zquery = ztfquery.query.ZTFQuery()
+    zquery.load_metadata(radec=[ra, dec], size=0.01)
+    mt = zquery.metatable
+    return len(mt)
+
+
+def get_irsa_filecount(ras: list, decs: list, nprocess: int = 16) -> list:
+    """ """
+    irsa_filecount = []
+
+    progress_bar = ProgressBar(len(ras))
+
+    with multiprocessing.Pool(nprocess) as p:
+        for j, result in enumerate(
+            p.imap_unordered(
+                get_irsa_multiprocessing,
+                zip(
+                    ras,
+                    decs,
+                ),
+            )
+        ):
+            progress_bar.update(j)
+            irsa_filecount.append(result)
+
+        progress_bar.update(len(ras))
+
+    return irsa_filecount
