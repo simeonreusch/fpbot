@@ -410,7 +410,7 @@ class ForcedPhotometryPipeline:
             )
 
             self.logger.info(
-                f"\n{name} ({i+1} of {number_of_objects}) Downloading data"
+                f"\n{name} ({i+1} of {len(download_needed)}) Downloading data"
             )
             if not os.path.exists(
                 os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
