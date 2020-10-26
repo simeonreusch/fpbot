@@ -380,6 +380,7 @@ class ForcedPhotometryPipeline:
 
         from ztffps.connectors import get_irsa_filecount
 
+        self.logger.info(f"\nObtaining information on available images at IRSA.")
         irsa_filecounts = get_irsa_filecount(download_requested, ras, decs, nprocess=16)
 
         for index, name in enumerate(download_requested):
