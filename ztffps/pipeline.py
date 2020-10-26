@@ -356,8 +356,6 @@ class ForcedPhotometryPipeline:
         """
         number_of_objects = len(self.object_list)
 
-        from ztffps.connectors import get_irsa_filecount
-
         download_requested = []
 
         query = database.read_database(self.object_list, ["ra", "dec", "last_download"])
@@ -366,7 +364,6 @@ class ForcedPhotometryPipeline:
         # In case no_new_downloads option is passed (download_newest = False): Download only if it has never been downloaded before (useful for bulk downloads which repeatedly fail because IPAC is unstable) Else: try to download everything.
         if self.download_newest is False:
             for index, name in enumerate(self.object_list):
-                print(last_download[index])
                 if last_download[index] is None:
                     download_requested.append(name)
         else:
@@ -380,11 +377,10 @@ class ForcedPhotometryPipeline:
         ras = query["ra"]
         decs = query["dec"]
         local_filecounts = query["local_filecount"]
-        print(local_filecounts)
+
+        from ztffps.connectors import get_irsa_filecount
 
         irsa_filecounts = get_irsa_filecount(ras, decs, nprocess=16)
-
-        print(irsa_filecounts)
 
         for index, name in enumerate(download_requested):
             if local_filecounts[index] is None:
