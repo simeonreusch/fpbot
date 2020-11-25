@@ -19,6 +19,7 @@ pymongo
 fastapi
 uvicorn
 keyring
+setuptools>=46.4.0
 git+https://github.com/AmpelProject/Ampel-interface.git
 git+https://github.com/AmpelProject/Ampel-core.git
 git+https://github.com/AmpelProject/Ampel-alerts.git

@@ -289,6 +289,34 @@ class MarshalInfo:
                 return None
 
 
+class FritzInfo:
+    """ Testing only """
+
+    def __init__(self, ztf_names, nprocess=16, logger=None):
+        import pandas as pd
+        from ztfquery import fritz
+
+        if logger is None:
+            logging.basicConfig(level=logging.INFO)
+            self.logger = logging.getLogger("cosmology")
+        else:
+            self.logger = logger
+
+        object_count = len(ztf_names)
+        bar = ProgressBar(object_count)
+
+        queryresult = []
+
+        for i, name in enumerate(ztf_names):
+            query_res = fritz.download_alerts(name)
+            queryresult.append(query_res)
+            bar.update(i)
+
+        bar.update(object_count)
+
+        print(queryresult)
+
+
 def get_irsa_multiprocessing(args):
     """ """
     ztf_name, ra, dec = args
