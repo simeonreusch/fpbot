@@ -112,10 +112,10 @@ class ForcedPhotometryPipeline:
         self.ampel = ampel
         self.download_newest = download_newest
 
-        if self.daysago or self.daysuntil:
-            self.convert_daysago_to_jd()
         if self.jdmin or self.jdmax:
             self.convert_jd_to_days()
+        else:
+            self.convert_daysago_to_jd()
 
         # parse different formats of ra and dec
         if ra is not None and dec is not None:
