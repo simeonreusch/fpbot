@@ -529,9 +529,6 @@ class ForcedPhotometryPipeline:
             coords_per_filter[1] = np.nan_to_num(
                 x=coords_per_filter[1], nan=dec
             ).tolist()
-            now = Time(time.time(), format="unix", scale="utc").jd
-            jdmin = 2458100
-            jdmax = now
             fp = forcephotometry.ForcePhotometry.from_coords(
                 ra=coords_per_filter[0],
                 dec=coords_per_filter[1],
