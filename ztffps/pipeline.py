@@ -65,6 +65,8 @@ class ForcedPhotometryPipeline:
         file_or_name=None,
         daysago=None,
         daysuntil=None,
+        jdmin=None,
+        jdmax=None,
         snt=5.0,
         mag_range=None,
         flux_range=None,
@@ -97,6 +99,8 @@ class ForcedPhotometryPipeline:
 
         self.daysago = daysago
         self.daysuntil = daysuntil
+        self.jdmin = jdmin
+        self.jdmax = jdmax
         self.snt = snt
         self.mag_range = mag_range
         self.flux_range = flux_range
@@ -108,7 +112,10 @@ class ForcedPhotometryPipeline:
         self.ampel = ampel
         self.download_newest = download_newest
 
-        self.convert_daysago_to_jd()
+        if self.daysago or self.daysuntil:
+            self.convert_daysago_to_jd()
+        if self.jdmin or self.jdmax:
+            self.convert_jd_to_days()
 
         # parse different formats of ra and dec
         if ra is not None and dec is not None:
@@ -155,7 +162,7 @@ class ForcedPhotometryPipeline:
 
     def convert_daysago_to_jd(self):
         """
-        Converts a integer (days since now) to a Julian date
+        Converts days since now and daysuntil to Julian dates
         """
         now = Time(time.time(), format="unix", scale="utc").jd
 
@@ -167,6 +174,22 @@ class ForcedPhotometryPipeline:
             self.jdmax = now
         else:
             self.jdmax = now - self.daysuntil
+
+    def convert_jd_to_days(self):
+        """
+        Converts jdmin and jdmax to integers (daysfromnow and daysuntil)
+        """
+        now = Time(time.time(), format="unix", scale="utc").jd
+
+        if self.jdmin:
+            self.daysago = now - self.jdmin
+        else:
+            self.daysago = now - 2458100
+
+        if self.jdmax:
+            self.daysuntil = now - self.jdmax
+        else:
+            self.jdmax = now
 
     def use_if_ztf(self):
         """
@@ -285,15 +308,16 @@ class ForcedPhotometryPipeline:
                 "CAUTION: Data could be missing or not be up-to-date!!!"
             )
 
-        if self.daysago is None:
-            print("\nNo 'daysago' given, full timerange since ZTF operations used")
-        else:
-            if self.daysuntil is None:
-                print(f"\nData from {self.daysago:.2f} days ago till today is used")
+        if self.jdmin is None:
+            if self.daysago is None:
+                print("\nNo 'daysago' given, full timerange since ZTF operations used")
             else:
-                print(
-                    f"\nData from {self.daysago:.2f} days ago till {self.daysuntil:.2f} days ago is used"
-                )
+                if self.daysuntil is None:
+                    print(f"\nData from {self.daysago:.2f} days ago till today is used")
+                else:
+                    print(
+                        f"\nData from {self.daysago:.2f} days ago till {self.daysuntil:.2f} days ago is used"
+                    )
 
         now = Time(time.time(), format="unix", scale="utc").jd
 
@@ -505,6 +529,9 @@ class ForcedPhotometryPipeline:
             coords_per_filter[1] = np.nan_to_num(
                 x=coords_per_filter[1], nan=dec
             ).tolist()
+            now = Time(time.time(), format="unix", scale="utc").jd
+            jdmin = 2458100
+            jdmax = now
             fp = forcephotometry.ForcePhotometry.from_coords(
                 ra=coords_per_filter[0],
                 dec=coords_per_filter[1],
@@ -531,7 +558,7 @@ class ForcedPhotometryPipeline:
                 print(f"\n{name} ({i+1} of {objects_total}): Fitting PSF")
 
                 fp.run_forcefit(
-                    verbose=False,
+                    verbose=True,
                     nprocess=nprocess,
                     store=True,
                     force_refit=force_refit,

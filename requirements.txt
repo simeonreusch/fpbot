@@ -12,7 +12,7 @@ matplotlib
 lxml
 html5lib
 bs4
-iminuit
+iminuit<2
 sfdmap
 pymongo
 fastapi
