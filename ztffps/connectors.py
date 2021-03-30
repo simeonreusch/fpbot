@@ -78,6 +78,7 @@ class AmpelInfo:
             magerrs = []
             maglims = []
             fids = []
+            distnrs = []
             magzps = []
             magzps_err = []
             ra_g = []
@@ -99,6 +100,7 @@ class AmpelInfo:
                 magerr = res["candidate"]["sigmapsf"]
                 maglim = res["candidate"]["diffmaglim"]
                 fid = res["candidate"]["fid"]
+                distnr = res["candidate"]["distnr"]
                 if fid == 1:
                     ra_g.append(ra)
                     dec_g.append(dec)
@@ -117,6 +119,7 @@ class AmpelInfo:
                 magerrs.append(magerr)
                 maglims.append(maglim)
                 fids.append(fid)
+                distnrs.append(distnr)
                 magzps.append(magzp)
                 magzps_err.append(magzp_err)
             if len(ras) > 0:
@@ -141,6 +144,7 @@ class AmpelInfo:
                     magerrs,
                     maglims,
                     fids,
+                    distnrs,
                     lastobs,
                     magzps,
                     magzps_err,
