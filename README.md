@@ -8,7 +8,7 @@ Note: Requires Python >= 3.6. Also requires a MongoDB instance for storing the m
 
 ## Installation
 
-1. Note that libpq-dev needs to be present. On Debian/Ubuntu, issue ```sudo apt install libpq-dev```.
+1. Note that libpq-dev needs to be present. On Debian/Ubuntu, issue ```sudo apt install libpq-dev```. On Mac OS, run ```brew install postgresql```.
 
 2. All required packages should be installed by issuing: ```pip3 install git+https://github.com/simeonreusch/ztffps```.
 
