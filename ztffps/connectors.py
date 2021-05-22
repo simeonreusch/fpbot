@@ -4,13 +4,18 @@
 
 import os, getpass, socket, sqlalchemy, logging, time, multiprocessing, keyring
 import numpy as np
+import requests
+import backoff
 from itertools import product
 from astropy.time import Time
 from astropy.utils.console import ProgressBar
 import ztfquery
+from requests.auth import HTTPBasicAuth
 from ztffps import credentials
 
 MARSHAL_BASEURL = "http://skipper.caltech.edu:8080/cgi-bin/growth/view_avro.cgi?name="
+API_BASEURL = "https://ampel.zeuthen.desy.de"
+API_ZTF_ARCHIVE_URL = API_BASEURL + "/api/ztf/archive"
 
 
 class AmpelInfo:
@@ -24,41 +29,36 @@ class AmpelInfo:
         else:
             self.logger = logger
 
-        from ampel.ztf.archive.ArchiveDB import ArchiveDB
-
         self.ztf_names = ztf_names
         self.nprocess = nprocess
 
-        self.username, self.password = credentials.get_user_and_password(
-            "ampel_archivedb"
+        self.api_user, self.api_pass = credentials.get_user_and_password("ampel_api")
+
+        self.queryresult = self.parse_ampel_api_result()
+
+    @backoff.on_exception(
+        backoff.expo,
+        requests.exceptions.RequestException,
+        max_time=600,
+    )
+    def query_ampel_api_for_ztfname(self, ztf_name):
+        queryurl_ztf_name = (
+            API_ZTF_ARCHIVE_URL + f"/object/{ztf_name}/alerts?with_history=false"
         )
+        self.logger.debug(queryurl_ztf_name)
+        response = requests.get(
+            queryurl_ztf_name,
+            auth=HTTPBasicAuth(self.api_user, self.api_pass),
+        )
+        if response.status_code != 200:
+            raise requests.exceptions.RequestException
+        query_res = [i for i in response.json()]
 
-        self.port = 5432
+        return query_res
 
-        try:
-            self.ampel_client = ArchiveDB(
-                f"postgresql://{self.username}:{self.password}@localhost:{self.port}/ztfarchive"
-            )
-        except sqlalchemy.exc.OperationalError as e:
-            print(
-                "---------------------------------------------------------------------"
-            )
-            print(
-                "You can't access the archive database without first opening the port."
-            )
-            print("Open a new terminal and run the following command:")
-            print("ssh -L5432:localhost:5432 ztf-wgs.zeuthen.desy.de")
-            print("If that command doesn't work, you are either not a DESY user,")
-            print("the credentials are wrong or your ssh-config is erroneous .")
-            print(
-                "---------------------------------------------------------------------"
-            )
-            raise e
-
-        self.queryresult = self.get_info()
-
-    def get_info(self):
+    def parse_ampel_api_result(self):
         """ """
+
         object_count = len(self.ztf_names)
         print("\nObtaining ra/decs from AMPEL")
         from astropy.utils.console import ProgressBar
@@ -67,9 +67,8 @@ class AmpelInfo:
         bar = ProgressBar(object_count)
 
         for index, ztf_name in enumerate(self.ztf_names):
-            ampel_object = self.ampel_client.get_alerts_for_object(
-                ztf_name, with_history=False
-            )
+            ampel_object = self.query_ampel_api_for_ztfname(ztf_name=ztf_name)
+
             query_res = [i for i in ampel_object]
             ras = []
             decs = []
@@ -90,8 +89,9 @@ class AmpelInfo:
             isdiffpos = []
 
             for res in query_res:
-                _isdiffpos = res["candidate"]["isdiffpos"]
-                if _isdiffpos == "f":
+                if "isdiffpos" in res["candidate"].keys():
+                    _isdiffpos = res["candidate"]["isdiffpos"]
+                else:
                     continue
                 ra = res["candidate"]["ra"]
                 dec = res["candidate"]["dec"]
@@ -323,20 +323,30 @@ class FritzInfo:
 
 def get_irsa_multiprocessing(args):
     """ """
-    ztf_name, ra, dec = args
+    ztf_name, ra, dec, jdmin, jdmax = args
+
     zquery = ztfquery.query.ZTFQuery()
-    zquery.load_metadata(radec=[ra, dec], size=0.01)
+    sql_query = f"obsjd>={jdmin} and obsjd<={jdmax}"
+    zquery.load_metadata(radec=[ra, dec], sql_query=sql_query, size=0.01)
     mt = zquery.metatable
     return {ztf_name: len(mt)}
 
 
 def get_irsa_filecount(
-    ztf_names: list, ras: list, decs: list, nprocess: int = 16
+    ztf_names: list,
+    ras: list,
+    decs: list,
+    jdmin: float,
+    jdmax: float,
+    nprocess: int = 16,
 ) -> dict:
     """ """
     irsa_filecount = {}
 
     progress_bar = ProgressBar(len(ras))
+
+    jdmins = [jdmin] * len(ras)
+    jdmaxs = [jdmax] * len(ras)
 
     with multiprocessing.Pool(nprocess) as p:
         for j, result in enumerate(
@@ -346,6 +356,8 @@ def get_irsa_filecount(
                     ztf_names,
                     ras,
                     decs,
+                    jdmins,
+                    jdmaxs,
                 ),
             )
         ):

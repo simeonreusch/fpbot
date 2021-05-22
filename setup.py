@@ -79,7 +79,7 @@ def check_dependencies():
     try:
         import iminuit
     except ImportError:
-        install_requires.append("iminuit")
+        install_requires.append("iminuit<2")
     try:
         import sfdmap
     except ImportError:

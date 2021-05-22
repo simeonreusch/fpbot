@@ -18,3 +18,5 @@ pymongo
 fastapi
 uvicorn
 keyring
+backoff
+requests

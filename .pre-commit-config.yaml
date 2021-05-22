@@ -9,3 +9,5 @@ repos:
     rev: 20.8b1
     hooks:
     -   id: black
+default_language_version:
+    python: python3.9

@@ -294,11 +294,11 @@ class ForcedPhotometryPipeline:
                 marshal_failed = True
 
         if marshal_failed or self.ampel:
-            try:
-                connector = connectors.AmpelInfo(needs_external_database)
-                ampel_failed = False
-            except:
-                ampel_failed = True
+            # try:
+            connector = connectors.AmpelInfo(needs_external_database)
+            ampel_failed = False
+            # except:
+            # ampel_failed = True
 
         if marshal_failed and ampel_failed:
             print(
@@ -405,14 +405,23 @@ class ForcedPhotometryPipeline:
         from ztffps.connectors import get_irsa_filecount
 
         self.logger.info(f"\nObtaining information on available images at IRSA.")
-        irsa_filecounts = get_irsa_filecount(download_requested, ras, decs, nprocess=16)
+
+        irsa_filecounts = get_irsa_filecount(
+            ztf_names=download_requested,
+            ras=ras,
+            decs=decs,
+            jdmin=self.jdmin,
+            jdmax=self.jdmax,
+            nprocess=16,
+        )
+        print(irsa_filecounts)
 
         for index, name in enumerate(download_requested):
             if local_filecounts[index] is None:
                 local_filecounts[index] = 0
             if local_filecounts[index] < irsa_filecounts[name]:
                 download_needed.append(name)
-
+            print(local_filecounts[index])
         self.logger.info(
             f"\n{len(download_needed)} of {len(self.object_list)} objects have images available at IRSA that are not present locally and will thus be downloaded."
         )
@@ -551,6 +560,7 @@ class ForcedPhotometryPipeline:
                 fitted_datapoints = 0
 
             # Compare to number of fitted datapoints from database
+
             if number_of_fitted_datapoints_expected > fitted_datapoints or force_refit:
                 print(f"\n{name} ({i+1} of {objects_total}): Fitting PSF")
 
@@ -586,7 +596,7 @@ class ForcedPhotometryPipeline:
         Plots the lightcurve (uses PSF fitted datapoints if available and
         checks for alert photometry otherwise)
         """
-        self.logger.info("\nPlotting")
+        self.logger.info(f"\nPlotting")
         object_count = len(self.object_list)
         snt = [self.snt] * object_count
         daysago = [self.daysago] * object_count

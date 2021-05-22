@@ -12,8 +12,6 @@ from ztffps import credentials
 lc_dir = FORCEPHOTODATA
 
 
-
-
 def run_on_event(thread_id, channel_id, verbose=False, debug=False):
     """ """
     if debug:
@@ -475,4 +473,6 @@ if __name__ == "__main__":
     verbose = commandline_args.verbose
     debug = commandline_args.verbose
 
-    run_on_event(thread_id=thread_id, channel_id=channel_id, verbose=verbose, debug=debug)
+    run_on_event(
+        thread_id=thread_id, channel_id=channel_id, verbose=verbose, debug=debug
+    )
