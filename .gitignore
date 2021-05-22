@@ -1,7 +1,10 @@
-*.log
+*log
 .AMPEL*
 __pycache__
 *.slack*
 *.smtp*
 *test*
 *.cred
+*log
+.ztfquery
+.python-version

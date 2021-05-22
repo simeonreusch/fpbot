@@ -587,10 +587,7 @@ class ForcedPhotometryPipeline:
                     force_refit=force_refit,
                     no_badsub=False,
                 )
-                # fig = plt.figure(dpi=300)
-                # ax = fig.add_subplot(111)
-                # fp.show_lc(ax=ax)
-                # database.update_database(name, {"forced_photometry": fp._data_forcefit})
+
                 fp.store()
 
                 lastfit = Time(time.time(), format="unix", scale="utc").jd
