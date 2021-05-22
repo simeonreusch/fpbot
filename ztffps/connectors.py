@@ -60,7 +60,7 @@ class AmpelInfo:
         """ """
 
         object_count = len(self.ztf_names)
-        print("\nObtaining ra/decs from AMPEL")
+        self.logger.info("\nObtaining ra/decs from AMPEL")
         from astropy.utils.console import ProgressBar
 
         queryresult = []
@@ -89,9 +89,7 @@ class AmpelInfo:
             isdiffpos = []
 
             for res in query_res:
-                if "isdiffpos" in res["candidate"].keys():
-                    _isdiffpos = res["candidate"]["isdiffpos"]
-                else:
+                if "isdiffpos" not in res["candidate"].keys():
                     continue
                 ra = res["candidate"]["ra"]
                 dec = res["candidate"]["dec"]
@@ -122,6 +120,7 @@ class AmpelInfo:
                 distnrs.append(distnr)
                 magzps.append(magzp)
                 magzps_err.append(magzp_err)
+
             if len(ras) > 0:
                 ra = np.median(ras)
                 dec = np.median(decs)
@@ -220,7 +219,7 @@ class MarshalInfo:
                 try:
                     line = mtb.values[i][0].split(",")
                 except:
-                    print(mtb.values[i][0])
+                    self.logger.error(mtb.values[i][0])
                 for j in range(len(line)):
                     if line[j][:14] == '  "isdiffpos":':
                         isdiffpos = str(line[j].split(":")[1])
@@ -317,8 +316,6 @@ class FritzInfo:
             bar.update(i)
 
         bar.update(object_count)
-
-        print(queryresult)
 
 
 def get_irsa_multiprocessing(args):
