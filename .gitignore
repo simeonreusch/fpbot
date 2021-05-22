@@ -8,3 +8,6 @@ __pycache__
 *log
 .ztfquery
 .python-version
+lists/*
+ztffps/cosmology_leopold.py
+ztffps/findpairs.py
