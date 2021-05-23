@@ -20,15 +20,15 @@ from astropy.coordinates import SkyCoord
 from astropy import units as u
 from astropy.utils.console import ProgressBar
 import requests.exceptions
-from ztffps import database
+from ztffps import database, credentials
 from ztffps.utils import calculate_magnitudes
 
 try:
     ZTFDATA = os.getenv("ZTFDATA")
     FORCEPHOTODATA = os.path.join(ZTFDATA, "forcephotometry")
 except (TypeError, NameError):
-    self.logger.error(
-        "You have to export the environment variable ZTFDATA in your bash profile; e.g. export ZTFDATA='ABSOLUTE/PATH/TO/ZTFDATA'"
+    print(
+        "You have to export the environment variable ZTFDATA in your bash profile; e.g. export ZTFDATA='ABSOLUTE/PATH/TO/ZTFDATA/'\nNote the trailing slash is important!"
     )
 
 # Define servers
@@ -83,6 +83,9 @@ class ForcedPhotometryPipeline:
     ):
         self.startime = time.time()
         self.logger = logging.getLogger("pipeline")
+
+        # check for IRSA credentials
+        _, _ = credentials.get_user_and_password("irsa")
 
         if file_or_name is None:
             self.logger.error(
@@ -806,8 +809,6 @@ class ForcedPhotometryPipeline:
         from email.mime.multipart import MIMEMultipart
         from email.mime.text import MIMEText
         from email.utils import formatdate
-
-        from ztffps import credentials
 
         _smtp_password = credentials.get_password("ztfhub_smtp")
 
