@@ -10,7 +10,7 @@ Note: Requires Python >= 3.6. Also requires a MongoDB instance for storing the m
 
 1. Note that libpq-dev needs to be present. On Debian/Ubuntu, issue ```sudo apt install libpq-dev```. On Mac OS, run ```brew install postgresql```.
 
-2. All required packages should be installed by issuing: ```pip3 install git+https://github.com/simeonreusch/ztffps```.
+2. All required packages should be installed by issuing: ```pip3 install git+ssh://git@github.com/simeonreusch/ztffps```.
 
 3. If MongoDB is not present, it can easily be installed.
 On Debian/Ubuntu, just follow this [instruction set](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-debian/#install-mongodb-community-edition). After this, make sure the demon runs. Issue  ```sudo systemctl start mongod``` and ```sudo systemctl enable mongod```. On MacOS, make sure brew is present follow [this tutorial](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/).
@@ -19,7 +19,7 @@ On Debian/Ubuntu, just follow this [instruction set](https://docs.mongodb.com/ma
 
 ---
 
-5. If you want AMPEL for alert data (you don't have to!), you have to install the AMPEL requirements (and of course have credentials for AMPEL) with ```git clone https://github.com/simeonreusch/ztffps``` and then ```cd ztffps``` as well as ```pip3 install . -r ampel_requirements.txt```.
+5. If you want to use the AMPEL API for alert data (you don't have to!), you need credentials for the API.
 
 6. NOTE: If you are planning to run ztffps on a headless system which does not provide the luxury of a systemwide keychain, please add ```export ZTFHUB_MODE='HEADLESS'``` to your .bashrc or .zshrc. The pipeline will then uses ztfquery's base64 obfuscated password storage.
 
