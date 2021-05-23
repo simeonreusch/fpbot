@@ -262,12 +262,12 @@ class ForcedPhotometryPipeline:
         """
         Check for entry in Mongo database and update it via AMPEL or Marshal
         """
-        self.logger.info("\nChecking database")
+        self.logger.info("\nChecking database.")
         progress_bar = ProgressBar(len(self.object_list))
         needs_external_database = []
 
         if self.update_enforce:
-            self.logger.info("\nForced update of alert data data from AMPEL/Fritz")
+            self.logger.info("\nForced update of alert data data from AMPEL/Fritz.")
 
         query = database.read_database(self.object_list, ["_id", "entries", "ra"])
 
@@ -284,9 +284,9 @@ class ForcedPhotometryPipeline:
         progress_bar.update(len(self.object_list))
 
         if not self.ampel:
-            self.logger.info("\nConnecting to Marshal (or AMPEL if Marshal is down)")
+            self.logger.info("\nConnecting to Marshal (or AMPEL if Marshal is down).")
         else:
-            self.logger.info("\nConnecting to AMPEL")
+            self.logger.info("\nConnecting to AMPEL.")
         from ztffps import connectors
 
         marshal_failed = True
@@ -323,22 +323,22 @@ class ForcedPhotometryPipeline:
         if self.jdmin is None:
             if self.daysago is None:
                 self.logger.info(
-                    "\nNo 'daysago' given, full timerange since ZTF operations used"
+                    "\nNo 'daysago' given, full timerange since ZTF operations used."
                 )
             else:
                 if self.daysuntil is None:
                     self.logger.info(
-                        f"\nData from {self.daysago:.2f} days ago till today is used"
+                        f"\nData from {self.daysago:.2f} days ago till today is used."
                     )
                 else:
                     self.logger.info(
-                        f"\nData from {self.daysago:.2f} days ago till {self.daysuntil:.2f} days ago is used"
+                        f"\nData from {self.daysago:.2f} days ago till {self.daysuntil:.2f} days ago is used."
                     )
 
         now = Time(time.time(), format="unix", scale="utc").jd
 
         if not (marshal_failed and ampel_failed):
-            self.logger.info("\nUpdating local database")
+            self.logger.info("\nUpdating local database.")
             progress_bar = ProgressBar(len(connector.queryresult))
             for index, result in enumerate(connector.queryresult):
                 if result is not None:
@@ -371,7 +371,7 @@ class ForcedPhotometryPipeline:
         Delete from object-list if no info is available
         """
 
-        self.logger.info("\nChecking if alert data is present in the local database")
+        self.logger.info("\nChecking if alert data is present in the local database.")
 
         query = database.read_database(self.object_list, ["name", "entries"])
         not_found = []
@@ -438,7 +438,7 @@ class ForcedPhotometryPipeline:
                 download_needed.append(name)
 
         self.logger.info(
-            f"\n{len(download_needed)} of {len(self.object_list)} objects have images available at IRSA that are not present locally and will thus be downloaded."
+            f"\n{len(download_needed)} of {len(self.object_list)} objects have additional images available at IRSA.\nThese will be downloaded now."
         )
 
         for i, name in enumerate(download_needed):
@@ -455,7 +455,7 @@ class ForcedPhotometryPipeline:
             )
 
             self.logger.info(
-                f"\n{name} ({i+1} of {len(download_needed)}) Downloading data"
+                f"\n{name} ({i+1} of {len(download_needed)}) Downloading data."
             )
             if not os.path.exists(
                 os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
@@ -560,15 +560,15 @@ class ForcedPhotometryPipeline:
                 jdmax=jdmax,
                 name=name,
             )
-            self.logger.info(f"\n{name} ({i+1} of {objects_total}) loading metadata")
+            self.logger.info(f"\n{name} ({i+1} of {objects_total}) loading metadata.")
             fp.load_metadata()
-            self.logger.info(f"\n{name} ({i+1} of {objects_total}) metadata loaded")
+            self.logger.info(f"\n{name} ({i+1} of {objects_total}) metadata loaded.")
             self.logger.info(
-                f"\n{name} ({i+1} of {objects_total}) loading paths to files"
+                f"\n{name} ({i+1} of {objects_total}) loading paths to files."
             )
             fp.load_filepathes(filecheck=False)
             self.logger.info(
-                f"\n{name} ({i+1} of {objects_total}) paths to files loaded"
+                f"\n{name} ({i+1} of {objects_total}) paths to files loaded."
             )
 
             # Check how many forced photometry datapoints
@@ -581,7 +581,7 @@ class ForcedPhotometryPipeline:
             # Compare to number of fitted datapoints from database
 
             if number_of_fitted_datapoints_expected > fitted_datapoints or force_refit:
-                self.logger.info(f"\n{name} ({i+1} of {objects_total}): Fitting PSF")
+                self.logger.info(f"\n{name} ({i+1} of {objects_total}): Fitting PSF.")
 
                 fp.run_forcefit(
                     verbose=self.verbose,
@@ -604,7 +604,7 @@ class ForcedPhotometryPipeline:
                 )
             else:
                 self.logger.info(
-                    f"\n{name} ({i+1} of {objects_total}) No new images to fit, skipping PSF fit"
+                    f"\n{name} ({i+1} of {objects_total}) No new images to fit, skipping PSF fit."
                 )
 
     def plot(self, nprocess=4, progress=True, plot_flux=False):
@@ -693,7 +693,7 @@ class ForcedPhotometryPipeline:
         objectcount = len(self.cleaned_object_list)
         progress_bar = ProgressBar(objectcount)
         self.logger.info(
-            "\nChecking if the mwebv Milky Way dust map value is present and compute it if not"
+            "\nChecking if the mwebv Milky Way dust map value is present and compute it if not."
         )
 
         for index, name in enumerate(self.cleaned_object_list):
@@ -749,9 +749,9 @@ class ForcedPhotometryPipeline:
 
         for index, name in enumerate(self.cleaned_object_list):
             if alertfit:
-                self.logger.info(f"\n{name} performing SALT fit for alert photometry")
+                self.logger.info(f"\n{name} performing SALT fit for alert photometry.")
             else:
-                self.logger.info(f"\n{name} performing SALT fit for forced photometry")
+                self.logger.info(f"\n{name} performing SALT fit for forced photometry.")
 
             try:
                 fitresult, fitted_model = fit_salt(
@@ -766,7 +766,7 @@ class ForcedPhotometryPipeline:
                 fitresults.append(fitresult)
                 fitted_models.append(fitted_model)
             except:
-                self.logger.info(f"\n{name} Error while fitting")
+                self.logger.info(f"\n{name} Error while fitting.")
                 if progress_bar is not None:
                     progress_bar.update(index)
 
@@ -797,12 +797,12 @@ class ForcedPhotometryPipeline:
         salt_dataframe.to_csv(salt_dataframe_path)
 
         self.logger.info(
-            f"\n{len(fitresult_df)} of {object_count} fits were performed successfully\n"
+            f"\n{len(fitresult_df)} of {object_count} fits were performed successfully.\n"
         )
 
     def sendmail(self, send_to, tarball=False):
         """ """
-        self.logger.info("\nSending mail")
+        self.logger.info("\nSending mail.")
         import smtplib
 
         from email.mime.application import MIMEApplication
@@ -816,10 +816,10 @@ class ForcedPhotometryPipeline:
         objectnumber = len(self.object_list)
 
         if objectnumber == 1:
-            subject = f"Forced Photometry for {self.object_list[0]}"
+            subject = f"Forced Photometry for {self.object_list[0]}."
             text = f"Here is the forced photometry for {self.object_list[0]}."
         else:
-            subject = f"Forced Photometry for {objectnumber} objects"
+            subject = f"Forced Photometry for {objectnumber} objects."
             text = f"Here is your forced photometry output for {objectnumber} objects."
 
         assert isinstance(send_to, str)

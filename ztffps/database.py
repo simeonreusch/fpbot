@@ -68,7 +68,7 @@ def read_database(
                 else:
                     dict_for_return_values[entry].append(None)
         else:
-            logger.warning(f"\nNo entry found for {name}")
+            logger.info(f"\nNo entry found for {name}.")
             for entry in requested_data:
                 dict_for_return_values[entry].append(None)
         progress_bar.update(i)
