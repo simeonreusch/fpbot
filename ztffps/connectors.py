@@ -67,6 +67,7 @@ class AmpelInfo:
         bar = ProgressBar(object_count)
 
         for index, ztf_name in enumerate(self.ztf_names):
+            print(f"\n{ztf_name}")
             ampel_object = self.query_ampel_api_for_ztfname(ztf_name=ztf_name)
 
             query_res = [i for i in ampel_object]
@@ -90,6 +91,8 @@ class AmpelInfo:
 
             for res in query_res:
                 if "isdiffpos" not in res["candidate"].keys():
+                    continue
+                if "magzpsci" not in res["candidate"].keys():
                     continue
                 ra = res["candidate"]["ra"]
                 dec = res["candidate"]["dec"]
@@ -293,7 +296,7 @@ class MarshalInfo:
 
 
 class FritzInfo:
-    """ Testing only """
+    """Testing only"""
 
     def __init__(self, ztf_names, nprocess=16, logger=None):
         import pandas as pd
