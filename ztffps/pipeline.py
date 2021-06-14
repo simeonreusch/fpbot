@@ -21,6 +21,7 @@ from astropy import units as u
 from astropy.utils.console import ProgressBar
 import requests.exceptions
 from ztffps import database, credentials
+from ztffps.thumbnails import generate_thumbnails
 from ztffps.utils import calculate_magnitudes
 
 try:
@@ -942,8 +943,7 @@ class ForcedPhotometryPipeline:
         smtp.sendmail(send_from, send_to, msg.as_string())
         smtp.close()
 
-    def generate_thumbnails(self, nprocess=1):
-        from thumbnails import generate_thumbnails
+    def thumbnails(self, nprocess=1):
 
         # Note: Currently when run at DESY, this generates distorted plot headings
         # when multiprocessed. Therefore nprocess is set to 1.

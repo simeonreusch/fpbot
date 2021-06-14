@@ -225,6 +225,7 @@ def run_on_event(thread_id, channel_id, verbose=False, debug=False):
         sciimg=sciimg,
         update_disable=noupdate,
         download_newest=True,
+        ampel=True,
     )
 
     if do_download:

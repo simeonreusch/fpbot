@@ -207,6 +207,10 @@ if __name__ == "__main__":
     else:
         mag_range = None
 
+    if thumbnails:
+        sciimg = True
+        do_download = True
+
     pl = ForcedPhotometryPipeline(
         file_or_name=name,
         daysago=daysago,
@@ -239,7 +243,7 @@ if __name__ == "__main__":
     if targetmail:
         pl.sendmail(targetmail, tarball=True)
     if thumbnails:
-        pl.generate_thumbnails()
+        pl.thumbnails()
 
     endtime = time.time()
     duration = endtime - pl.startime

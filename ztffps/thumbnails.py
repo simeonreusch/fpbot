@@ -19,7 +19,7 @@ from astropy.visualization import astropy_mpl_style
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from astropy.utils.console import ProgressBar
-import pipeline
+from ztffps import pipeline
 import shutil
 
 plt.style.use(astropy_mpl_style)
@@ -52,6 +52,7 @@ def generate_thumbnails(
 
     # Now iterate over ZTF-filters
     for band in ["g", "r", "i"]:
+        print(name)
 
         # Generate lists to pass to multiprocessor function
         multiprocessing_args = get_lists_for_multiprocessing(
@@ -70,7 +71,8 @@ def generate_thumbnails(
         with multiprocessing.Pool(nprocess) as p:
             for j, result in enumerate(
                 p.imap_unordered(
-                    plot_thumbnail_multiprocess, zip(*multiprocessing_args),
+                    plot_thumbnail_multiprocess,
+                    zip(*multiprocessing_args),
                 )
             ):
                 if progress_bar is not None:
@@ -119,13 +121,16 @@ def plot_thumbnail_multiprocess(args):
     filename, name, quadrant, band, mag, obsmjd, ra, dec, size, index = args
     filename_split = filename.split("_")[1]
     basedir = os.path.join(pipeline.ZTFDATA, "sci")
-    sciimg_path = os.path.join(
-        basedir,
-        filename_split[:4],
-        filename_split[4:8],
-        filename_split[8:14],
-        filename[:-5],
-    ) + "_q{}_sciimg.fits".format(quadrant + 1)
+    sciimg_path = (
+        os.path.join(
+            basedir,
+            filename_split[:4],
+            filename_split[4:8],
+            filename_split[8:14],
+            filename[:-5],
+        )
+        + "_q{}_sciimg.fits".format(quadrant + 1)
+    )
 
     filter_color = {"ZTF_g": "green", "ZTF_r": "red", "ZTF_i": "orange"}
 
@@ -154,16 +159,16 @@ def plot_thumbnail_multiprocess(args):
     plt.close()
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    starttime = time.time()
-    generate_thumbnails(
-        name="ZTF19aaklqod",
-        ra=134.656544,
-        dec=+20.191857,
-        progress=True,
-        snt=5,
-        nprocess=4,
-    )
-    endtime = time.time()
-    print("\nThe script took {:.1f} seconds".format(endtime - starttime))
+#     starttime = time.time()
+#     generate_thumbnails(
+#         name="ZTF19aaklqod",
+#         ra=134.656544,
+#         dec=+20.191857,
+#         progress=True,
+#         snt=5,
+#         nprocess=4,
+#     )
+#     endtime = time.time()
+#     print("\nThe script took {:.1f} seconds".format(endtime - starttime))
