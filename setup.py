@@ -1,5 +1,5 @@
 DESCRIPTION = "ZTF Forced Photometry Pipeline"
-LONG_DESCRIPTION = """Provides a Forced Photometry Pipeline for ZTF based on ztfquery and ztflc, needs IPAC as well as Marshal or AMPEL access."""
+LONG_DESCRIPTION = """Provides a Forced Photometry Pipeline for ZTF based on ztfquery and ztflc, needs IPAC as well as Fritz or AMPEL access."""
 
 DISTNAME = "ztffps"
 AUTHOR = "Simeon Reusch"
@@ -7,8 +7,8 @@ MAINTAINER = "Simeon Reusch"
 MAINTAINER_EMAIL = "simeon.reusch@desy.de"
 URL = "https://github.com/simeonreusch/modelSED/"
 LICENSE = "BSD (3-clause)"
-DOWNLOAD_URL = "https://github.com/simeonreusch/ztffps/archive/v1.0.2.tar.gz"
-VERSION = "1.0.2"
+DOWNLOAD_URL = "https://github.com/simeonreusch/ztffps/archive/v1.0.3.tar.gz"
+VERSION = "1.0.3"
 
 try:
     from setuptools import setup, find_packages

@@ -50,6 +50,7 @@ class AmpelInfo:
             queryurl_ztf_name,
             auth=HTTPBasicAuth(self.api_user, self.api_pass),
         )
+
         if response.status_code == 503:
             raise requests.exceptions.RequestException
         query_res = [i for i in response.json()]
