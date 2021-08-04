@@ -180,7 +180,7 @@ if __name__ == "__main__":
     do_plot = commandline_args.plot
     do_fluxplot = commandline_args.plotflux
     do_saltfit = commandline_args.saltfit
-    do_filecheck = commandline_args.filecheck
+    filecheck = commandline_args.filecheck
     do_global_filecheck = commandline_args.filecheck_global
     targetmail = commandline_args.sendmail
     sciimg = commandline_args.sciimg
