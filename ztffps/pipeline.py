@@ -80,6 +80,7 @@ class ForcedPhotometryPipeline:
         update_disable=False,
         ampel=False,
         download_newest=True,
+        filecheck=False,
         verbose=False,
     ):
         self.startime = time.time()
@@ -117,6 +118,7 @@ class ForcedPhotometryPipeline:
         self.update_disable = update_disable
         self.ampel = ampel
         self.download_newest = download_newest
+        self.filecheck = filecheck
 
         if self.jdmin or self.jdmax:
             self.convert_jd_to_days()
@@ -567,7 +569,7 @@ class ForcedPhotometryPipeline:
             self.logger.info(
                 f"\n{name} ({i+1} of {objects_total}) loading paths to files."
             )
-            fp.load_filepathes(filecheck=False)
+            fp.load_filepathes(filecheck=self.filecheck)
             self.logger.info(
                 f"\n{name} ({i+1} of {objects_total}) paths to files loaded."
             )

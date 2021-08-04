@@ -114,6 +114,12 @@ if __name__ == "__main__":
         "--filecheck",
         "-filecheck",
         action="store_true",
+        help="Runs a filecheck on all the files a fit will run on",
+    )
+    parser.add_argument(
+        "--filecheck_global",
+        "-filecheck_global",
+        action="store_true",
         help="Runs a full filecheck on the ZTFDATA directory. Can take several hours",
     )
     parser.add_argument(
@@ -175,6 +181,7 @@ if __name__ == "__main__":
     do_fluxplot = commandline_args.plotflux
     do_saltfit = commandline_args.saltfit
     do_filecheck = commandline_args.filecheck
+    do_global_filecheck = commandline_args.filecheck_global
     targetmail = commandline_args.sendmail
     sciimg = commandline_args.sciimg
     thumbnails = commandline_args.thumbnails
@@ -226,8 +233,9 @@ if __name__ == "__main__":
         update_disable=update_disable,
         ampel=True,
         download_newest=download_newest,
+        filecheck=filecheck,
     )
-    if do_filecheck:
+    if do_global_filecheck:
         pl.global_filecheck()
     if do_download:
         pl.download()
