@@ -82,9 +82,15 @@ class ForcedPhotometryPipeline:
         download_newest=True,
         filecheck=False,
         verbose=False,
+        logger=None,
     ):
+
         self.startime = time.time()
-        self.logger = logging.getLogger("pipeline")
+
+        if logger is None:
+            self.logger = logging.getLogger("pipeline")
+        else:
+            self.logger = logger
 
         # check for IRSA credentials
         _, _ = credentials.get_user_and_password("irsa")
@@ -96,13 +102,19 @@ class ForcedPhotometryPipeline:
         else:
             self.file_or_name = file_or_name
 
-        hdlr = logging.FileHandler("./log")
-        logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
-        formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
-        hdlr.setFormatter(formatter)
-        self.verbose = verbose
-        self.logger.addHandler(hdlr)
-        self.logger.setLevel(logging.INFO)
+        if not self.logger.hasHandlers():
+            logFormatter = logging.Formatter(
+                "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s"
+            )
+
+            fileHandler = logging.FileHandler("./log")
+            fileHandler.setFormatter(logFormatter)
+            self.logger.addHandler(fileHandler)
+
+            consoleHandler = logging.StreamHandler()
+            consoleHandler.setFormatter(logFormatter)
+            self.logger.addHandler(consoleHandler)
+            self.logger.setLevel(logging.INFO)
 
         self.daysago = daysago
         self.daysuntil = daysuntil
