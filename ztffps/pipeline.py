@@ -130,6 +130,7 @@ class ForcedPhotometryPipeline:
         self.update_disable = update_disable
         self.ampel = ampel
         self.download_newest = download_newest
+        self.verbose = verbose
         self.filecheck = filecheck
 
         if self.jdmin or self.jdmax:
