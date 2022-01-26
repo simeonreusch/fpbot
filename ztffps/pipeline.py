@@ -453,9 +453,12 @@ class ForcedPhotometryPipeline:
             if local_filecounts[index] < irsa_filecounts[name]:
                 download_needed.append(name)
 
-        self.logger.info(
-            f"\n{len(download_needed)} of {len(self.object_list)} objects have additional images available at IRSA.\nThese will be downloaded now."
-        )
+        if download_needed:
+            self.logger.info(
+                f"\n{len(download_needed)} of {len(self.object_list)} objects have additional images available at IRSA.\nThese will be downloaded now."
+            )
+        else:
+            self.logger.info("For none of the transients are new images available, so no download needed.")
 
         for i, name in enumerate(download_needed):
             query = database.read_database(
