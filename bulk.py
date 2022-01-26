@@ -18,7 +18,7 @@ def is_ztf_name(name):
     return re.match("^ZTF[1-2]\d[a-z]{7}$", name)
 
 
-def main(file_or_name):
+def main(file_or_name, startitem=0):
     """ """
     logger = logging.getLogger("pipeline")
 
@@ -46,8 +46,8 @@ def main(file_or_name):
 
     bad_objects = []
 
-    for i, ztfid in enumerate(object_list):
-        print(f"Processing {ztfid} ({i} of {len(object_list)} transients)")
+    for i, ztfid in enumerate(object_list[startitem:]):
+        print(f"Processing {ztfid} ({i} of {len(object_list[startitem:])} transients)")
         try:
             pl = ForcedPhotometryPipeline(
                 file_or_name=ztfid,
@@ -58,7 +58,8 @@ def main(file_or_name):
                 update_disable=True,
                 logger=logger,
             )
-            pl.psffit()
+            # pl.download()
+            pl.psffit(force_refit=False)
             pl.plot()
             del pl
 
@@ -79,13 +80,21 @@ def main(file_or_name):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Bulk processing for ztffps")
+
     parser.add_argument(
         "name",
         type=str,
         help='Provide a ZTF name (e.g. "ZTF19aaelulu") or a .txt-file containing a list of ZTF names',
     )
+    parser.add_argument(
+        "-start",
+        type=int,
+        default=0,
+        help="Define with which item to start",
+    )
 
     commandline_args = parser.parse_args()
+    startitem = commandline_args.start
     file_or_name = commandline_args.name
 
-    main(file_or_name)
+    main(file_or_name, startitem)
