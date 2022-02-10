@@ -51,6 +51,7 @@ def main(file_or_name, startitem=0, download=True, fit=True, delete=False):
         print(f"Processing {len(object_list)} transients")
 
     bad_objects = []
+    good_objects = []
 
     for i, ztfid in enumerate(object_list[startitem:]):
         print(f"Processing {ztfid} ({i+1} of {len(object_list[startitem:])} transients)")
@@ -71,6 +72,7 @@ def main(file_or_name, startitem=0, download=True, fit=True, delete=False):
                 pl.psffit(force_refit=False)
             #pl.plot()
             del pl
+            good_objects.append(ztfid)
 
         except:
             bad_objects.append(ztfid)
@@ -79,12 +81,16 @@ def main(file_or_name, startitem=0, download=True, fit=True, delete=False):
         print("\nBad objects (have thrown an error) are:")
         print(bad_objects)
 
-    outfile = "bad_objects.txt"
+    outfile = "bulk_bad_objects.txt"
     file = open(outfile, "w")
-
     for bad_object in bad_objects:
         file.write(bad_object + "\n")
+    file.close()
 
+    outfile = "bulk_good_objects.txt"
+    file = open(outfile, "w")
+    for good_object in good_objects:
+        file.write(good_object + "\n")
     file.close()
 
     if delete:
