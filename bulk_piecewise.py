@@ -52,6 +52,28 @@ def get_local_files(ztf_names):
     return local_data
 
 
+def sizeof_fmt_dec(num, suffix="B"):
+    """
+    Convert ugly Bytes to human readable number
+    """
+    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
+        if abs(num) < 1000.0:
+            return f"{num:3.1f}{unit}{suffix}"
+        num /= 1000.0
+    return f"{num:.1f}Yi{suffix}"
+
+
+def sizeof_fmt_bin(num, suffix="B"):
+    """
+    Convert ugly Bytes to human readable number
+    """
+    for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
+        if abs(num) < 1024.0:
+            return f"{num:3.1f}{unit}{suffix}"
+        num /= 1024.0
+    return f"{num:.1f}Yi{suffix}"
+
+
 def main(
     file_or_name,
     startitem=0,
@@ -169,10 +191,17 @@ def main(
 
         print(f"Found {len(local_files)} local files")
 
+        total_bytes = 0
+
         for file in local_files:
             if os.path.exists(file):
                 fs = os.path.getsize(file)
-                print(fs)
+                total_bytes += fs
+
+        total_diskspace_dec = sizeof_fmt_dec(total_bytes)
+        total_diskspace_bin = sizeof_fmt_bin(total_bytes)
+
+        print(f"These take {total_diskspace_dec} ({total_diskspace_bin})")
 
     if delete:
         print("\nNow we delete all the transient data!")
