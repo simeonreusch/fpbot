@@ -87,9 +87,9 @@ class SaltFit:
 
     def obtain_marshal_lightcurve(self):
         """
-		This reads the marshal lightcurve from the metadata database to
+                This reads the marshal lightcurve from the metadata database to
         put upper and lower bounds on t0 for better SALT-fitting
-		"""
+        """
 
         query = database.read_database(
             self.name,
@@ -550,7 +550,9 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "name", type=str, help='Provide a ZTF name (e.g. "ZTF19aaelulu")',
+        "name",
+        type=str,
+        help='Provide a ZTF name (e.g. "ZTF19aaelulu")',
     )
 
     parser.add_argument(
@@ -579,8 +581,15 @@ if __name__ == "__main__":
     if ra is None:
         logger.warning("No entry in database found. Exiting.")
         quit()
-    mwebv = dustmap.ebv(ra, dec,)
+    mwebv = dustmap.ebv(
+        ra,
+        dec,
+    )
 
     fit_salt(
-        name=name, snt=snt, mwebv=mwebv, quality_checks=True, alertfit=alertfit,
+        name=name,
+        snt=snt,
+        mwebv=mwebv,
+        quality_checks=True,
+        alertfit=alertfit,
     )

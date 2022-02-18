@@ -233,7 +233,7 @@ if __name__ == "__main__":
         do_download = True
 
     if nosnt:
-        snt=None
+        snt = None
 
     pl = ForcedPhotometryPipeline(
         file_or_name=name,

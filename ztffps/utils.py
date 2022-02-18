@@ -89,9 +89,9 @@ def calculate_magnitudes(dataframe, snt=5):
                 mag = 99
                 mag_unc = 99
         else:
-                upper_limit = np.nan
-                mag = -2.5 * np.log10(Fratio)
-                mag_unc = 2.5 / np.log(10) * Fratio_unc / Fratio   
+            upper_limit = np.nan
+            mag = -2.5 * np.log10(Fratio)
+            mag_unc = 2.5 / np.log(10) * Fratio_unc / Fratio
         upper_limits.append(upper_limit)
         mags.append(mag)
         mags_unc.append(mag_unc)

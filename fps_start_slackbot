@@ -26,7 +26,7 @@ else:
 
 
 def run_on_event(data):
-    """ executes a shell script which spawns a screen session"""
+    """executes a shell script which spawns a screen session"""
     ts = data["ts"]
     channel = data["channel"]
     sid = int(float(ts) * 1.0e6)

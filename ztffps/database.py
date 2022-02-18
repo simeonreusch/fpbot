@@ -102,9 +102,8 @@ def update_database(
             {"_id": name}, {"$set": data_to_update[index]}, upsert=True
         )
 
-def delete_from_database(
-    ztf_objects: Union[list, str], logger=None
-    ) -> Any:
+
+def delete_from_database(ztf_objects: Union[list, str], logger=None) -> Any:
     """
     Deletes all ztf_objects from database
     """
@@ -120,6 +119,4 @@ def delete_from_database(
     for i, name in enumerate(ztf_objects):
         query = METADATA_COLL.find_one({"_id": name})
         if query:
-            METADATA_COLL.delete_one(query) 
-
-
+            METADATA_COLL.delete_one(query)

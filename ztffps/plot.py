@@ -269,7 +269,7 @@ def plot_lightcurve(
         if snt:
             title = f"SNT={snt:.0f}"
         else:
-            title = None,
+            title = (None,)
         ax.legend(
             loc=0,
             framealpha=1,
@@ -279,7 +279,10 @@ def plot_lightcurve(
         )
     else:
         ax.legend(
-            loc=0, framealpha=1, fontsize="x-small", title_fontsize="x-small",
+            loc=0,
+            framealpha=1,
+            fontsize="x-small",
+            title_fontsize="x-small",
         )
     images_dir = os.path.join(lc_plotdir, "images")
     if not os.path.exists(images_dir):

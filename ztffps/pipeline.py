@@ -458,7 +458,9 @@ class ForcedPhotometryPipeline:
                 f"\n{len(download_needed)} of {len(self.object_list)} objects have additional images available at IRSA.\nThese will be downloaded now."
             )
         else:
-            self.logger.info("For none of the transients are new images available, so no download needed.")
+            self.logger.info(
+                "For none of the transients are new images available, so no download needed."
+            )
 
         for i, name in enumerate(download_needed):
             query = database.read_database(
@@ -626,7 +628,9 @@ class ForcedPhotometryPipeline:
                     f"\n{name} ({i+1} of {objects_total}) No new images to fit, skipping PSF fit."
                 )
 
-    def plot(self, nprocess=4, progress=True, plot_flux=False, plot_alertdata=True, snt=None):
+    def plot(
+        self, nprocess=4, progress=True, plot_flux=False, plot_alertdata=True, snt=None
+    ):
         """
         Plots the lightcurve (uses PSF fitted datapoints if available and
         checks for alert photometry otherwise)
@@ -660,7 +664,7 @@ class ForcedPhotometryPipeline:
                         mag_range,
                         flux_range,
                         plot_flux,
-                        plot_alertdata
+                        plot_alertdata,
                     ),
                 )
             ):
@@ -686,7 +690,16 @@ class ForcedPhotometryPipeline:
         """
         Plots with multiprocessing
         """
-        name, snt, daysago, daysuntil, mag_range, flux_range, plot_flux, plot_alertdata = args
+        (
+            name,
+            snt,
+            daysago,
+            daysuntil,
+            mag_range,
+            flux_range,
+            plot_flux,
+            plot_alertdata,
+        ) = args
         from ztffps.plot import plot_lightcurve
 
         plot_lightcurve(

@@ -10,6 +10,7 @@ import ztfquery
 from ztfquery import query
 from ztffps import connectors, database
 
+
 def is_ztf_name(name):
     """
     Checks if a string adheres to the ZTF naming scheme
@@ -43,7 +44,12 @@ def main(file_or_name, startitem=0, download=True, fit=True, plot=False, delete=
 
     if delete:
         while True:
-            if input(f"You have selected to delete {len(object_list)} transient(s). Do you want to continue? If so, type 'y'") == "y":
+            if (
+                input(
+                    f"You have selected to delete {len(object_list)} transient(s). Do you want to continue? If so, type 'y'"
+                )
+                == "y"
+            ):
                 break
             else:
                 quit()
@@ -57,7 +63,9 @@ def main(file_or_name, startitem=0, download=True, fit=True, plot=False, delete=
     good_objects = []
 
     for i, ztfid in enumerate(object_list[startitem:]):
-        print(f"Processing {ztfid} ({i+1} of {len(object_list[startitem:])} transients)")
+        print(
+            f"Processing {ztfid} ({i+1} of {len(object_list[startitem:])} transients)"
+        )
         try:
             pl = ForcedPhotometryPipeline(
                 file_or_name=ztfid,
@@ -79,7 +87,6 @@ def main(file_or_name, startitem=0, download=True, fit=True, plot=False, delete=
             good_objects.append(ztfid)
         except:
             bad_objects.append(ztfid)
-
 
     if len(bad_objects) > 0:
         print("\nBad objects (have thrown an error) are:")
@@ -124,12 +131,13 @@ def main(file_or_name, startitem=0, download=True, fit=True, plot=False, delete=
             dec = res[2]
 
             zquery = query.ZTFQuery()
-            zquery.load_metadata(radec=[ra,dec], size=0.1)
+            zquery.load_metadata(radec=[ra, dec], size=0.1)
 
             mt = zquery.metatable
 
-            local_data = zquery.get_local_data(suffix="scimrefdiffimg.fits.fz", filecheck=False)
-
+            local_data = zquery.get_local_data(
+                suffix="scimrefdiffimg.fits.fz", filecheck=False
+            )
 
             print(f"There are {len(local_data)} local difference images for {name}")
 
@@ -138,7 +146,7 @@ def main(file_or_name, startitem=0, download=True, fit=True, plot=False, delete=
                     os.remove(file)
                 if os.path.exists(file + ".md5"):
                     os.remove(file + ".md5")
-            
+
             database.delete_from_database(name)
 
 
@@ -158,13 +166,19 @@ if __name__ == "__main__":
         help="Define with which item to start",
     )
 
-    parser.add_argument("-dl", "--dl", action="store_true", help="Download the files from IPAC")
+    parser.add_argument(
+        "-dl", "--dl", action="store_true", help="Download the files from IPAC"
+    )
 
     parser.add_argument("-fit", "--fit", action="store_true", help="Run PSF fit")
 
     parser.add_argument("-plot", "--plot", action="store_true", help="Plot lightcurves")
 
-    parser.add_argument("-delete", action="store_true", help="ATTENTION: THIS DELETES THE TRANSIENTS FROM THE DATABASE AND REMOVES THE LOCAL FILES")
+    parser.add_argument(
+        "-delete",
+        action="store_true",
+        help="ATTENTION: THIS DELETES THE TRANSIENTS FROM THE DATABASE AND REMOVES THE LOCAL FILES",
+    )
 
     commandline_args = parser.parse_args()
 
@@ -176,16 +190,16 @@ if __name__ == "__main__":
     delete = commandline_args.delete
 
     print("------------------------------------\n")
-    print(f"Starting.\nRun config: file={file_or_name} / startitem={startitem} // download={download} // fit={fit} // delete={delete}")
+    print(
+        f"Starting.\nRun config: file={file_or_name} / startitem={startitem} // download={download} // fit={fit} // delete={delete}"
+    )
     print("\n------------------------------------")
 
     main(
         file_or_name=file_or_name,
-        startitem=startitem, 
-        download=download, 
+        startitem=startitem,
+        download=download,
         fit=fit,
         plot=plot,
         delete=delete,
     )
-
-
