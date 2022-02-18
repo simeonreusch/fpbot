@@ -147,9 +147,10 @@ def plot_lightcurve(
         r = lc_full[lc_full["filter"].isin(filterlist[1])]
         i = lc_full[lc_full["filter"].isin(filterlist[2])]
 
-    logger.info(
-        f"{name} {len_after_sn_cut} of {len_before_sn_cut} datapoints survived SNT cut of {snt}"
-    )
+    if not plot_flux:
+        logger.info(
+            f"{name} {len_after_sn_cut} of {len_before_sn_cut} datapoints survived SNT cut of {snt}"
+        )
 
     ### define functions for secondary axis (conversion from jd --> distance to today)
     def t0_dist(obsmjd):
