@@ -30,24 +30,25 @@ def get_local_files(ztf_names):
 
     for res in tqdm(connector.queryresult):
 
-        name = res[0]
-        ra = res[1]
-        dec = res[2]
+        if res is not None:
+            name = res[0]
+            ra = res[1]
+            dec = res[2]
 
-        zquery = query.ZTFQuery()
-        zquery.load_metadata(radec=[ra, dec], size=0.1)
+            zquery = query.ZTFQuery()
+            zquery.load_metadata(radec=[ra, dec], size=0.1)
 
-        mt = zquery.metatable
+            mt = zquery.metatable
 
-        local_data_obj = zquery.get_local_data(
-            suffix="scimrefdiffimg.fits.fz", filecheck=False
-        )
+            local_data_obj = zquery.get_local_data(
+                suffix="scimrefdiffimg.fits.fz", filecheck=False
+            )
 
-        # print(f"There are {len(local_data_obj)} local difference images for {name}")
+            # print(f"There are {len(local_data_obj)} local difference images for {name}")
 
-        local_data.extend(local_data_obj)
+            local_data.extend(local_data_obj)
 
-        local_data = list(set(local_data))
+    local_data = list(set(local_data))
 
     return local_data
 
