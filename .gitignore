@@ -11,3 +11,4 @@ __pycache__
 lists/*
 ztffps/cosmology_leopold.py
 ztffps/findpairs.py
+bulk_logs/
