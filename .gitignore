@@ -12,3 +12,7 @@ lists/*
 ztffps/cosmology_leopold.py
 ztffps/findpairs.py
 bulk_logs/
+ztffps.egg-info/
+*.txt
+!requirements.txt
+!ztffps/data/gBandRefImages.txt
