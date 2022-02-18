@@ -23,17 +23,23 @@ def get_local_files(ztf_names):
     """
     Returns the locally saved files for the given list of ZTF names
     """
-    connector = connectors.AmpelInfo(ztf_names=ztf_names, logger=None)
+    # connector = connectors.AmpelInfo(ztf_names=ztf_names, logger=None)
     local_data = []
 
     print("Obtaining image counts from IPAC")
 
-    for res in tqdm(connector.queryresult):
+    res = database.read_database(ztf_names, ["ra", "dec"])
+    ras = res["ra"]
+    decs = res["dec"]
 
-        if res is not None:
-            name = res[0]
-            ra = res[1]
-            dec = res[2]
+    # for res in tqdm(connector.queryresult):
+    for i, ra in enumerate(tqdm(ras)):
+
+        if ra is not None:
+            # name = res[0]
+            # ra = res[1]
+            # dec = res[2]
+            dec = decs[i]
 
             zquery = query.ZTFQuery()
             zquery.load_metadata(radec=[ra, dec], size=0.1)
