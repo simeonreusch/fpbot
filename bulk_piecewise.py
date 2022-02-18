@@ -4,6 +4,7 @@
 import pandas as pd
 import os, re, json, logging, argparse, logging
 from datetime import datetime
+from tqdm import tqdm
 from astropy.time import Time
 from ztffps.pipeline import ForcedPhotometryPipeline
 import ztfquery
@@ -18,7 +19,48 @@ def is_ztf_name(name):
     return re.match("^ZTF[1-2]\d[a-z]{7}$", name)
 
 
-def main(file_or_name, startitem=0, download=True, fit=True, plot=False, delete=False):
+def get_local_files(ztf_names):
+    """
+    Returns the locally saved files for the given list of ZTF names
+    """
+    connector = connectors.AmpelInfo(ztf_names=ztf_names, logger=None)
+    local_data = []
+
+    print("Obtaining image counts from IPAC")
+
+    for res in tqdm(connector.queryresult):
+
+        name = res[0]
+        ra = res[1]
+        dec = res[2]
+
+        zquery = query.ZTFQuery()
+        zquery.load_metadata(radec=[ra, dec], size=0.1)
+
+        mt = zquery.metatable
+
+        local_data_obj = zquery.get_local_data(
+            suffix="scimrefdiffimg.fits.fz", filecheck=False
+        )
+
+        # print(f"There are {len(local_data_obj)} local difference images for {name}")
+
+        local_data.extend(local_data_obj)
+
+        local_data = list(set(local_data))
+
+    return local_data
+
+
+def main(
+    file_or_name,
+    startitem=0,
+    download=True,
+    fit=True,
+    plot=False,
+    size=False,
+    delete=False,
+):
     """ """
     logger = logging.getLogger("pipeline")
 
@@ -119,35 +161,31 @@ def main(file_or_name, startitem=0, download=True, fit=True, plot=False, delete=
             file.write(bad_object + "\n")
         file.close()
 
+    if size:
+        print(
+            "Obtaining the combined disk space used by the images for the given ZTF objects"
+        )
+        local_files = get_local_files(ztf_names=object_list[startitem:])
+
+        print(f"Found {len(local_files)} local files")
+
+        for file in local_files:
+            if os.path.exists(file):
+                fs = os.path.getsize(file)
+                print(fs)
+
     if delete:
-        print("Now we delete all the transient data!")
+        print("\nNow we delete all the transient data!")
 
-        connector = connectors.AmpelInfo(ztf_names=object_list[startitem:], logger=None)
+        local_files = get_local_files(ztf_names=object_list[startitem:])
 
-        for res in connector.queryresult:
+        for file in local_files:
+            if os.path.exists(file):
+                os.remove(file)
+            if os.path.exists(file + ".md5"):
+                os.remove(file + ".md5")
 
-            name = res[0]
-            ra = res[1]
-            dec = res[2]
-
-            zquery = query.ZTFQuery()
-            zquery.load_metadata(radec=[ra, dec], size=0.1)
-
-            mt = zquery.metatable
-
-            local_data = zquery.get_local_data(
-                suffix="scimrefdiffimg.fits.fz", filecheck=False
-            )
-
-            print(f"There are {len(local_data)} local difference images for {name}")
-
-            for file in local_data:
-                if os.path.exists(file):
-                    os.remove(file)
-                if os.path.exists(file + ".md5"):
-                    os.remove(file + ".md5")
-
-            database.delete_from_database(name)
+        database.delete_from_database(name)
 
 
 if __name__ == "__main__":
@@ -175,6 +213,13 @@ if __name__ == "__main__":
     parser.add_argument("-plot", "--plot", action="store_true", help="Plot lightcurves")
 
     parser.add_argument(
+        "-size",
+        "--size",
+        action="store_true",
+        help="Obtaining the combined disk space used by the images for the given ZTF objects.",
+    )
+
+    parser.add_argument(
         "-delete",
         action="store_true",
         help="ATTENTION: THIS DELETES THE TRANSIENTS FROM THE DATABASE AND REMOVES THE LOCAL FILES",
@@ -187,11 +232,12 @@ if __name__ == "__main__":
     download = commandline_args.dl
     fit = commandline_args.fit
     plot = commandline_args.plot
+    size = commandline_args.size
     delete = commandline_args.delete
 
     print("------------------------------------\n")
     print(
-        f"Starting.\nRun config: file={file_or_name} / startitem={startitem} // download={download} // fit={fit} // delete={delete}"
+        f"Starting.\nRun config: file={file_or_name} / startitem={startitem} // download={download} // fit={fit} // size={size} // delete={delete}"
     )
     print("\n------------------------------------")
 
@@ -201,5 +247,6 @@ if __name__ == "__main__":
         download=download,
         fit=fit,
         plot=plot,
+        size=size,
         delete=delete,
     )

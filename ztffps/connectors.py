@@ -6,6 +6,7 @@ import os, getpass, socket, sqlalchemy, logging, time, multiprocessing, keyring
 import numpy as np
 import requests
 import backoff
+from tqdm import tqdm
 from itertools import product
 from astropy.time import Time
 from astropy.utils.console import ProgressBar
@@ -65,10 +66,9 @@ class AmpelInfo:
         from astropy.utils.console import ProgressBar
 
         queryresult = []
-        bar = ProgressBar(object_count)
 
-        for index, ztf_name in enumerate(self.ztf_names):
-            print(f"\n{ztf_name}")
+        for index, ztf_name in enumerate(tqdm(self.ztf_names)):
+            # print(f"\n{ztf_name}")
             ampel_object = self.query_ampel_api_for_ztfname(ztf_name=ztf_name)
 
             query_res = [i for i in ampel_object]
@@ -154,10 +154,8 @@ class AmpelInfo:
                     coords_per_filter,
                 ]
                 queryresult.append(result)
-                bar.update(index)
             else:
                 queryresult.append(None)
-        bar.update(object_count)
 
         return queryresult
 

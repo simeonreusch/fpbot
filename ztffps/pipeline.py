@@ -10,6 +10,7 @@ import re
 import logging
 import argparse
 import tarfile
+from tqdm import tqdm
 from ztflc import forcephotometry
 from ztflc.io import LOCALDATA
 import numpy as np
@@ -279,7 +280,7 @@ class ForcedPhotometryPipeline:
         Check for entry in Mongo database and update it via AMPEL or Marshal
         """
         self.logger.info("\nChecking database.")
-        progress_bar = ProgressBar(len(self.object_list))
+
         needs_external_database = []
 
         if self.update_enforce:
@@ -287,7 +288,7 @@ class ForcedPhotometryPipeline:
 
         query = database.read_database(self.object_list, ["_id", "entries", "ra"])
 
-        for index, name in enumerate(self.object_list):
+        for index, name in enumerate(tqdm(self.object_list)):
             if (
                 query["entries"][index] == None
                 or query["entries"][index] < 10
@@ -295,9 +296,6 @@ class ForcedPhotometryPipeline:
                 or np.isnan(query["ra"][index])
             ):
                 needs_external_database.append(name)
-            progress_bar.update(index)
-
-        progress_bar.update(len(self.object_list))
 
         if not self.ampel:
             self.logger.info("\nConnecting to Marshal (or AMPEL if Marshal is down).")
@@ -355,8 +353,8 @@ class ForcedPhotometryPipeline:
 
         if not (marshal_failed and ampel_failed):
             self.logger.info("\nUpdating local database.")
-            progress_bar = ProgressBar(len(connector.queryresult))
-            for index, result in enumerate(connector.queryresult):
+
+            for index, result in enumerate(tqdm(connector.queryresult)):
                 if result is not None:
                     database.update_database(
                         result[0],
@@ -378,8 +376,6 @@ class ForcedPhotometryPipeline:
                             "coords_per_filter": result[13],
                         },
                     )
-                progress_bar.update(index)
-            progress_bar.update(len(connector.queryresult))
 
     def check_if_present_in_metadata(self):
         """
@@ -720,7 +716,6 @@ class ForcedPhotometryPipeline:
         """
         self.check_if_psf_data_exists()
         import sfdmap
-        from astropy.utils.console import ProgressBar
         from saltfit import fit_salt
 
         # Read info from metadata databse and update it with mwebv
@@ -729,12 +724,12 @@ class ForcedPhotometryPipeline:
         dustmap = sfdmap.SFDMap()
 
         objectcount = len(self.cleaned_object_list)
-        progress_bar = ProgressBar(objectcount)
+
         self.logger.info(
             "\nChecking if the mwebv Milky Way dust map value is present and compute it if not."
         )
 
-        for index, name in enumerate(self.cleaned_object_list):
+        for index, name in enumerate(tqdm(self.cleaned_object_list)):
             ra = query["ra"][index]
             dec = query["dec"][index]
             if query["mwebv"][index] is None:
@@ -743,15 +738,9 @@ class ForcedPhotometryPipeline:
                     dec,
                 )
                 database.update_database(name, {"mwebv": mwebv})
-            progress_bar.update(index)
-
-        progress_bar.update(objectcount)
 
         object_count = len(self.cleaned_object_list)
-        if progress:
-            progress_bar = ProgressBar(object_count)
-        else:
-            progress_bar = None
+
         fitresults = []
         fitted_models = []
 
@@ -785,7 +774,7 @@ class ForcedPhotometryPipeline:
             ]
         )
 
-        for index, name in enumerate(self.cleaned_object_list):
+        for index, name in enumerate(tqdm(self.cleaned_object_list)):
             if alertfit:
                 self.logger.info(f"\n{name} performing SALT fit for alert photometry.")
             else:
@@ -799,17 +788,10 @@ class ForcedPhotometryPipeline:
                     quality_checks=quality_checks,
                     alertfit=alertfit,
                 )
-                if progress_bar is not None:
-                    progress_bar.update(index)
                 fitresults.append(fitresult)
                 fitted_models.append(fitted_model)
             except:
                 self.logger.info(f"\n{name} Error while fitting.")
-                if progress_bar is not None:
-                    progress_bar.update(index)
-
-        if progress_bar is not None:
-            progress_bar.update(object_count)
 
         for fitresult in fitresults:
             if fitresult is not None:

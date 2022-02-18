@@ -2,8 +2,8 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 import os, logging, collections
+from tqdm import tqdm
 from typing import Union, Any, Sequence, Tuple
-from astropy.utils.console import ProgressBar
 from pymongo import MongoClient
 
 if "MONGO_DB_LOCATION_DOCKER" in os.environ:
@@ -45,7 +45,6 @@ def read_database(
         requested_data = [requested_data]
 
     objectcount = len(ztf_objects)
-    progress_bar = ProgressBar(objectcount)
 
     # Check all keys in collection if no desired keys are passed as
     # argument
@@ -59,7 +58,7 @@ def read_database(
             requested_data = list(set(requested_data))
 
     dict_for_return_values = collections.defaultdict(list)
-    for i, name in enumerate(ztf_objects):
+    for i, name in enumerate(tqdm(ztf_objects)):
         query = METADATA_COLL.find_one({"_id": name})
         if query:
             for entry in requested_data:
@@ -71,9 +70,6 @@ def read_database(
             logger.info(f"\nNo entry found for {name}.")
             for entry in requested_data:
                 dict_for_return_values[entry].append(None)
-        progress_bar.update(i)
-
-    progress_bar.update(objectcount)
 
     return dict_for_return_values
 
