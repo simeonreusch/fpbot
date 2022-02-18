@@ -32,13 +32,9 @@ def get_local_files(ztf_names):
     ras = res["ra"]
     decs = res["dec"]
 
-    # for res in tqdm(connector.queryresult):
     for i, ra in enumerate(tqdm(ras)):
 
         if ra is not None:
-            # name = res[0]
-            # ra = res[1]
-            # dec = res[2]
             dec = decs[i]
 
             zquery = query.ZTFQuery()
@@ -49,8 +45,6 @@ def get_local_files(ztf_names):
             local_data_obj = zquery.get_local_data(
                 suffix="scimrefdiffimg.fits.fz", filecheck=False
             )
-
-            # print(f"There are {len(local_data_obj)} local difference images for {name}")
 
             local_data.extend(local_data_obj)
 
