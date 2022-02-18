@@ -626,19 +626,23 @@ class ForcedPhotometryPipeline:
                     f"\n{name} ({i+1} of {objects_total}) No new images to fit, skipping PSF fit."
                 )
 
-    def plot(self, nprocess=4, progress=True, plot_flux=False):
+    def plot(self, nprocess=4, progress=True, plot_flux=False, plot_alertdata=True, snt=None):
         """
         Plots the lightcurve (uses PSF fitted datapoints if available and
         checks for alert photometry otherwise)
         """
         self.logger.info(f"\nPlotting")
         object_count = len(self.object_list)
-        snt = [self.snt] * object_count
+        if snt == None:
+            snt = [self.snt] * object_count
+        else:
+            snt = [snt] * object_count
         daysago = [self.daysago] * object_count
         daysuntil = [self.daysuntil] * object_count
         mag_range = [self.mag_range] * object_count
         flux_range = [self.flux_range] * object_count
         plot_flux = [plot_flux] * object_count
+        plot_alertdata = [plot_alertdata] * object_count
 
         if progress:
             progress_bar = ProgressBar(object_count)
@@ -656,6 +660,7 @@ class ForcedPhotometryPipeline:
                         mag_range,
                         flux_range,
                         plot_flux,
+                        plot_alertdata
                     ),
                 )
             ):
@@ -681,7 +686,7 @@ class ForcedPhotometryPipeline:
         """
         Plots with multiprocessing
         """
-        name, snt, daysago, daysuntil, mag_range, flux_range, plot_flux = args
+        name, snt, daysago, daysuntil, mag_range, flux_range, plot_flux, plot_alertdata = args
         from ztffps.plot import plot_lightcurve
 
         plot_lightcurve(
@@ -692,6 +697,7 @@ class ForcedPhotometryPipeline:
             mag_range=mag_range,
             flux_range=flux_range,
             plot_flux=plot_flux,
+            plot_alertdata=plot_alertdata,
         )
         print(f"\n{name} plotted")
 

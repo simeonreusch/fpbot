@@ -16,13 +16,15 @@ from ztffps.utils import calculate_magnitudes, abmag_err_to_flux_err, abmag_to_f
 
 def plot_lightcurve(
     name,
-    snt=5.0,
-    daysago=None,
-    daysuntil=None,
+    snt: float = 5.0,
+    daysago: float = None,
+    daysuntil: float = None,
     mag_range=None,
     flux_range=None,
     logger=None,
     plot_flux=False,
+    plot_alertdata=True,
+    plot_pdf=False,
 ):
     """ """
     if logger is None:
@@ -38,6 +40,7 @@ def plot_lightcurve(
 
     query = database.read_database(name)
     has_alertdata = False
+
     if query["jdobs_alert"][0] is not None:
         has_alertdata = True
         alert_jd = query["jdobs_alert"][0]
@@ -98,7 +101,7 @@ def plot_lightcurve(
     lc.to_csv(os.path.join(lc_plotted_dir, f"{name}_SNT_{snt}.csv"))
 
     # Create Dataframe for Alert data / Rounding is neccessary because Alert and Forced Photometry MJDs are not consistent
-    if has_alertdata:
+    if has_alertdata and plot_alertdata:
         alert_df = pd.DataFrame(
             data={
                 "obsmjd": np.around(alert_mjd, decimals=4),
@@ -128,7 +131,8 @@ def plot_lightcurve(
     lc.insert(2, "t0_dist", t0_dist)
     uplim = lc.query("mag == 99")
     lc_full = lc.copy()
-    lc = lc.query("mag < 99")
+    if not plot_flux:
+        lc = lc.query("mag < 99")
     len_after_sn_cut = len(lc)
     filterlist = [["ZTF g", "ZTF_g"], ["ZTF r", "ZTF_r"], ["ZTF i", "ZTF_i"]]
     if not plot_flux:
@@ -209,7 +213,7 @@ def plot_lightcurve(
                 mew=0.5,
             )
 
-        if has_alertdata:
+        if has_alertdata and plot_alertdata:
             alert_dfs = {"g": alert_g, "r": alert_r, "i": alert_i}
 
             for band in alert_dfs.keys():
@@ -227,15 +231,17 @@ def plot_lightcurve(
         for band in flux_dfs.keys():
             ax.errorbar(
                 flux_dfs[band].obsmjd.values,
-                flux_dfs[band].ampl.values,
-                flux_dfs[band]["ampl.err"].values,
+                # flux_dfs[band].ampl.values,
+                # flux_dfs[band]["ampl.err"].values,
+                flux_dfs[band].Fratio.values,
+                flux_dfs[band]["Fratio.err"].values,
                 color=plot_colors[band],
                 fmt=".",
                 label=plot_labels[band],
                 mec="black",
                 mew=0.5,
             )
-        if has_alertdata:
+        if has_alertdata and plot_alertdata:
             alert_dfs = {"g": alert_g, "r": alert_r, "i": alert_i}
             for band in alert_dfs.keys():
                 ax.errorbar(
@@ -260,10 +266,14 @@ def plot_lightcurve(
             ax.set_ylim([np.min(flux_range), np.max(flux_range)])
 
     if not plot_flux:
+        if snt:
+            title = f"SNT={snt:.0f}"
+        else:
+            title = None,
         ax.legend(
             loc=0,
             framealpha=1,
-            title=f"SNT={snt:.0f}",
+            title=title,
             fontsize="x-small",
             title_fontsize="x-small",
         )
@@ -275,7 +285,10 @@ def plot_lightcurve(
     if not os.path.exists(images_dir):
         os.makedirs(images_dir)
     if not plot_flux:
-        image_path = os.path.join(images_dir, f"{name}_SNT_{snt}.png")
+        if snt:
+            image_path = os.path.join(images_dir, f"{name}_SNT_{snt}.png")
+        else:
+            image_path = os.path.join(images_dir, f"{name}.png")
     else:
         image_path = os.path.join(images_dir, f"{name}_flux.png")
     fig.savefig(image_path, dpi=300, bbox_inches="tight")

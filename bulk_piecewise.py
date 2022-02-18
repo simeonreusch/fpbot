@@ -17,11 +17,13 @@ def is_ztf_name(name):
     return re.match("^ZTF[1-2]\d[a-z]{7}$", name)
 
 
-def main(file_or_name, startitem=0, download=True, fit=True, delete=False):
+def main(file_or_name, startitem=0, download=True, fit=True, plot=False, delete=False):
     """ """
     logger = logging.getLogger("pipeline")
 
     errormessage = "\nYou have to provide a either a ZTF name (a string adhering to the ZTF naming scheme), an ascii file containing ZTF names (1 per line) in the same directory or an arbitrary name if using the radec option.\n"
+
+    fname = None
 
     if is_ztf_name(file_or_name):
         object_list = [file_or_name]
@@ -29,6 +31,7 @@ def main(file_or_name, startitem=0, download=True, fit=True, delete=False):
         object_list = []
         try:
             file = open(f"{file_or_name}", "r")
+            fname = os.path.splitext(file_or_name)[0]
             lines = file.read().splitlines()
             for line in lines:
                 if is_ztf_name(line):
@@ -66,32 +69,48 @@ def main(file_or_name, startitem=0, download=True, fit=True, delete=False):
                 logger=logger,
             )
             if download:
-                print("lalala")
                 pl.download()
             if fit:
-                pl.psffit(force_refit=False)
-            #pl.plot()
+                pl.psffit(force_refit=True)
+            if plot:
+                pl.plot(plot_alertdata=False, plot_flux=True, snt=None)
+                pl.plot(plot_alertdata=False, plot_flux=False, snt=2)
             del pl
             good_objects.append(ztfid)
-
         except:
             bad_objects.append(ztfid)
+
 
     if len(bad_objects) > 0:
         print("\nBad objects (have thrown an error) are:")
         print(bad_objects)
 
-    outfile = "bulk_bad_objects.txt"
-    file = open(outfile, "w")
-    for bad_object in bad_objects:
-        file.write(bad_object + "\n")
-    file.close()
+    if fname:
+        if not os.path.exists("./bulk_logs"):
+            os.makedirs("./bulk_logs")
 
-    outfile = "bulk_good_objects.txt"
-    file = open(outfile, "w")
-    for good_object in good_objects:
-        file.write(good_object + "\n")
-    file.close()
+        outfile_name = f"{fname}"
+
+        if download:
+            outfile_name += "_dl"
+        if fit:
+            outfile_name += "_fit"
+        if plot:
+            outfile_name += "_plot"
+
+        outfile_good = os.path.join(".", "bulk_logs", f"{outfile_name}_success.txt")
+        outfile_bad = os.path.join(".", "bulk_logs", f"{outfile_name}_failure.txt")
+
+        outfile = os.path.join(".", "bulk_logs", f"{fname}_success.txt")
+        file = open(outfile_good, "w")
+        for good_object in good_objects:
+            file.write(good_object + "\n")
+        file.close()
+
+        file = open(outfile_bad, "w")
+        for bad_object in bad_objects:
+            file.write(bad_object + "\n")
+        file.close()
 
     if delete:
         print("Now we delete all the transient data!")
@@ -139,9 +158,11 @@ if __name__ == "__main__":
         help="Define with which item to start",
     )
 
-    parser.add_argument("-dl", action="store_true", help="Download the files from IPAC")
+    parser.add_argument("-dl", "--dl", action="store_true", help="Download the files from IPAC")
 
-    parser.add_argument("-fit", action="store_true", help="Run PSF fit")
+    parser.add_argument("-fit", "--fit", action="store_true", help="Run PSF fit")
+
+    parser.add_argument("-plot", "--plot", action="store_true", help="Plot lightcurves")
 
     parser.add_argument("-delete", action="store_true", help="ATTENTION: THIS DELETES THE TRANSIENTS FROM THE DATABASE AND REMOVES THE LOCAL FILES")
 
@@ -151,6 +172,7 @@ if __name__ == "__main__":
     file_or_name = commandline_args.name
     download = commandline_args.dl
     fit = commandline_args.fit
+    plot = commandline_args.plot
     delete = commandline_args.delete
 
     print("------------------------------------\n")
@@ -162,6 +184,7 @@ if __name__ == "__main__":
         startitem=startitem, 
         download=download, 
         fit=fit,
+        plot=plot,
         delete=delete,
     )
 

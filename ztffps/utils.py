@@ -58,7 +58,7 @@ def flux_lambda_to_nu(fluxlambda, wav):
     return np.asarray(fluxlambda) * 3.33564095e-19 * np.asarray(wav) ** 2 * FNU
 
 
-def calculate_magnitudes(dataframe, snt):
+def calculate_magnitudes(dataframe, snt=5):
     ### add magnitudes, upper limits, errors and times to forced photometry lightcurve
 
     lc = dataframe
@@ -79,14 +79,19 @@ def calculate_magnitudes(dataframe, snt):
     maglims = np.asarray(lc["maglim"].values)
     for i, Fratio in enumerate(Fratios):
         Fratio_unc = Fratios_unc[i]
-        if Fratio > (Fratio_unc * snt):
-            upper_limit = np.nan
-            mag = -2.5 * np.log10(Fratio)
-            mag_unc = 2.5 / np.log(10) * Fratio_unc / Fratio
+        if snt:
+            if Fratio > (Fratio_unc * snt):
+                upper_limit = np.nan
+                mag = -2.5 * np.log10(Fratio)
+                mag_unc = 2.5 / np.log(10) * Fratio_unc / Fratio
+            else:
+                upper_limit = maglims[i]
+                mag = 99
+                mag_unc = 99
         else:
-            upper_limit = maglims[i]
-            mag = 99
-            mag_unc = 99
+                upper_limit = np.nan
+                mag = -2.5 * np.log10(Fratio)
+                mag_unc = 2.5 / np.log(10) * Fratio_unc / Fratio   
         upper_limits.append(upper_limit)
         mags.append(mag)
         mags_unc.append(mag_unc)

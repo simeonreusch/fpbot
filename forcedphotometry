@@ -74,6 +74,12 @@ if __name__ == "__main__":
         help="What signal to noise ratio is desired? Default: 5",
     )
     parser.add_argument(
+        "--nosnt",
+        "-nosnt",
+        action="store_true",
+        help="No cut on SNT",
+    )
+    parser.add_argument(
         "--daysago",
         "-daysago",
         type=int,
@@ -154,6 +160,12 @@ if __name__ == "__main__":
         help="Force to use Fritz instead of AMPEL for alert photometry",
     )
     parser.add_argument(
+        "--noalert",
+        "-noalert",
+        action="store_false",
+        help="Don't include alertdata in plots where forced photometry is missing (looking at you, MSIP)",
+    )
+    parser.add_argument(
         "--no_new_download",
         "-no_new_download",
         action="store_false",
@@ -190,6 +202,8 @@ if __name__ == "__main__":
     fritz = commandline_args.fritz
     download_newest = commandline_args.no_new_download
     force_refit = commandline_args.refit
+    nosnt = commandline_args.nosnt
+    plot_alertdata = commandline_args.noalert
 
     # if thumbnails:
     #     sciimg = True
@@ -218,6 +232,9 @@ if __name__ == "__main__":
         sciimg = True
         do_download = True
 
+    if nosnt:
+        snt=None
+
     pl = ForcedPhotometryPipeline(
         file_or_name=name,
         daysago=daysago,
@@ -242,9 +259,9 @@ if __name__ == "__main__":
     if do_psffit:
         pl.psffit(force_refit=force_refit)
     if do_plot:
-        pl.plot()
+        pl.plot(plot_alertdata=plot_alertdata)
     if do_fluxplot:
-        pl.plot(plot_flux=True)
+        pl.plot(plot_flux=True, plot_alertdata=plot_alertdata)
     if do_saltfit:
         pl.saltfit(quality_checks=True, alertfit=True)
         pl.saltfit(quality_checks=True, alertfit=False)
