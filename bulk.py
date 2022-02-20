@@ -50,6 +50,8 @@ def get_local_files(ztf_names):
 
     local_data = list(set(local_data))
 
+    print(local_data[0])
+
     return local_data
 
 
@@ -215,7 +217,8 @@ def main(
             if os.path.exists(file + ".md5"):
                 os.remove(file + ".md5")
 
-        database.delete_from_database(name)
+        for name in object_list[startitem:]:
+            database.delete_from_database(name)
 
 
 if __name__ == "__main__":
