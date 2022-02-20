@@ -342,7 +342,7 @@ def get_irsa_filecount(
     """ """
     irsa_filecount = {}
 
-    progress_bar = ProgressBar(len(ras))
+    progress_bar = tqdm(total=len(ras))
 
     jdmins = [jdmin] * len(ras)
     jdmaxs = [jdmax] * len(ras)
