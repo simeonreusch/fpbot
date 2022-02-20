@@ -50,8 +50,6 @@ def get_local_files(ztf_names):
 
     local_data = list(set(local_data))
 
-    print(local_data[0])
-
     return local_data
 
 
