@@ -128,9 +128,11 @@ def main(
     good_objects = []
 
     for i, ztfid in enumerate(object_list[startitem:]):
+        print("\n-------------------------------------------------")
         print(
             f"Processing {ztfid} ({i+1} of {len(object_list[startitem:])} transients)"
         )
+        print("\n-------------------------------------------------\n")
         try:
             pl = ForcedPhotometryPipeline(
                 file_or_name=ztfid,
