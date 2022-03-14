@@ -36,7 +36,7 @@ def plot_lightcurve(
     lc_plotdir = pipeline.PLOTDATA
     lc_plotted_dir = pipeline.PLOT_DATAFRAMES
 
-    lc = pd.read_csv(lc_path)
+    lc = pd.read_csv(lc_path, comment="#")
 
     query = database.read_database(name)
     has_alertdata = False

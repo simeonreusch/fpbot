@@ -541,6 +541,7 @@ class ForcedPhotometryPipeline:
                 "jdmin",
                 "jdmax",
                 "lastobs",
+                "lastdownload",
                 "lastfit",
                 "coords_per_filter",
                 "fitted_datapoints",
@@ -555,6 +556,7 @@ class ForcedPhotometryPipeline:
             jdmin = self.jdmin
             jdmax = self.jdmax
             lastobs = query["lastobs"][i]
+            lastdownload = query["lastdownload"][i]
             lastfit = query["lastfit"][i]
             coords_per_filter = query["coords_per_filter"][i]
             fitted_datapoints = query["fitted_datapoints"][i]
@@ -611,6 +613,19 @@ class ForcedPhotometryPipeline:
                 fp.store()
 
                 lastfit = Time(time.time(), format="unix", scale="utc").jd
+
+                # Add ra dec as comment to FP dataframe
+                df_file = os.path.join(FORCEPHOTODATA, f"{name}.csv")
+                df = pd.read_csv(df_file, comment="#", index_col=0)
+                os.remove(df_file)
+                f = open(df_file, "a")
+                f.write(f"#ra={ra}\n")
+                f.write(f"#dec={dec}\n")
+                f.write(f"#lastobs={lastobs}\n")
+                f.write(f"#lastdownload={lastdownload}\n")
+                f.write(f"#lastfit={lastfit}\n")
+                df.to_csv(f)
+                f.close()
 
                 database.update_database(
                     name,
@@ -732,6 +747,7 @@ class ForcedPhotometryPipeline:
         for index, name in enumerate(tqdm(self.cleaned_object_list)):
             ra = query["ra"][index]
             dec = query["dec"][index]
+
             if query["mwebv"][index] is None:
                 mwebv = dustmap.ebv(
                     ra,

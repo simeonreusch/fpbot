@@ -65,7 +65,9 @@ class SaltFit:
             self.beta = beta
 
         self.name = name
-        self.lightcurve = pd.read_csv(os.path.join(LOCALDATA, f"{self.name}.csv"))
+        self.lightcurve = pd.read_csv(
+            os.path.join(LOCALDATA, f"{self.name}.csv"), comment="#"
+        )
         self.z = m.target_sources.query(f'name == "{name}"')["redshift"].values[0]
         self.rcid = m.target_sources.query(f'name == "{name}"')["rcid"].values[0]
         self.fieldid = m.target_sources.query(f'name == "{name}"')["field"].values[0]
