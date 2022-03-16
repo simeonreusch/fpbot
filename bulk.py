@@ -35,8 +35,10 @@ def get_local_files(ztf_names):
     for i, ra in enumerate(tqdm(ras)):
 
         if ra is not None:
+            name = ztf_names[i]
             dec = decs[i]
 
+            print(f"Querying IPAC for {name}")
             zquery = query.ZTFQuery()
             zquery.load_metadata(radec=[ra, dec], size=0.1)
 
