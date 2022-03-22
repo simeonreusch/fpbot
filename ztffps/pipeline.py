@@ -619,6 +619,7 @@ class ForcedPhotometryPipeline:
                 df = pd.read_csv(df_file, comment="#", index_col=0)
                 os.remove(df_file)
                 f = open(df_file, "a")
+                f.write(f"#name={name}\n")
                 f.write(f"#ra={ra}\n")
                 f.write(f"#dec={dec}\n")
                 f.write(f"#lastobs={lastobs}\n")
