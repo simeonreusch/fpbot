@@ -16,3 +16,4 @@ ztffps.egg-info/
 *.txt
 !requirements.txt
 !ztffps/data/gBandRefImages.txt
+!ztffs/data/zp_thresholds_quadID.txt
