@@ -100,7 +100,7 @@ def plot_lightcurve(
 
     with open(lc_path, "r") as f:
         csv = reader(f)
-        header = f"#name=lalala"
+        header = ""
 
         for i, row in enumerate(csv):
             header += f"\n{row[0]}"
