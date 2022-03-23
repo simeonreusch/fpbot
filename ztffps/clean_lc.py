@@ -105,11 +105,13 @@ def flag_lc(lc):
     # Other options: maglim>19.3; seeing<3; fieldid<879 (primary grid); moonillf<0.5; seeing <4; airmass<2
     # To be implemented: skysigpix
     lc.loc[
-        (lc["ampl.err"] == 0)
-        | (lc["ampl"] / lc["ampl.err"] > 1e6)
+        (np.isnan(lc["ampl.err"]))
+        | (lc["ampl.err"] < 2.001)
+        | (lc["ampl"] / lc["ampl.err"] > 1e5)
         | (lc["ampl.err"] > 1e6),
         "flag",
     ] += 1  # Flag things with zero error
+
     lc.loc[lc["chi2dof"] > 3, "flag"] += 2  # Flag things with poor chi2 fits
     if len(lc.keys()[lc.keys() == "cloudy"]) == 0:
         if "nmatches" in lc.keys():
