@@ -113,7 +113,8 @@ def plot_lightcurve(
 
     # Save this version of the dataframe for later analysis (and to be sent by mail)
     outpath = os.path.join(lc_plotted_dir, f"{name}_SNT_{snt}.csv")
-    os.remove(outpath)
+    if os.path.isfile(outpath):
+        os.remove(outpath)
     f = open(outpath, "a")
     f.write(f"{header}\n")
     lc.to_csv(f, index=False)
