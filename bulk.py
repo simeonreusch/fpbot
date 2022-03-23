@@ -32,7 +32,7 @@ def get_local_files(ztf_names):
     ras = res["ra"]
     decs = res["dec"]
 
-    for i, ra in enumerate(tqdm(ras)):
+    for i, ra in enumerate(ras):
 
         if ra is not None:
             name = ztf_names[i]
@@ -211,7 +211,7 @@ def main(
     if delete:
         print("\nNow we delete all the transient data!")
 
-        for name in object_list[startitem:]:
+        for name in tqdm(object_list[startitem:]):
 
             local_files = get_local_files(ztf_names=[name])
 
