@@ -103,12 +103,13 @@ def plot_lightcurve(
         header = ""
 
         for i, row in enumerate(csv):
+            if row[0][0] != "#":
+                break
+
             if i == 0:
                 header += f"{row[0]}"
             else:
                 header += f"\n{row[0]}"
-            if i > 4:
-                break
 
     # Save this version of the dataframe for later analysis (and to be sent by mail)
     outpath = os.path.join(lc_plotted_dir, f"{name}_SNT_{snt}.csv")
