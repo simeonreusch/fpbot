@@ -205,7 +205,6 @@ def run_on_event(thread_id, channel_id, verbose=False, debug=False):
         do_download = True
         do_plot = True
         do_fit = True
-        force_refit = True
 
     if len(ztf_names) > 1:
         nprocess = 16
