@@ -3,6 +3,7 @@
 # License: BSD-3-Clause
 
 import os, time, sys, logging
+from csv import reader
 import numpy as np
 import pandas as pd
 from astropy.time import Time
@@ -97,8 +98,22 @@ def plot_lightcurve(
     lc.reset_index(inplace=True)
     lc.drop(columns=["index"], inplace=True)
 
+    with open(lc_path, "r") as f:
+        csv = reader(f)
+        header = f"#name=lalala"
+
+        for i, row in enumerate(csv):
+            header += f"\n{row[0]}"
+            if i > 4:
+                break
+
     # Save this version of the dataframe for later analysis (and to be sent by mail)
-    lc.to_csv(os.path.join(lc_plotted_dir, f"{name}_SNT_{snt}.csv"))
+    outpath = os.path.join(lc_plotted_dir, f"{name}_SNT_{snt}.csv")
+    os.remove(outpath)
+    f = open(outpath, "a")
+    f.write(f"{header}\n")
+    lc.to_csv(f, index=False)
+    f.close()
 
     # Create Dataframe for Alert data / Rounding is neccessary because Alert and Forced Photometry MJDs are not consistent
     if has_alertdata and plot_alertdata:

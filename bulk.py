@@ -223,7 +223,7 @@ def main(
                 if os.path.exists(file + ".md5"):
                     os.remove(file + ".md5")
 
-            # for name in object_list[startitem:]:
+            print(f"Deleting {name} from internal database")
             database.delete_from_database(name)
 
 

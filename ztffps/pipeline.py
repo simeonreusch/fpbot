@@ -24,6 +24,7 @@ import requests.exceptions
 from ztffps import database, credentials
 from ztffps.thumbnails import generate_thumbnails
 from ztffps.utils import calculate_magnitudes
+from ztffps.clean_lc import clean_lc
 
 try:
     ZTFDATA = os.getenv("ZTFDATA")
@@ -614,9 +615,13 @@ class ForcedPhotometryPipeline:
 
                 lastfit = Time(time.time(), format="unix", scale="utc").jd
 
-                # Add ra dec as comment to FP dataframe
                 df_file = os.path.join(FORCEPHOTODATA, f"{name}.csv")
                 df = pd.read_csv(df_file, comment="#", index_col=0)
+
+                # Calculate cloudiness parameter, add 'pass' column (only rows with pass=1 should be used)
+                df = clean_lc(df, trim=False)
+
+                # Add ra dec as comment to FP dataframe
                 os.remove(df_file)
                 f = open(df_file, "a")
                 f.write(f"#name={name}\n")
@@ -625,7 +630,7 @@ class ForcedPhotometryPipeline:
                 f.write(f"#lastobs={lastobs}\n")
                 f.write(f"#lastdownload={lastdownload}\n")
                 f.write(f"#lastfit={lastfit}\n")
-                df.to_csv(f)
+                df.to_csv(f, index=False)
                 f.close()
 
                 database.update_database(
