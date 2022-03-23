@@ -285,7 +285,7 @@ class ForcedPhotometryPipeline:
         needs_external_database = []
 
         if self.update_enforce:
-            self.logger.info("\nForced update of alert data data from AMPEL/Fritz.")
+            self.logger.info("\nForced update of alert data data from AMPEL")
 
         query = database.read_database(self.object_list, ["_id", "entries", "ra"])
 
@@ -298,41 +298,21 @@ class ForcedPhotometryPipeline:
             ):
                 needs_external_database.append(name)
 
-        if not self.ampel:
-            self.logger.info("\nConnecting to Marshal (or AMPEL if Marshal is down).")
-        else:
-            self.logger.info("\nConnecting to AMPEL.")
+        self.logger.info("\nConnecting to AMPEL.")
+
         from ztffps import connectors
 
-        marshal_failed = True
-        ampel_failed = True
-
-        if not self.ampel:
-            try:
-                connector = connectors.MarshalInfo(needs_external_database, nprocess=32)
-                marshal_failed = False
-            except (
-                ConnectionError,
-                requests.exceptions.ConnectionError,
-                ValueError,
-            ):
-                marshal_failed = True
-
-        if marshal_failed or self.ampel:
-            # try:
+        try:
             connector = connectors.AmpelInfo(
                 ztf_names=needs_external_database, logger=self.logger
             )
             ampel_failed = False
-            # except:
-            # ampel_failed = True
+        except:
+            ampel_failed = True
 
-        if marshal_failed and ampel_failed:
+        if ampel_failed:
             self.logger.error(
-                "\nConnection to Marshal and AMPEL failed. Temporary outages for the\n"
-                "Marshal are frequent. Problems with AMPEL are most likely due to a \n"
-                "problem with your .ssh/config.\nProceeding with local database.\n"
-                "CAUTION: Data could be missing or not be up-to-date!!!"
+                "\nConnection to AMPEL failed. Please check if the AMPEL API is currently working."
             )
 
         if self.jdmin is None:
@@ -352,11 +332,12 @@ class ForcedPhotometryPipeline:
 
         now = Time(time.time(), format="unix", scale="utc").jd
 
-        if not (marshal_failed and ampel_failed):
+        if not ampel_failed:
             self.logger.info("\nUpdating local database.")
 
             for index, result in enumerate(tqdm(connector.queryresult)):
                 if result is not None:
+
                     database.update_database(
                         result[0],
                         {
