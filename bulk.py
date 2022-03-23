@@ -215,7 +215,7 @@ def main(
 
             local_files = get_local_files(ztf_names=[name])
 
-            print(f"Deleting files for {name}")
+            print(f"Deleting {len(local_files)} local files for {name}")
 
             for file in local_files:
                 if os.path.exists(file):
