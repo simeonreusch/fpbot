@@ -211,15 +211,19 @@ def main(
     if delete:
         print("\nNow we delete all the transient data!")
 
-        local_files = get_local_files(ztf_names=object_list[startitem:])
-
-        for file in local_files:
-            if os.path.exists(file):
-                os.remove(file)
-            if os.path.exists(file + ".md5"):
-                os.remove(file + ".md5")
-
         for name in object_list[startitem:]:
+
+            local_files = get_local_files(ztf_names=[name])
+
+            print(f"Deleting files for {name}")
+
+            for file in local_files:
+                if os.path.exists(file):
+                    os.remove(file)
+                if os.path.exists(file + ".md5"):
+                    os.remove(file + ".md5")
+
+            # for name in object_list[startitem:]:
             database.delete_from_database(name)
 
 
