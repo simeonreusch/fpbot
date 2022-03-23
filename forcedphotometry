@@ -256,7 +256,7 @@ if __name__ == "__main__":
         pl.global_filecheck()
     if do_download:
         pl.download()
-    if do_psffit:
+    if do_psffit or force_refit:
         pl.psffit(force_refit=force_refit)
     if do_plot:
         pl.plot(plot_alertdata=plot_alertdata)

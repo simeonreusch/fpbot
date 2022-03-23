@@ -103,7 +103,10 @@ def plot_lightcurve(
         header = ""
 
         for i, row in enumerate(csv):
-            header += f"\n{row[0]}"
+            if i == 0:
+                header += f"{row[0]}"
+            else:
+                header += f"\n{row[0]}"
             if i > 4:
                 break
 
