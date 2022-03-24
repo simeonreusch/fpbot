@@ -545,8 +545,9 @@ class ForcedPhotometryPipeline:
 
             # Automatically rerun fit if last fit was before
             # March 24, 2022 (to ensure header and quality flags)
-            if lastfit < 2459662.50000:
-                force_refit = True
+            if lastfit:
+                if lastfit < 2459662.50000:
+                    force_refit = True
 
             # Check if there are different centroids for the
             # different filters
