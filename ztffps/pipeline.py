@@ -543,6 +543,11 @@ class ForcedPhotometryPipeline:
             coords_per_filter = query["coords_per_filter"][i]
             fitted_datapoints = query["fitted_datapoints"][i]
 
+            # Automatically rerun fit if last fit was before
+            # March 24, 2022 (to ensure header and quality flags)
+            if lastfit < 2459662.50000:
+                force_refit = True
+
             # Check if there are different centroids for the
             # different filters
             # If a filter is missing, replace with total (all filters)
