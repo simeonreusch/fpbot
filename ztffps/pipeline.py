@@ -585,8 +585,15 @@ class ForcedPhotometryPipeline:
             if fitted_datapoints is None:
                 fitted_datapoints = 0
 
-            # Compare to number of fitted datapoints from database
+            df_file = os.path.join(FORCEPHOTODATA, f"{name}.csv")
+            if os.path.isfile(df_file):
+                _df = pd.read_csv(df_file, comment="#", index_col=0)
+                if len(_df) == 0:
+                    force_refit = True
+            else:
+                force_refit = True
 
+            # Compare to number of fitted datapoints from database
             if number_of_fitted_datapoints_expected > fitted_datapoints or force_refit:
                 self.logger.info(f"\n{name} ({i+1} of {objects_total}): Fitting PSF.")
 
@@ -606,7 +613,8 @@ class ForcedPhotometryPipeline:
                 df = pd.read_csv(df_file, comment="#", index_col=0)
 
                 # Calculate cloudiness parameter, add 'pass' column (only rows with pass=1 should be used)
-                df = clean_lc(df, trim=False)
+                if len(df) > 0:
+                    df = clean_lc(df, trim=False)
 
                 # Add ra dec as comment to FP dataframe
                 os.remove(df_file)

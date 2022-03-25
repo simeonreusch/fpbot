@@ -44,8 +44,6 @@ def run_on_event(thread_id, channel_id, verbose=False, debug=False):
     else:
         ztf_names = [split_message[1]]
 
-    # ztf_names = [split_message[1]]
-    lc_paths = [os.path.join(lc_dir, f"{name}.csv") for name in ztf_names]
     lc_plotdir = os.path.join(lc_dir, "plots")
 
     do_download = False
