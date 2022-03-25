@@ -25,6 +25,7 @@ from ztffps import database, credentials
 from ztffps.thumbnails import generate_thumbnails
 from ztffps.utils import calculate_magnitudes
 from ztffps.clean_lc import clean_lc
+from ztfquery import query as zq
 
 try:
     ZTFDATA = os.getenv("ZTFDATA")
@@ -406,17 +407,16 @@ class ForcedPhotometryPipeline:
         # Check with IRSA how many images are present for each object. Only if this number is bigger than the local number of images, download will start.
         download_needed = []
         query = database.read_database(
-            download_requested, ["ra", "dec", "local_filecount"]
+            download_requested, ["ra", "dec"]  # , "local_filecount"]
         )
         ras = query["ra"]
         decs = query["dec"]
-        local_filecounts = query["local_filecount"]
 
-        from ztffps.connectors import get_irsa_filecount
+        from ztffps.connectors import get_ipac_and_local_filecount
 
         self.logger.info(f"\nObtaining information on available images at IRSA.")
 
-        irsa_filecounts = get_irsa_filecount(
+        ipac_filecounts = get_ipac_and_local_filecount(
             ztf_names=download_requested,
             ras=ras,
             decs=decs,
@@ -426,9 +426,7 @@ class ForcedPhotometryPipeline:
         )
 
         for index, name in enumerate(download_requested):
-            if local_filecounts[index] is None:
-                local_filecounts[index] = 0
-            if local_filecounts[index] < irsa_filecounts[name]:
+            if ipac_filecounts[name]["local"] < ipac_filecounts[name]["ipac"]:
                 download_needed.append(name)
 
         if download_needed:
@@ -485,13 +483,13 @@ class ForcedPhotometryPipeline:
 
             last_download = Time(time.time(), format="unix", scale="utc").jd
 
-            local_filecount = irsa_filecounts[name]
+            # local_filecount = irsa_filecounts[name]
 
             database.update_database(
                 name,
                 {
                     "lastdownload": last_download,
-                    "local_filecount": local_filecount,
+                    # "local_filecount": local_filecount,
                 },
             )
 

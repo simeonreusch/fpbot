@@ -320,7 +320,7 @@ class FritzInfo:
         bar.update(object_count)
 
 
-def get_irsa_multiprocessing(args):
+def get_ipac_multiprocessing(args):
     """ """
     ztf_name, ra, dec, jdmin, jdmax = args
 
@@ -328,10 +328,12 @@ def get_irsa_multiprocessing(args):
     sql_query = f"obsjd>={jdmin} and obsjd<={jdmax}"
     zquery.load_metadata(radec=[ra, dec], sql_query=sql_query, size=0.01)
     mt = zquery.metatable
-    return {ztf_name: len(mt)}
+    local_data = zquery.get_local_data(suffix="scimrefdiffimg.fits.fz", filecheck=False)
+
+    return {ztf_name: {"ipac": len(mt), "local": len(local_data)}}
 
 
-def get_irsa_filecount(
+def get_ipac_and_local_filecount(
     ztf_names: list,
     ras: list,
     decs: list,
@@ -340,7 +342,7 @@ def get_irsa_filecount(
     nprocess: int = 16,
 ) -> dict:
     """ """
-    irsa_filecount = {}
+    ipac_filecount = {}
 
     progress_bar = tqdm(total=len(ras))
 
@@ -350,7 +352,7 @@ def get_irsa_filecount(
     with multiprocessing.Pool(nprocess) as p:
         for j, result in enumerate(
             p.imap_unordered(
-                get_irsa_multiprocessing,
+                get_ipac_multiprocessing,
                 zip(
                     ztf_names,
                     ras,
@@ -361,8 +363,8 @@ def get_irsa_filecount(
             )
         ):
             progress_bar.update(j)
-            irsa_filecount.update(result)
+            ipac_filecount.update(result)
 
         progress_bar.update(len(ras))
 
-    return irsa_filecount
+    return ipac_filecount
