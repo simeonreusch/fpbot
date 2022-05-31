@@ -31,9 +31,9 @@ def run_on_event(data):
     channel = data["channel"]
     sid = int(float(ts) * 1.0e6)
     if _DEBUG_ or _DEBUGDESY_:
-        cmd = f"fps_slackbot_spawn_screen_session_debug {channel} {ts}"
+        cmd = f"./fps_slackbot_spawn_screen_session_debug {channel} {ts}"
     else:
-        cmd = f"fps_slackbot_spawn_screen_session {channel} {ts}"
+        cmd = f"./fps_slackbot_spawn_screen_session {channel} {ts}"
     print(cmd)
     os.system(cmd)
 
