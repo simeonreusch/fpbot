@@ -110,16 +110,6 @@ def run_on_event(thread_id, channel_id, verbose=False, debug=False):
                 icon_emoji=":fp-emoji:",
             )
 
-    for item in split_message:
-        if item in fuzzy_parameters(["reprocess"]):
-            reprocess = True
-            wc.chat_postMessage(
-                channel=channel_id,
-                text="You have chosen 'reprocess'. This will take longer, as ALL files will be downloaded and fit again.",
-                thread_ts=thread_id,
-                icon_emoji=":fp-emoji:",
-            )
-
     for i, parameter in enumerate(split_message):
         if parameter in fuzzy_parameters(
             ["snt", "signaltonoise", "signal-to-noise", "SNT", "SN", "sn"]
