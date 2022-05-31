@@ -103,7 +103,12 @@ def run_on_event(thread_id, channel_id, verbose=False, debug=False):
             sciimg = True
         if item in fuzzy_parameters(["refit", "fit", "do_fit"]):
             do_fit = True
-            # refit_psf = True
+            wc.chat_postMessage(
+                channel=channel_id,
+                text="You have chosen 'refit'. This will take longer, as the full lightcurve will be fit again.",
+                thread_ts=thread_id,
+                icon_emoji=":fp-emoji:",
+            )
 
     for i, parameter in enumerate(split_message):
         if parameter in fuzzy_parameters(
