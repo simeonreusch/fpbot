@@ -5,7 +5,11 @@
 import warnings
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 from astropy import constants as const
+from ztfquery import query
+
+from ztffps import database
 
 
 def flux_to_abmag(fluxnu):
@@ -32,7 +36,7 @@ def abmag_err_to_flux_err(abmag, abmag_err, magzp=None, magzp_err=None):
         sigma_f = 3.39059e-20 * np.exp(-0.921034 * abmag) * abmag_err
     else:
         del_f = 0.921034 * np.exp(0.921034 * (magzp - abmag))
-        sigma_f = np.sqrt(del_f ** 2 * (abmag_err + magzp_err) ** 2)
+        sigma_f = np.sqrt(del_f**2 * (abmag_err + magzp_err) ** 2)
     return sigma_f
 
 
@@ -69,7 +73,7 @@ def calculate_magnitudes(dataframe, snt=5):
     lc["F0.err"] = lc.F0 / 2.5 * np.log(10) * lc.magzpunc
     lc["Fratio"] = lc.ampl / lc.F0
     lc["Fratio.err"] = np.sqrt(
-        (lc["ampl.err"] / lc.F0) ** 2 + (lc.ampl * lc["F0.err"] / lc.F0 ** 2) ** 2
+        (lc["ampl.err"] / lc.F0) ** 2 + (lc.ampl * lc["F0.err"] / lc.F0**2) ** 2
     )
     mags = []
     mags_unc = []
@@ -100,3 +104,61 @@ def calculate_magnitudes(dataframe, snt=5):
     lc["mag_err"] = mags_unc
 
     return lc
+
+
+def get_local_files(ztf_names):
+    """
+    Returns the locally saved files for the given list of ZTF names
+    """
+    # connector = connectors.AmpelInfo(ztf_names=ztf_names, logger=None)
+    local_data = []
+
+    print("Obtaining image counts from IPAC")
+
+    res = database.read_database(ztf_names, ["ra", "dec"])
+    ras = res["ra"]
+    decs = res["dec"]
+
+    for i, ra in enumerate(ras):
+
+        if ra is not None:
+            name = ztf_names[i]
+            dec = decs[i]
+
+            print(f"Querying IPAC for {name}")
+            zquery = query.ZTFQuery()
+            zquery.load_metadata(radec=[ra, dec], size=0.1)
+
+            mt = zquery.metatable
+
+            local_data_obj = zquery.get_local_data(
+                suffix="scimrefdiffimg.fits.fz", filecheck=False
+            )
+
+            local_data.extend(local_data_obj)
+
+    local_data = list(set(local_data))
+
+    return local_data
+
+
+def sizeof_fmt_dec(num, suffix="B"):
+    """
+    Convert ugly Bytes to human readable number
+    """
+    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
+        if abs(num) < 1000.0:
+            return f"{num:3.1f}{unit}{suffix}"
+        num /= 1000.0
+    return f"{num:.1f}Yi{suffix}"
+
+
+def sizeof_fmt_bin(num, suffix="B"):
+    """
+    Convert ugly Bytes to human readable number
+    """
+    for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
+        if abs(num) < 1024.0:
+            return f"{num:3.1f}{unit}{suffix}"
+        num /= 1024.0
+    return f"{num:.1f}Yi{suffix}"

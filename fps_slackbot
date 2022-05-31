@@ -65,6 +65,7 @@ def run_on_event(thread_id, channel_id, verbose=False, debug=False):
     sciimg = False
     noupdate = False
     refit_psf = False
+    reprocess = False
 
     def fuzzy_parameters(param_list):
         """ """
@@ -83,6 +84,14 @@ def run_on_event(thread_id, channel_id, verbose=False, debug=False):
             do_fluxplot = True
         if item in fuzzy_parameters(["quiet"]):
             verbose = False
+        if item in fuzzy_parameters(["reprocess"]):
+            reprocess = True
+            wc.chat_postMessage(
+                channel=channel_id,
+                text="You have chosen 'reprocess'. This will take longer, as ALL files will be downloaded and fit again.",
+                thread_ts=thread_id,
+                icon_emoji=":fp-emoji:",
+            )
         if item in fuzzy_parameters(["df", "dataframe", "csv", "file"]):
             upload_dataframe = True
         if item in fuzzy_parameters(
@@ -204,6 +213,11 @@ def run_on_event(thread_id, channel_id, verbose=False, debug=False):
         do_plot = True
         do_fit = True
 
+    if reprocess:
+        do_download = True
+        do_plot = True
+        do_fit = True
+
     if len(ztf_names) > 1:
         nprocess = 16
     else:
@@ -219,6 +233,7 @@ def run_on_event(thread_id, channel_id, verbose=False, debug=False):
         ra=ra,
         dec=dec,
         nprocess=nprocess,
+        reprocess=reprocess,
         update_enforce=True,
         sciimg=sciimg,
         update_disable=noupdate,

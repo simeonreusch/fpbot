@@ -178,6 +178,13 @@ class ForcedPhotometryPipeline:
                 self.get_position_and_timerange()
             self.check_if_present_in_metadata()
 
+        if self.reprocess:
+            # attention, this deletes downloaded files!
+            self.purge()
+            if not self.update_disable:
+                self.get_position_and_timerange()
+            self.check_if_present_in_metadata()
+
     def is_ztf_name(self, name):
         """
         Checks if a string adheres to the ZTF naming scheme
@@ -251,6 +258,27 @@ class ForcedPhotometryPipeline:
             )
 
         self.logger.info("Logs are stored in log")
+
+    def purge(self):
+        """Deletes transient(s) from the database
+        and from the disk
+        """
+        from ztffps.utils import get_local_files
+
+        self.logger.info(f"Will delete (from disk and db): {self.object_list}")
+
+        for name in tqdm(self.object_list):
+            local_files = get_local_files(ztf_names=[name])
+            self.logger.info(f"Deleting {len(local_files)} local files for {name}")
+
+            for file in local_files:
+                if os.path.exists(file):
+                    os.remove(file)
+                if os.path.exists(file + ".md5"):
+                    os.remove(file + ".md5")
+
+            self.logger.info(f"Deleting {name} from internal database")
+            database.delete_from_database(name)
 
     def check_for_duplicates(self):
         """

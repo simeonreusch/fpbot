@@ -9,7 +9,7 @@ from astropy.time import Time
 from ztffps.pipeline import ForcedPhotometryPipeline
 import ztfquery
 from ztfquery import query
-from ztffps import connectors, database
+from ztffps import connectors, database, utils
 
 
 def is_ztf_name(name):
@@ -17,64 +17,6 @@ def is_ztf_name(name):
     Checks if a string adheres to the ZTF naming scheme
     """
     return re.match("^ZTF[1-2]\d[a-z]{7}$", name)
-
-
-def get_local_files(ztf_names):
-    """
-    Returns the locally saved files for the given list of ZTF names
-    """
-    # connector = connectors.AmpelInfo(ztf_names=ztf_names, logger=None)
-    local_data = []
-
-    print("Obtaining image counts from IPAC")
-
-    res = database.read_database(ztf_names, ["ra", "dec"])
-    ras = res["ra"]
-    decs = res["dec"]
-
-    for i, ra in enumerate(ras):
-
-        if ra is not None:
-            name = ztf_names[i]
-            dec = decs[i]
-
-            print(f"Querying IPAC for {name}")
-            zquery = query.ZTFQuery()
-            zquery.load_metadata(radec=[ra, dec], size=0.1)
-
-            mt = zquery.metatable
-
-            local_data_obj = zquery.get_local_data(
-                suffix="scimrefdiffimg.fits.fz", filecheck=False
-            )
-
-            local_data.extend(local_data_obj)
-
-    local_data = list(set(local_data))
-
-    return local_data
-
-
-def sizeof_fmt_dec(num, suffix="B"):
-    """
-    Convert ugly Bytes to human readable number
-    """
-    for unit in ["", "K", "M", "G", "T", "P", "E", "Z"]:
-        if abs(num) < 1000.0:
-            return f"{num:3.1f}{unit}{suffix}"
-        num /= 1000.0
-    return f"{num:.1f}Yi{suffix}"
-
-
-def sizeof_fmt_bin(num, suffix="B"):
-    """
-    Convert ugly Bytes to human readable number
-    """
-    for unit in ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"]:
-        if abs(num) < 1024.0:
-            return f"{num:3.1f}{unit}{suffix}"
-        num /= 1024.0
-    return f"{num:.1f}Yi{suffix}"
 
 
 def main(
@@ -192,7 +134,7 @@ def main(
         print(
             "Obtaining the combined disk space used by the images for the given ZTF objects"
         )
-        local_files = get_local_files(ztf_names=object_list[startitem:])
+        local_files = utils.get_local_files(ztf_names=object_list[startitem:])
 
         print(f"Found {len(local_files)} local files")
 
@@ -203,8 +145,8 @@ def main(
                 fs = os.path.getsize(file)
                 total_bytes += fs
 
-        total_diskspace_dec = sizeof_fmt_dec(total_bytes)
-        total_diskspace_bin = sizeof_fmt_bin(total_bytes)
+        total_diskspace_dec = utils.sizeof_fmt_dec(total_bytes)
+        total_diskspace_bin = utils.sizeof_fmt_bin(total_bytes)
 
         print(f"These take {total_diskspace_dec} ({total_diskspace_bin})")
 
@@ -213,7 +155,7 @@ def main(
 
         for name in tqdm(object_list[startitem:]):
 
-            local_files = get_local_files(ztf_names=[name])
+            local_files = utils.get_local_files(ztf_names=[name])
 
             print(f"Deleting {len(local_files)} local files for {name}")
 

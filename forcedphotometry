@@ -177,6 +177,12 @@ if __name__ == "__main__":
         action="store_true",
         help="Forces the pipeline to refit all psf data",
     )
+    parser.add_argument(
+        "--reprocess",
+        "-reprocess",
+        action="store_true",
+        help="Delete all files and database entry for the object(s).",
+    )
 
     commandline_args = parser.parse_args()
     nprocess = commandline_args.nprocess
@@ -202,13 +208,14 @@ if __name__ == "__main__":
     fritz = commandline_args.fritz
     download_newest = commandline_args.no_new_download
     force_refit = commandline_args.refit
+    reprocess = commandline_args.reprocess
     nosnt = commandline_args.nosnt
     plot_alertdata = commandline_args.noalert
 
     # if thumbnails:
     #     sciimg = True
 
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 2 or reprocess:
         do_download = True
         do_psffit = True
         do_plot = True
@@ -243,6 +250,7 @@ if __name__ == "__main__":
         flux_range=flux_range,
         snt=snt,
         nprocess=nprocess,
+        reprocess=reprocess,
         ra=ra,
         dec=dec,
         sciimg=sciimg,
