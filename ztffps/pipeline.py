@@ -269,6 +269,7 @@ class ForcedPhotometryPipeline:
 
         for name in tqdm(self.object_list):
             local_files = get_local_files(ztf_names=[name])
+
             self.logger.info(f"Deleting {len(local_files)} local files for {name}")
 
             for file in local_files:

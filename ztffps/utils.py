@@ -131,11 +131,15 @@ def get_local_files(ztf_names):
 
             mt = zquery.metatable
 
-            local_data_obj = zquery.get_local_data(
+            local_data_sci = zquery.get_local_data(
                 suffix="scimrefdiffimg.fits.fz", filecheck=False
             )
+            local_data_psf = zquery.get_local_data(
+                suffix="diffimgpsf.fits", filecheck=False
+            )
 
-            local_data.extend(local_data_obj)
+            local_data.extend(local_data_sci)
+            local_data.extend(local_data_psf)
 
     local_data = list(set(local_data))
 
