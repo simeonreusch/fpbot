@@ -2,7 +2,7 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import warnings
+import warnings, re, os
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -12,21 +12,55 @@ from ztfquery import query
 from ztffps import database
 
 
-def flux_to_abmag(fluxnu):
+def is_ztf_name(name: str) -> bool:
+    """
+    Checks if a string adheres to the ZTF naming scheme
+    """
+    return re.match("^ZTF[1-2]\d[a-z]{7}$", name)
+
+
+def is_wise_name(name: str) -> bool:
+    """
+    Checks if a string adheres to the (internal) WISE naming scheme
+    """
+    return re.match("^WISE\d[0-9]{0,}$", name)
+
+
+def get_wise_ra_dec(name: str):
+    """
+    Obtains WISE object RA and Dec from parquet file
+    """
+    wise_database_file = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "data", "WISE.parquet"
+    )
+
+    if is_wise_name(name):
+        _wise_id = name[4:]
+        df = pd.read_parquet(wise_database_file)
+        _df = df.iloc[[_wise_id]]
+        ra = _df["RA"].values[0]
+        dec = _df["Dec"].values[0]
+
+        return ra, dec
+
+
+def flux_to_abmag(fluxnu: float):
     return (-2.5 * np.log10(np.asarray(fluxnu))) - 48.585
 
 
-def flux_err_to_abmag_err(fluxnu, fluxerr_nu):
+def flux_err_to_abmag_err(fluxnu: float, fluxerr_nu: float):
     return 1.08574 / fluxnu * fluxerr_nu
 
 
-def abmag_to_flux(abmag, magzp=48.585):
+def abmag_to_flux(abmag: float, magzp: float = 48.585) -> float:
     magzp = np.asarray(magzp, dtype=float)
     abmag = np.asarray(abmag, dtype=float)
     return np.power(10, ((magzp - abmag) / 2.5))
 
 
-def abmag_err_to_flux_err(abmag, abmag_err, magzp=None, magzp_err=None):
+def abmag_err_to_flux_err(
+    abmag: float, abmag_err: float, magzp: float = None, magzp_err: float = None
+) -> float:
     abmag = np.asarray(abmag, dtype=float)
     abmag_err = np.asarray(abmag_err, dtype=float)
     if magzp is not None:
@@ -40,14 +74,14 @@ def abmag_err_to_flux_err(abmag, abmag_err, magzp=None, magzp_err=None):
     return sigma_f
 
 
-def lambda_to_nu(wavelength):
+def lambda_to_nu(wavelength: float) -> float:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         nu_value = const.c.value / (wavelength * 1e-10)  # Hz
     return nu_value
 
 
-def nu_to_lambda(nu):
+def nu_to_lambda(nu: float) -> float:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         lambda_value = const.c.value / (nu * 1e-10)  # Angstrom
@@ -106,23 +140,22 @@ def calculate_magnitudes(dataframe, snt=5):
     return lc
 
 
-def get_local_files(ztf_names):
+def get_local_files(names):
     """
-    Returns the locally saved files for the given list of ZTF names
+    Returns the locally saved files for the given list of ZTF (or WISE) names
     """
-    # connector = connectors.AmpelInfo(ztf_names=ztf_names, logger=None)
     local_data = []
 
     print("Obtaining image counts from IPAC")
 
-    res = database.read_database(ztf_names, ["ra", "dec"])
+    res = database.read_database(names, ["ra", "dec"])
     ras = res["ra"]
     decs = res["dec"]
 
     for i, ra in enumerate(ras):
 
         if ra is not None:
-            name = ztf_names[i]
+            name = names[i]
             dec = decs[i]
 
             print(f"Querying IPAC for {name}")

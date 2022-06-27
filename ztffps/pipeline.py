@@ -2,30 +2,36 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import multiprocessing
-import time
-import os
-import sys
-import re
-import logging
-import argparse
-import tarfile
+import multiprocessing, time, os, sys, logging, argparse, tarfile
+
 from tqdm import tqdm
+
 from ztflc import forcephotometry
 from ztflc.io import LOCALDATA
-import numpy as np
+
 import ztfquery
+from ztfquery import query as zq
+
+import numpy as np
+
 import pandas as pd
+
 from astropy.time import Time
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 from astropy.utils.console import ProgressBar
 import requests.exceptions
+
 from ztffps import database, credentials
 from ztffps.thumbnails import generate_thumbnails
-from ztffps.utils import calculate_magnitudes
+from ztffps.utils import (
+    calculate_magnitudes,
+    is_ztf_name,
+    is_wise_name,
+    get_wise_ra_dec,
+)
 from ztffps.clean_lc import clean_lc
-from ztfquery import query as zq
+
 
 try:
     ZTFDATA = os.getenv("ZTFDATA")
@@ -161,14 +167,14 @@ class ForcedPhotometryPipeline:
             self.update_database_with_given_radec()
 
         elif (ra is None and dec is not None) or (ra is not None and dec is None):
-            self.logger.info("Either both set ra and dec or none.")
+            self.logger.info("Either both set RA and Dec or none.")
             raise ValueError
 
         else:
             self.ra = None
             self.dec = None
             if isinstance(self.file_or_name, str):
-                self.use_if_ztf()
+                self.use_if_ztf_or_wise()
             elif isinstance(self.file_or_name, list):
                 self.object_list = self.file_or_name
             else:
@@ -184,12 +190,6 @@ class ForcedPhotometryPipeline:
             if not self.update_disable:
                 self.get_position_and_timerange()
             self.check_if_present_in_metadata()
-
-    def is_ztf_name(self, name):
-        """
-        Checks if a string adheres to the ZTF naming scheme
-        """
-        return re.match("^ZTF[1-2]\d[a-z]{7}$", name)
 
     def convert_daysago_to_jd(self):
         """
@@ -222,7 +222,7 @@ class ForcedPhotometryPipeline:
         else:
             self.jdmax = now
 
-    def use_if_ztf(self):
+    def use_if_ztf_or_wise(self):
         """
         Checks if name argument is a ZTF name (must fit ZTF naming convention),
         an ascii file containing ZTF names (1 per line) in the program
@@ -231,7 +231,9 @@ class ForcedPhotometryPipeline:
         """
         errormessage = "\nYou have to provide a either a ZTF name (a string adhering to the ZTF naming scheme), an ascii file containing ZTF names (1 per line) in the same directory or an arbitrary name if using the radec option.\n"
 
-        if self.is_ztf_name(self.file_or_name):
+        if is_ztf_name(self.file_or_name):
+            self.object_list = [self.file_or_name]
+        elif is_wise_name(self.file_or_name):
             self.object_list = [self.file_or_name]
         else:
             self.object_list = []
@@ -239,13 +241,15 @@ class ForcedPhotometryPipeline:
                 file = open(f"{self.file_or_name}", "r")
                 self.lines = file.read().splitlines()
                 for line in self.lines:
-                    if self.is_ztf_name(line):
+                    if is_ztf_name(line):
+                        self.object_list.append(line)
+                    elif is_wise_name(line):
                         self.object_list.append(line)
             except FileNotFoundError as error:
                 self.logger.error(errormessage)
                 raise error
             assert (
-                self.object_list[0][:3] == "ZTF" and len(self.object_list[0]) == 12
+                self.object_list[0][:3] == "ZTF" or self.object_list[0][:4] == "WISE"
             ), errormessage
         # Grammar check
         if len(self.object_list) == 1:
@@ -268,15 +272,16 @@ class ForcedPhotometryPipeline:
         self.logger.info(f"Will delete (from disk and db): {self.object_list}")
 
         for name in tqdm(self.object_list):
-            local_files = get_local_files(ztf_names=[name])
+            local_files = get_local_files(names=[name])
 
             self.logger.info(f"Deleting {len(local_files)} local files for {name}")
 
-            for file in local_files:
-                if os.path.exists(file):
-                    os.remove(file)
-                if os.path.exists(file + ".md5"):
-                    os.remove(file + ".md5")
+            if local_files:
+                for file in local_files:
+                    if os.path.exists(file):
+                        os.remove(file)
+                    if os.path.exists(file + ".md5"):
+                        os.remove(file + ".md5")
 
             self.logger.info(f"Deleting {name} from internal database")
             database.delete_from_database(name)
@@ -319,8 +324,23 @@ class ForcedPhotometryPipeline:
 
         query = database.read_database(self.object_list, ["_id", "entries", "ra"])
 
+        # Now we check if these are ZTF or WISE objects:
+        for index, name in enumerate(self.object_list):
+
+            if is_wise_name(name) and query["_id"][index] == None:
+                ra, dec = get_wise_ra_dec(name)
+                database.update_database(
+                    name,
+                    {
+                        "_id": name,
+                        "ra": ra,
+                        "dec": dec,
+                        "entries": 1,
+                    },
+                )
+
         for index, name in enumerate(tqdm(self.object_list)):
-            if (
+            if not is_wise_name(name) and (
                 query["entries"][index] == None
                 or query["entries"][index] < 10
                 or self.update_enforce
@@ -570,16 +590,26 @@ class ForcedPhotometryPipeline:
             coords_per_filter = query["coords_per_filter"][i]
             fitted_datapoints = query["fitted_datapoints"][i]
 
-            # Automatically rerun fit if last fit was before
-            # March 24, 2022 (to ensure header and quality flags)
+            """
+            Automatically rerun fit if last fit was before
+            March 24, 2022 (to ensure header and quality flags)
+            """
+
             if lastfit:
                 if lastfit < 2459662.50000:
                     force_refit = True
 
-            # Check if there are different centroids for the
-            # different filters
-            # If a filter is missing, replace with total (all filters)
-            # median ra/dec
+            """
+            Check if there are different centroids for the
+            different filters
+            If a filter is missing, replace with total (all filters) median RA/Dec.
+
+            If the source is a WISE object, we
+            only have one RA/Dec
+            """
+
+            if is_wise_name(name):
+                coords_per_filter = [ra, dec]
 
             coords_per_filter[0] = np.nan_to_num(
                 x=coords_per_filter[0], nan=ra
@@ -605,8 +635,10 @@ class ForcedPhotometryPipeline:
                 f"\n{name} ({i+1} of {objects_total}) paths to files loaded."
             )
 
-            # Check how many forced photometry datapoints
-            # there SHOULD exist for this object
+            """
+            Check how many forced photometry datapoints
+            there SHOULD exist for this object
+            """
             number_of_fitted_datapoints_expected = len(fp.filepathes)
 
             if fitted_datapoints is None:

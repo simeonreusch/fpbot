@@ -112,7 +112,7 @@ def run_on_event(thread_id, channel_id, verbose=False, debug=False):
 
     for i, parameter in enumerate(split_message):
         if parameter in fuzzy_parameters(
-            ["snt", "signaltonoise", "signal-to-noise", "SNT", "SN", "sn"]
+            ["snt", "signaltonoise", "signal-to-noise", "SNT", "SNR", "snr"]
         ):
             try:
                 snt = float(split_message[i + 1])

@@ -6,6 +6,7 @@ import os, io, argparse, re
 from slack import RTMClient, WebClient
 from ztflc.io import LOCALDATA
 from ztffps import credentials
+from ztffps.utils import is_wise_name, is_ztf_name
 
 
 parser = argparse.ArgumentParser(description="This is a realtime slackbot")
@@ -38,10 +39,10 @@ def run_on_event(data):
     os.system(cmd)
 
 
-def is_ztf_string(string):
-    """ """
-    if re.match("^ZTF[1-2]\d[a-z]{7}$", string):
-        return True
+# def is_ztf_string(string):
+#     """ """
+#     if re.match("^ZTF[1-2]\d[a-z]{7}$", string):
+#         return True
 
 
 def post_error(channel_id, thread_ts, wc):
@@ -169,17 +170,18 @@ def say_hello(**payload):
                     for item in object_list:
                         item = item.strip(" ")
                         names.append(item)
-                        checklist.append(is_ztf_string(item))
+                        if is_ztf_name(item) or is_wise_name(item):
+                            checklist.append(item)
                     if all(checklist):
-                        ztf_names = names
-                        post_request(channel_id, thread_ts, wc, ztf_names)
+                        checked_names = names
+                        post_request(channel_id, thread_ts, wc, checked_names)
                         run_on_event(data)
                     else:
                         post_error(channel_id, thread_ts, wc)
 
-                elif is_ztf_string(split_message[1]):
-                    ztf_name = split_message[1]
-                    post_request(channel_id, thread_ts, wc, ztf_name)
+                elif is_ztf_name(split_message[1]) or is_wise_name(split_message[1]):
+                    name = split_message[1]
+                    post_request(channel_id, thread_ts, wc, name)
                     run_on_event(data)
 
                 else:

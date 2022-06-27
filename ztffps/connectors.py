@@ -62,13 +62,13 @@ class AmpelInfo:
         """ """
 
         object_count = len(self.ztf_names)
-        self.logger.info("\nObtaining ra/decs from AMPEL")
+        self.logger.info("\nObtaining RA/Dec from AMPEL")
         from astropy.utils.console import ProgressBar
 
         queryresult = []
 
         for index, ztf_name in enumerate(tqdm(self.ztf_names)):
-            # print(f"\n{ztf_name}")
+
             ampel_object = self.query_ampel_api_for_ztfname(ztf_name=ztf_name)
 
             query_res = [i for i in ampel_object]
