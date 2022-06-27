@@ -9,7 +9,7 @@ __pycache__
 .ztfquery
 .python-version
 lists/*
-data/WISE.parquet
+ztffps/data/WISE.parquet
 ztffps/cosmology_leopold.py
 ztffps/findpairs.py
 bulk_logs/
