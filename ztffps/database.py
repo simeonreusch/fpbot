@@ -9,9 +9,9 @@ if "MONGO_DB_LOCATION_DOCKER" in os.environ:
     location = os.getenv("MONGO_DB_LOCATION_DOCKER")
     username = "root"
     password = "password"
-    MONGO_DB = MongoClient(f"mongodb://{username}:{password}@{location}:27017").ztfhub
+    MONGO_DB = MongoClient(f"mongodb://{username}:{password}@{location}:27017").ztffps
 else:
-    MONGO_DB = MongoClient("localhost", 27017).ztfhub
+    MONGO_DB = MongoClient("localhost", 27017).ztffps
 
 METADATA_COLL = MONGO_DB.metadata
 
