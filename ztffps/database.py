@@ -100,7 +100,7 @@ def update_database(
 
 def delete_from_database(ztf_objects: Union[list, str], logger=None) -> Any:
     """
-    Deletes all ztf_objects from database
+    Deletes all ztf_objects passed from database
     """
 
     if logger is None:
@@ -115,3 +115,14 @@ def delete_from_database(ztf_objects: Union[list, str], logger=None) -> Any:
         query = METADATA_COLL.find_one({"_id": name})
         if query:
             METADATA_COLL.delete_one(query)
+
+
+def drop_database(logger=None) -> None:
+    """
+    WARNING: Drops the complete database
+    """
+    if logger is None:
+        logger = logging.getLogger("database")
+
+    METADATA_COLL.drop()
+    logger.info("ztffps database has been dropped")
