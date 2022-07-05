@@ -497,7 +497,11 @@ class ForcedPhotometryPipeline:
             jdmax = self.jdmax
 
             fp = forcephotometry.ForcePhotometry.from_coords(
-                ra=ra, dec=dec, jdmin=jdmin, jdmax=jdmax, name=name
+                ra=ra,
+                dec=dec,
+                jdmin=jdmin,
+                jdmax=jdmax,
+                name=name,
             )
 
             self.logger.info(
