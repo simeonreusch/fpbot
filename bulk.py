@@ -155,7 +155,7 @@ def main(
 
         for name in tqdm(object_list[startitem:]):
 
-            local_files = utils.get_local_files(ztf_names=[name])
+            local_files = utils.get_local_files(names=[name])
 
             print(f"Deleting {len(local_files)} local files for {name}")
 
