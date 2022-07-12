@@ -12,14 +12,11 @@ from ztffps import credentials
 lc_dir = FORCEPHOTODATA
 
 
-def run_on_event(thread_id, channel_id, verbose=False, debug=False):
+def run_on_event(thread_id, channel_id, verbose=False):
     """ """
-    if debug:
-        bot_token = credentials.get_password("ztfhub_slack_bot_token_debug")
-        user_token = credentials.get_password("ztfhub_slack_user_token_debug")
-    else:
-        bot_token = credentials.get_password("ztfhub_slack_bot_token")
-        user_token = credentials.get_password("ztfhub_slack_user_token")
+
+    bot_token = credentials.get_password("ztfhub_slack_bot_token")
+    user_token = credentials.get_password("ztfhub_slack_user_token")
     wc = WebClient(token=user_token)
 
     payload = wc.conversations_history(
@@ -479,19 +476,10 @@ if __name__ == "__main__":
         action="store_true",
         help="Run in verbose mode",
     )
-    parser.add_argument(
-        "--debug",
-        "-debug",
-        action="store_true",
-        help="Run in debug mode",
-    )
 
     commandline_args = parser.parse_args()
     channel_id = commandline_args.channel
     thread_id = commandline_args.thread
     verbose = commandline_args.verbose
-    debug = commandline_args.verbose
 
-    run_on_event(
-        thread_id=thread_id, channel_id=channel_id, verbose=verbose, debug=debug
-    )
+    run_on_event(thread_id=thread_id, channel_id=channel_id, verbose=verbose)
