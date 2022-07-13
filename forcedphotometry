@@ -4,7 +4,7 @@
 
 import os, time, argparse, multiprocessing, sys
 import numpy as np
-from ztffps.pipeline import ForcedPhotometryPipeline
+from fpbot.pipeline import ForcedPhotometryPipeline
 
 if __name__ == "__main__":
     # neccessary arg

@@ -5,7 +5,7 @@
 import os
 from tqdm import tqdm
 import pandas as pd
-from ztffps import connectors
+from fpbot import connectors
 
 BASE_DIR = os.path.join("/", "Users", "simeon", "DESY", "nuclear_sample", "data")
 DATA_DIR = os.path.join(BASE_DIR, "6000-6999_cleaned")

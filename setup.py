@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="nuztf",
+    name="fpbot",
     version="1.0.3",
     author="Simeon Reusch",
     author_email="simeon.reusch@desy.de",
@@ -23,7 +23,7 @@ setuptools.setup(
     ],
     python_requires=">=3.8.0",
     package_data={
-        "ztffps": [
+        "fpbot": [
             "data/*.dat",
             "data/*.jpg",
         ]

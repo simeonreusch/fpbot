@@ -5,9 +5,9 @@
 import time, os, getpass, re, tarfile
 from slack import RTMClient, WebClient
 import numpy as np
-from ztffps import pipeline
-from ztffps.pipeline import FORCEPHOTODATA
-from ztffps import credentials
+from fpbot import pipeline
+from fpbot.pipeline import FORCEPHOTODATA
+from fpbot import credentials
 
 lc_dir = FORCEPHOTODATA
 

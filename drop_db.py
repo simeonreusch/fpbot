@@ -3,7 +3,7 @@
 # License: BSD-3-Clause
 
 import os
-from ztffps.database import drop_database
+from fpbot.database import drop_database
 
 while True:
     if (
@@ -13,7 +13,7 @@ while True:
         == "yes"
     ):
         drop_database()
-        print("ztffps database has been dropped")
+        print("fpbot database has been dropped")
         break
     else:
         break

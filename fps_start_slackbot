@@ -5,8 +5,8 @@
 import os, io, argparse, re
 from slack import RTMClient, WebClient
 from ztflc.io import LOCALDATA
-from ztffps import credentials
-from ztffps.utils import is_wise_name, is_ztf_name
+from fpbot import credentials
+from fpbot.utils import is_wise_name, is_ztf_name
 
 
 parser = argparse.ArgumentParser(description="This is a realtime slackbot")

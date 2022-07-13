@@ -6,10 +6,10 @@ import os, re, json, logging, argparse, logging
 from datetime import datetime
 from tqdm import tqdm
 from astropy.time import Time
-from ztffps.pipeline import ForcedPhotometryPipeline
+from fpbot.pipeline import ForcedPhotometryPipeline
 import ztfquery
 from ztfquery import query
-from ztffps import connectors, database, utils
+from fpbot import connectors, database, utils
 
 
 def is_ztf_name(name):
@@ -171,7 +171,7 @@ def main(
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Bulk processing for ztffps")
+    parser = argparse.ArgumentParser(description="Bulk processing for fpbot")
 
     parser.add_argument(
         "name",
