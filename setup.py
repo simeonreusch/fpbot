@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="fpbot",
-    version="1.0.3",
+    version="1.0.4",
     author="Simeon Reusch",
     author_email="simeon.reusch@desy.de",
     description="ZTF Forced Photometry Pipeline",
@@ -38,8 +38,6 @@ setuptools.setup(
     install_requires=[
         "astropy",
         "numpy",
-        "sncosmo",
-        "extinction",
         "pandas",
         "matplotlib",
         "scipy",
@@ -52,8 +50,6 @@ setuptools.setup(
         "iminuit<2",
         "sfdmap",
         "pymongo",
-        "fastapi",
-        "uvicorn",
         "keyring",
         "ztflc",
         "ztfquery",
