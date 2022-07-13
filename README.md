@@ -1,32 +1,32 @@
 [![DOI](https://zenodo.org/badge/236213534.svg)](https://zenodo.org/badge/latestdoi/236213534)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-# ztffps
+# fpbot
 
 Provides a Forced Photometry Pipeline based on [ztfquery](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery), needs [IPAC](https://irsa.ipac.caltech.edu/account/signon/login.do?josso_back_to=https://irsa.ipac.caltech.edu/frontpage/&ts=517) as well as [Marshal](http://skipper.caltech.edu:8080/cgi-bin/growth/marshal.cgi) or [AMPEL](https://github.com/ampelproject) access.
 
-Note: Requires Python >= 3.6. Also requires a MongoDB instance for storing the metadata, reachable under port 27017. This can be modified in database.py.
+Note: Requires Python >= 3.8. Also requires a MongoDB instance for storing the metadata, reachable under port 27017. This can be modified in database.py.
 
 ## Installation
 
 1. Note that libpq-dev needs to be present. On Debian/Ubuntu, issue ```sudo apt install libpq-dev```. On Mac OS, run ```brew install postgresql```.
 
-2. All required packages should be installed by issuing: ```pip3 install git+ssh://git@github.com/simeonreusch/ztffps```.
+2. All required packages should be installed by issuing: ```pip3 install git+ssh://git@github.com/simeonreusch/fpbot```.
 
 3. If MongoDB is not present, it can easily be installed.
 On Debian/Ubuntu, just follow this [instruction set](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-debian/#install-mongodb-community-edition). After this, make sure the demon runs. Issue  ```sudo systemctl start mongod``` and ```sudo systemctl enable mongod```. On MacOS, make sure brew is present follow [this tutorial](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/).
 
-4. ztffps requires an environment variable so it knows where to store the data. Include a line in your .bashrc or .zshrc like ```export ZTFDATA='/absolute/path/to/ZTF-data-folder/'```. If you don't need AMPEL access, you are done!
+4. fpbot requires an environment variable so it knows where to store the data. Include a line in your .bashrc or .zshrc like ```export ZTFDATA='/absolute/path/to/ZTF-data-folder/'```. If you don't need AMPEL access, you are done!
 
 ---
 
-5. If you want to use the AMPEL API for alert data (you don't have to!), you need credentials for the API.
+5. If you want to use the [AMPEL API](https://ampel.zeuthen.desy.de/api/ztf/archive/v3/docs) for alert data (you don't have to!), you need credentials for the API.
 
-6. NOTE: If you are planning to run ztffps on a headless system which does not provide the luxury of a systemwide keychain, please add ```export ZTFHUB_MODE='HEADLESS'``` to your .bashrc or .zshrc. The pipeline will then uses ztfquery's base64 obfuscated password storage.
+6. NOTE: If you are planning to run fpbot on a headless system which does not provide the luxury of a systemwide keychain, please add ```export ZTFHUB_MODE='HEADLESS'``` to your .bashrc or .zshrc. The pipeline will then uses ztfquery's base64 obfuscated password storage.
 
 ## ALTERNATIVE: Use Docker container
-ztffps comes shipped with a Dockerfile and a docker-compose.yml. Use them to build the docker container (this includes all dependencies as well as a MongoDB instance). Note: You have to provide a .ztfquery file in the ztffps directory containing access data for ztfquery (see [ztfquery](https://github.com/mickaelrigault/ztfquery) or [ztflc](https://github.com/mickaelrigault/ztfquery) for details).
+fpbot comes shipped with a Dockerfile and a docker-compose.yml. Use them to build the docker container (this includes all dependencies as well as a MongoDB instance). Note: You have to provide a .ztfquery file in the fpbot directory containing access data for ztfquery (see [ztfquery](https://github.com/mickaelrigault/ztfquery) or [ztflc](https://github.com/mickaelrigault/ztfquery) for details).
 
-First, clone this project: ```git clone https://github.com/simeonreusch/ztffps```
+First, clone this project: ```git clone https://github.com/simeonreusch/fpbot```
 
 The container can be built by navigating to the just cloned directory and issuing
 
@@ -34,7 +34,7 @@ The container can be built by navigating to the just cloned directory and issuin
 
 in the directory containing 1) the Dockerfile, 2) the docker-compose.yml and 3) the .ztfquery credentials file and run with
 
-```docker-compose run -p 8000:8000 ztffps```. This exposes the web API to port 8000 of your local machine.
+```docker-compose run -p 8000:8000 fpbot```. This exposes the web API to port 8000 of your local machine.
 
 ### Troubleshooting
 Make sure that ztfquery and ztflc are installed with the latest version.
@@ -49,7 +49,7 @@ All functionality of the command-line tool is present in the class. Just call it
 For example:
 
 ```python
-from ztffps.pipeline import ForcedPhotometryPipeline
+from fpbot.pipeline import ForcedPhotometryPipeline
 
 pl = ForcedPhotometryPipeline(
     file_or_name="ZTF19aatubsj",
