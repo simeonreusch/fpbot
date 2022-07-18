@@ -26,6 +26,21 @@ else:
             'No Credentials for "IRSA" found in environment' "Assuming they are set."
         )
 
+    try:
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=UserWarning)
+            io.set_account(
+                "ampel_api_archive_token",
+                username=os.environ["AMPEL_API_ARCHIVE_TOKEN_USER"],
+                password=os.environ["AMPEL_API_ARCHIVE_TOKEN_PASSWORD"],
+            )
+            logging.info('Set up "ampel_api_archive_token" credentials')
+
+    except KeyError:
+        logging.info(
+            "No Token for AMPEL API found in environment" "Assume they are set."
+        )
+
 
 def get_user_and_password(service: str = None):
     """ """
