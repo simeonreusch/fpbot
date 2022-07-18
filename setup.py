@@ -39,6 +39,7 @@ setuptools.setup(
         "numpy",
         "pandas",
         "matplotlib",
+        "coveralls",
         "scipy",
         "slackclient",
         "sqlalchemy",
