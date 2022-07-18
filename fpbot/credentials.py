@@ -10,7 +10,9 @@ from os import environ
 
 if environ.get("ZTFHUB_MODE") == "HEADLESS":
     HEADLESS = True
+
 else:
+
     try:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=UserWarning)
@@ -41,7 +43,6 @@ else:
             "No Token for AMPEL API found in environment" "Assume they are set."
         )
 
-else:
     try:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=UserWarning)
