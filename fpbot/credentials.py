@@ -41,6 +41,22 @@ else:
             "No Token for AMPEL API found in environment" "Assume they are set."
         )
 
+else:
+    try:
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=UserWarning)
+            io.set_account(
+                "marshal",
+                username=os.environ["MARSHAL_USER"],
+                password=os.environ["MARSHAL_PASSWORD"],
+            )
+            logging.info('Set up "marshal" credentials')
+
+    except KeyError:
+        logging.info(
+            'No Credentials for "marshal" found in environment' "Assuming they are set."
+        )
+
 
 def get_user_and_password(service: str = None):
     """ """

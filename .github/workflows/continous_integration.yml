@@ -54,10 +54,12 @@ jobs:
         env:
           AMPEL_API_USER: ${{ secrets.ampel_api_archive_token_user }}
           AMPEL_API_PASSWORD: ${{ secrets.ampel_api_archive_token_password }}
+          FRITZ_TOKEN: ${{ secrets.fritz_token }}
           IRSA_USER: ${{ secrets.irsa_user }}
           IRSA_PASSWORD: ${{ secrets.irsa_password }}
+          MARSHAL_USER: ${{ secrets.marshal_user }}
+          MARSHAL_PASSWORD: ${{ secrets.marshal_password }}          
           PYPI_API_TOKEN: ${{ secrets.pypi_api_token }}
-          FRITZ_TOKEN: ${{ secrets.fritz_token }}
           ZTFDATA: ./
         run: |
           coverage run -m unittest discover tests/
