@@ -85,7 +85,6 @@ def main(
                 nprocess=32,
                 ampel=True,
                 update_disable=False,
-                logger=logger,
             )
             if download:
                 pl.download()

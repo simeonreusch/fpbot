@@ -11,6 +11,7 @@ from itertools import product
 from astropy.time import Time
 from astropy.utils.console import ProgressBar
 import ztfquery
+from ztfquery.query import ZTFQuery
 from requests.auth import HTTPBasicAuth
 from fpbot import credentials
 
@@ -323,8 +324,7 @@ class FritzInfo:
 def get_ipac_multiprocessing(args):
     """ """
     ztf_name, ra, dec, jdmin, jdmax = args
-
-    zquery = ztfquery.query.ZTFQuery()
+    zquery = ZTFQuery()
     sql_query = f"obsjd>={jdmin} and obsjd<={jdmax}"
     zquery.load_metadata(radec=[ra, dec], sql_query=sql_query, size=0.01)
     mt = zquery.metatable
@@ -368,3 +368,7 @@ def get_ipac_and_local_filecount(
         progress_bar.update(len(ras))
 
     return ipac_filecount
+
+
+if __name__ == "__main__":
+    a = 1

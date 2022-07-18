@@ -12,7 +12,7 @@ from scipy import stats
 import pkg_resources
 
 THRESHOLD_FILE = pkg_resources.resource_filename(
-    os.path.join("fpbot", "data", "zp_thresholds_quadID.txt")
+    "fpbot", "data/zp_thresholds_quadID.txt"
 )
 
 # THRESHOLD_FILE = os.path.join(os.getcwd(), "data", "zp_thresholds_quadID.txt")

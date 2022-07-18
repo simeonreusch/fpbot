@@ -4,7 +4,8 @@
 __pycache__
 *.slack*
 *.smtp*
-*test*
+*test
+test.py
 *.cred
 *log
 .ztfquery
