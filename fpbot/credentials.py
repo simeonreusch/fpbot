@@ -30,11 +30,11 @@ else:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=UserWarning)
             io.set_account(
-                "ampel_api_archive_token",
-                username=os.environ["AMPEL_API_ARCHIVE_TOKEN_USER"],
-                password=os.environ["AMPEL_API_ARCHIVE_TOKEN_PASSWORD"],
+                "ampel_api",
+                username=os.environ["AMPEL_API_USER"],
+                password=os.environ["AMPEL_API_PASSWORD"],
             )
-            logging.info('Set up "ampel_api_archive_token" credentials')
+            logging.info('Set up "ampel_api" credentials')
 
     except KeyError:
         logging.info(
