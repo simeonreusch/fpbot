@@ -39,6 +39,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # Initialize a MongoDB instance
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.7.0
+
      # Setting up dependencies
       - name: Install dependencies
         run: |
