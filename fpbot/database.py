@@ -5,22 +5,26 @@ import os, logging, collections
 from typing import Union, Any, Sequence, Tuple
 from pymongo import MongoClient
 
-if "MONGO_DB_LOCATION_DOCKER" in os.environ:
-    location = os.getenv("MONGO_DB_LOCATION_DOCKER")
-    username = "root"
-    password = "password"
-    MONGO_DB = MongoClient(f"mongodb://{username}:{password}@{location}:27017").fpbot
-else:
-    MONGO_DB = MongoClient("localhost", 27017).fpbot
 
-METADATA_COLL = MONGO_DB.metadata
+def get_db() -> MongoClient:
+    if "MONGO_DB_LOCATION_DOCKER" in os.environ:
+        location = os.getenv("MONGO_DB_LOCATION_DOCKER")
+        username = "root"
+        password = "password"
+        mongo_db = MongoClient(
+            f"mongodb://{username}:{password}@{location}:27017"
+        ).fpbot
+    else:
+        mongo_db = MongoClient("localhost", 27017)
+
+    return mongo_db
 
 
 def read_database(
     ztf_objects: Union[list, str],
     requested_data: Union[list, str, None] = None,
     logger=None,
-) -> Any:
+) -> dict:
     """
     Returns entries in metadata database for all ztf_objects given that are requested in requested_data
     Note: When doing bulk requests, it is much faster to query a list than
@@ -28,6 +32,9 @@ def read_database(
     for each individual query
     """
     from fpbot.pipeline import METADATA
+
+    mongo_db = get_db()
+    metadata_coll = mongo_db.fpbot.metadata
 
     if logger is None:
         logger = logging.getLogger("database")
@@ -49,7 +56,7 @@ def read_database(
     # argument
     if not requested_data:
         for i, name in enumerate(ztf_objects):
-            mydoc = METADATA_COLL.find()
+            mydoc = metadata_coll.find()
             for x in mydoc:
                 l = list(x.keys())
                 for key in l:
@@ -58,7 +65,7 @@ def read_database(
 
     dict_for_return_values = collections.defaultdict(list)
     for i, name in enumerate(ztf_objects):
-        query = METADATA_COLL.find_one({"_id": name})
+        query = metadata_coll.find_one({"_id": name})
         if query:
             for entry in requested_data:
                 if query.get(entry, None) is not None:
@@ -70,16 +77,21 @@ def read_database(
             for entry in requested_data:
                 dict_for_return_values[entry].append(None)
 
+    mongo_db.close()
+
     return dict_for_return_values
 
 
 def update_database(
     ztf_objects: Union[list, str], data_to_update: Union[list, dict], logger=None
-) -> Any:
+) -> None:
     """
     Updates metadata database for all ztf_objects given with data in data_to_update (must be a list of dictionaries or single dictionary if only one object is given)
     """
     from fpbot.pipeline import METADATA
+
+    mongo_db = get_db()
+    metadata_coll = mongo_db.fpbot.metadata
 
     if logger is None:
         logger = logging.getLogger("database")
@@ -93,12 +105,14 @@ def update_database(
         data_to_update = [data_to_update]
 
     for index, name in enumerate(ztf_objects):
-        METADATA_COLL.update_one(
+        metadata_coll.update_one(
             {"_id": name}, {"$set": data_to_update[index]}, upsert=True
         )
 
+    mongo_db.close()
 
-def delete_from_database(ztf_objects: Union[list, str], logger=None) -> Any:
+
+def delete_from_database(ztf_objects: Union[list, str], logger=None) -> None:
     """
     Deletes all ztf_objects passed from database
     """
@@ -106,15 +120,20 @@ def delete_from_database(ztf_objects: Union[list, str], logger=None) -> Any:
     if logger is None:
         logger = logging.getLogger("database")
 
+    mongo_db = get_db()
+    metadata_coll = mongo_db.fpbot.metadata
+
     assert isinstance(ztf_objects, list) or isinstance(ztf_objects, str)
 
     if isinstance(ztf_objects, str):
         ztf_objects = [ztf_objects]
 
     for i, name in enumerate(ztf_objects):
-        query = METADATA_COLL.find_one({"_id": name})
+        query = metadata_coll.find_one({"_id": name})
         if query:
-            METADATA_COLL.delete_one(query)
+            metadata_coll.delete_one(query)
+
+    mongo_db.close()
 
 
 def drop_database(logger=None) -> None:
@@ -124,5 +143,10 @@ def drop_database(logger=None) -> None:
     if logger is None:
         logger = logging.getLogger("database")
 
-    METADATA_COLL.drop()
+    mongo_db = get_db()
+    metadata_coll = mongo_db.fpbot.metadata
+
+    metadata_coll.drop()
     logger.info("fpbot database has been dropped")
+
+    mongo_db.close()
