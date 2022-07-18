@@ -4,12 +4,27 @@
 
 HEADLESS = False
 
-import os, getpass, keyring
+import os, getpass, keyring, warnings, logging
 from ztfquery import io
 from os import environ
 
 if environ.get("ZTFHUB_MODE") == "HEADLESS":
     HEADLESS = True
+else:
+    try:
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=UserWarning)
+            io.set_account(
+                "irsa",
+                username=os.environ["IRSA_USER"],
+                password=os.environ["IRSA_PASSWORD"],
+            )
+            logging.info('Set up "irsa" credentials')
+
+    except KeyError:
+        logging.info(
+            'No Credentials for "IRSA" found in environment' "Assuming they are set."
+        )
 
 
 def get_user_and_password(service: str = None):
