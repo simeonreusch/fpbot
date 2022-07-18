@@ -10,15 +10,13 @@ test.py
 *log
 .ztfquery
 lists/*
-ztffps/data/WISE.parquet
-ztffps/cosmology_leopold.py
-ztffps/findpairs.py
+fpbot/data/WISE.parquet
 bulk_logs/
-ztffps.egg-info/
+fpbot.egg-info/
 *.txt
 !requirements.txt
-!ztffps/data/gBandRefImages.txt
-!ztffps/data/zp_thresholds_quadID.txt
+!fpbot/data/gBandRefImages.txt
+!fpbot/data/zp_thresholds_quadID.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
