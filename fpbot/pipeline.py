@@ -308,7 +308,7 @@ class ForcedPhotometryPipeline:
 
     def get_position_and_timerange(self):
         """
-        Check for entry in Mongo database and update it via AMPEL or Marshal
+        Check for entry in Mongo database and update it via AMPEL
         """
         logger.info("\nChecking database.")
 
