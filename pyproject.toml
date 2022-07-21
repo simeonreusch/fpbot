@@ -35,6 +35,8 @@ ztfquery = "^1.18.4"
 
 [tool.poetry.dev-dependencies]
 setuptools = "^63.2.0"
+
+[tool.poetry.extras]
 slack = ["slackclient"]
 
 [build-system]
