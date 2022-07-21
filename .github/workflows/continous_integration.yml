@@ -23,6 +23,13 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    # We need a MongoDB to run
+    services:
+      mongo:
+        image: mongo:5
+        ports:
+          - 27017:27017
+
     # Specify the python versions to test
     strategy:
       matrix:
