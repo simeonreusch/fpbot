@@ -16,14 +16,14 @@ def is_ztf_name(name: str) -> bool:
     """
     Checks if a string adheres to the ZTF naming scheme
     """
-    return re.match("^ZTF[1-2]\d[a-z]{7}$", name)
+    return re.match(r"^ZTF[1-2]\d[a-z]{7}$", name)
 
 
 def is_wise_name(name: str) -> bool:
     """
     Checks if a string adheres to the (internal) WISE naming scheme
     """
-    return re.match("^WISE\d[0-9]{0,}$", name)
+    return re.match(r"^WISE\d[0-9]{0,}$", name)
 
 
 def get_wise_ra_dec(name: str):
