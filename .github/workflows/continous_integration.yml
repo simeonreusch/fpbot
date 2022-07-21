@@ -38,7 +38,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Set up the python versions
       - name: Set up Python ${{ matrix.python-version }}
@@ -67,7 +67,9 @@ jobs:
           FRITZ_TOKEN: ${{ secrets.fritz_token }}
           ZTFDATA: ./
         run: |
-          poetry run coverage run -m unittest discover tests/
+          poetry run coverage run -m pytest -v
+        env:
+          MONGO_PORT: ${{ job.services.mongo.ports[27017] }}
 
       # Push the coverage result to coveralls.io
       - name: Run Coveralls
