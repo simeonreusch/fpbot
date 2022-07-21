@@ -39,63 +39,43 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Initialize a MongoDB instance
-      - name: Set up MongoDB
-        uses: supercharge/mongodb-github-action@1.7.0
+      # Install poetry
+      - name: Install poetry and coveralls
+        run: >-
+          python -m pip install --upgrade poetry coveralls
 
      # Setting up dependencies
-      - name: Install dependencies
+      - name: Install dependencies (with all extras)
         run: |
-          pip install wheel
-          pip install -e .
+          poetry install --extras "slack"
 
-      # Runs a set of commands using the runners shell
+      # Runs all tests in the 'tests' directory and gets coverage
       - name: Test the code
         env:
-          AMPEL_API_USER: ${{ secrets.ampel_api_archive_token_user }}
-          AMPEL_API_PASSWORD: ${{ secrets.ampel_api_archive_token_password }}
-          FRITZ_TOKEN: ${{ secrets.fritz_token }}
+          KOWALSKI_HOST: ${{ secrets.kowalski_host }}
+          KOWALSKI_API_TOKEN: ${{ secrets.kowalski_api_token }}
           IRSA_USER: ${{ secrets.irsa_user }}
           IRSA_PASSWORD: ${{ secrets.irsa_password }}
-          MARSHAL_USER: ${{ secrets.marshal_user }}
-          MARSHAL_PASSWORD: ${{ secrets.marshal_password }}          
           PYPI_API_TOKEN: ${{ secrets.pypi_api_token }}
+          FRITZ_TOKEN: ${{ secrets.fritz_token }}
           ZTFDATA: ./
         run: |
-          coverage run -m unittest discover tests/
+          poetry run coverage run -m unittest discover tests/
 
-# coverage combine
-
+      # Push the coverage result to coveralls.io
       - name: Run Coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         if: ${{ success() }}
         run: coveralls
 
-
       - name: Echo tag name
         run: echo "Tag is ${{ github.ref }}, Tagged is ${{ startsWith(github.ref, 'refs/tags/')}}, Python Check is ${{matrix.python-version == 3.10}},  Deploy is ${{ startsWith(github.ref, 'refs/tags/') && matrix.python-version == 3.10}}"
 
-      - name: Install pypa/build
-        run: >-
-          python -m
-          pip install
-          build
-          --user
-          
-      - name: Build a binary wheel and a source tarball
-        run: >-
-          python -m
-          build
-          --sdist
-          --wheel
-          --outdir dist/
-          .
-
-      - name: Publish distribution 📦 to PyPI
+      # Build a tarball and push to Pypi if tagged with new version
+      - name: Build and publish
         if: ${{ startsWith(github.ref, 'refs/tags/') && success() && matrix.python-version == 3.10}}
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
-
+        run: |
+          poetry publish -n --build
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
