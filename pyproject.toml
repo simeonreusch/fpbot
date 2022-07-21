@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "fpbot"
+version = "1.0.4"
+description = "Forced photometry pipeline for the Zwicky Transient Facility"
+authors = ["simeonreusch <simeon.reusch@desy.de>"]
+maintainers = ["Simeon Reusch <simeon.reusch@desy.de>"]
+license = "BSD-3-Clause"
+repository = "https://github.com/simeonreusch/fpbot"
+readme = "README.md"
+classifiers = [
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+astropy = "^5.1"
+backoff = "^2.1.2"
+fastapi = "^0.79.0"
+keyring = "^23.7.0"
+matplotlib = "^3.5.2"
+numpy = "^1.23.1"
+pandas = "^1.4.3"
+pymongo = "^4.2.0"
+requests = "^2.28.1"
+scipy = "^1.8.1"
+sfdmap = "^0.1.1"
+slackclient = "^2.9.4"
+SQLAlchemy = "^1.4.39"
+tdqm = "^0.0.1"
+ztflc = "^0.2.4"
+ztfquery = "^1.18.4"
+
+[tool.poetry.dev-dependencies]
+setuptools = "^63.2.0"
+slack = ["slackclient"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
