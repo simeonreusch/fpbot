@@ -1,16 +1,17 @@
-FROM python:3.8.5-buster
+FROM python:3.10.5-buster
 
 RUN apt-get update && apt-get install -y \
     git \
     python3-pip \
     libpq-dev \
-    python3-dev
+    python3-dev \
+    poetry
 
-RUN git clone https://github.com/simeonreusch/ztffps.git
-WORKDIR ztffps
+RUN git clone https://github.com/simeonreusch/fpbot.git
+WORKDIR fpbot
 EXPOSE 8000
-RUN pip3 install -r requirements.txt
+RUN poetry install
 #CMD ["mkdir", "/ZTFDATA"]
 ADD .ztfquery /root
 ENV ZTFDATA=/ZTFDATA/
-WORKDIR /ztffps/ztffps
+WORKDIR /fpbot/fpbot

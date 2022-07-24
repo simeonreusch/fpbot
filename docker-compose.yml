@@ -24,7 +24,7 @@ services:
     networks:
      - app-tier
     command:
-      uvicorn api:ztffps_api --host 0.0.0.0 --port 8000 --reload
+      uvicorn api:fpbot_api --host 0.0.0.0 --port 8000 --reload
     volumes:
       - ./ZTFDATA:/ZTFDATA
 
