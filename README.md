@@ -11,7 +11,7 @@ Note: Requires Python >= 3.8. Also requires a MongoDB instance for storing the m
 
 1. Note that libpq-dev needs to be present. On Debian/Ubuntu, issue ```sudo apt install libpq-dev```. On Mac OS, run ```brew install postgresql```.
 
-2. All required packages should be installed by issuing: ```pip3 install git+ssh://git@github.com/simeonreusch/fpbot```.
+2. Then install via: ```pip install fpbot```.
 
 3. If MongoDB is not present, it can easily be installed.
 On Debian/Ubuntu, just follow this [instruction set](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-debian/#install-mongodb-community-edition). After this, make sure the demon runs. Issue  ```sudo systemctl start mongod``` and ```sudo systemctl enable mongod```. On MacOS, make sure brew is present follow [this tutorial](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/).
@@ -20,9 +20,9 @@ On Debian/Ubuntu, just follow this [instruction set](https://docs.mongodb.com/ma
 
 ---
 
-5. If you want to use the [AMPEL API](https://ampel.zeuthen.desy.de/api/ztf/archive/v3/docs) for alert data (you don't have to!), you need credentials for the API.
+5. If you want to use the [AMPEL API](https://ampel.zeuthen.desy.de/api/ztf/archive/v3/docs) for alert data (you don't have to!), you need credentials for the API. You can get these [here](https://ampel.zeuthen.desy.de/live/dashboard/tokens).
 
-6. NOTE: If you are planning to run fpbot on a headless system which does not provide the luxury of a systemwide keychain, please add ```export ZTFHUB_MODE='HEADLESS'``` to your .bashrc or .zshrc. The pipeline will then uses ztfquery's base64 obfuscated password storage.
+6. NOTE: If you are planning to run fpbot on a headless system which does not provide the luxury of a systemwide keychain, please add ```export ZTFHUB_MODE='HEADLESS'``` to your .bashrc or .zshrc. The pipeline will then uses `ztfquery`'s base64-obfuscated password storage.
 
 ## ALTERNATIVE: Use Docker container
 fpbot comes shipped with a Dockerfile and a docker-compose.yml. Use them to build the docker container (this includes all dependencies as well as a MongoDB instance). Note: You have to provide a .ztfquery file in the fpbot directory containing access data for ztfquery (see [ztfquery](https://github.com/mickaelrigault/ztfquery) or [ztflc](https://github.com/mickaelrigault/ztfquery) for details).
@@ -38,14 +38,14 @@ in the directory containing 1) the Dockerfile, 2) the docker-compose.yml and 3) 
 ```docker-compose run -p 8000:8000 fpbot```. This exposes the web API to port 8000 of your local machine.
 
 ### Troubleshooting
-Make sure that ztfquery and ztflc are installed with the latest version.
+Make sure that `ztfquery` and `ztflc` are installed with the latest version.
 
-In case way too few images are downloaded, check your Marshal and IRSA credentials. These are stored in ```~.ztfquery```. If there is a problem with these, ztfquery will not complain but simply only download publicly accessible images.
+In case way too few images are downloaded, check your Marshal and IRSA credentials. These are stored in `~.ztfquery`. If there is a problem with these, `ztfquery` will not complain but simply only download publicly accessible images.
 
 ## Usage
 
 ### By importing class
-All functionality of the command-line tool is present in the class. Just call it according to the commands available in the pipeline.py file.
+All functionality of the command-line tool is present in the class. Just call it according to the commands available in `pipeline.py`.
 
 For example:
 
@@ -63,7 +63,7 @@ pl.psffit()
 pl.plot()
 ```
 
-### By systemwide command (forcedphotometry ZTFname -operations --options)
+### By systemwide command (`forcedphotometry ZTFname -operations --options`)
 
 Always:
 
