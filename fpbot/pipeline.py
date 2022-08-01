@@ -500,11 +500,11 @@ class ForcedPhotometryPipeline:
             )
 
             logger.info(f"\n{name} ({i+1} of {len(download_needed)}) Downloading data.")
-            if not os.path.exists(
-                os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
-            ):
-                fp.io.update_marshal()
-            fp.load_metadata()
+            # if not os.path.exists(
+            #     os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
+            # ):
+            #     fp.io.update_marshal()
+            # fp.load_metadata()
             if self.sciimg:
                 fp.io.download_data(
                     nprocess=32,
