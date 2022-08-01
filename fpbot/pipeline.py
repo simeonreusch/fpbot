@@ -2,7 +2,7 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import multiprocessing, time, os, sys, logging, argparse, tarfile
+import multiprocessing, time, os, sys, logging, argparse, tarfile, shutil
 
 from tqdm import tqdm
 
@@ -505,6 +505,19 @@ class ForcedPhotometryPipeline:
             # ):
             #     fp.io.update_marshal()
             # fp.load_metadata()
+
+            marshal_dummyfile = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                "data",
+                "marshal_dummyfile.csv",
+            )
+            dummyfile_target = os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
+
+            if not os.path.exists(dummyfile_target):
+                shutil.copyfile(marshal_dummyfile, dst)
+
+            fp.load_metadata()
+
             if self.sciimg:
                 fp.io.download_data(
                     nprocess=32,
