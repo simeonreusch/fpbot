@@ -506,16 +506,6 @@ class ForcedPhotometryPipeline:
             #     fp.io.update_marshal()
             # fp.load_metadata()
 
-            marshal_dummyfile = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                "data",
-                "marshal_dummyfile.csv",
-            )
-            dummyfile_target = os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
-
-            if not os.path.exists(dummyfile_target):
-                shutil.copyfile(marshal_dummyfile, dst)
-
             fp.load_metadata()
 
             if self.sciimg:
@@ -634,6 +624,17 @@ class ForcedPhotometryPipeline:
                 jdmax=jdmax,
                 name=name,
             )
+
+            marshal_dummyfile = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                "data",
+                "marshal_dummyfile.csv",
+            )
+            dummyfile_target = os.path.join(MARSHALDATA, "Cosmology_target_sources.csv")
+
+            if not os.path.exists(dummyfile_target):
+                shutil.copyfile(marshal_dummyfile, dummyfile_target)
+
             logger.info(f"\n{name} ({i+1} of {objects_total}) loading metadata.")
             fp.load_metadata()
             logger.info(f"\n{name} ({i+1} of {objects_total}) metadata loaded.")
