@@ -11,7 +11,7 @@ from fpbot.pipeline import ForcedPhotometryPipeline
 class TestPipeline(unittest.TestCase):
     def setUp(self):
         logging.getLogger("fpbot.pipeline").setLevel(logging.DEBUG)
-        logging.getLogger("nuztf.observations").setLevel(logging.DEBUG)
+        logging.getLogger("fpbot.observations").setLevel(logging.DEBUG)
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
