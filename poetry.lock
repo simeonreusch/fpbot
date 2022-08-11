@@ -325,7 +325,7 @@ test = ["async-timeout", "trio", "testpath", "pytest-asyncio (>=0.17)", "pytest-
 
 [[package]]
 name = "keyring"
-version = "23.8.1"
+version = "23.8.2"
 description = "Store and access your passwords safely."
 category = "main"
 optional = false
@@ -1278,8 +1278,8 @@ jeepney = [
     {file = "jeepney-0.8.0.tar.gz", hash = "sha256:5efe48d255973902f6badc3ce55e2aa6c5c3b3bc642059ef3a91247bcfcc5806"},
 ]
 keyring = [
-    {file = "keyring-23.8.1-py3-none-any.whl", hash = "sha256:73dec1c13b15a69979fc9952e01c5c69e38c8ba340cc664d0461a947fc90b93c"},
-    {file = "keyring-23.8.1.tar.gz", hash = "sha256:9715c8461f6d9e61066a5883b1fc8aec68f950e81db4ce9f8635cbaa4b9625bb"},
+    {file = "keyring-23.8.2-py3-none-any.whl", hash = "sha256:10d2a8639663fe2090705a00b8c47c687cacdf97598ea9c11456679fa974473a"},
+    {file = "keyring-23.8.2.tar.gz", hash = "sha256:0d9973f8891850f1ade5f26aafd06bb16865fbbae3fc56b0defb6a14a2624003"},
 ]
 kiwisolver = [
     {file = "kiwisolver-1.4.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:2f5e60fabb7343a836360c4f0919b8cd0d6dbf08ad2ca6b9cf90bf0c76a3c4f6"},
