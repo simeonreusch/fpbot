@@ -39,7 +39,7 @@ def generate_thumbnails(
         pipeline.PLOT_DATAFRAMES, "{}_SNT_{:.1f}.csv".format(name, snt)
     )
 
-    df = pd.read_csv(lc_file)
+    df = pd.read_csv(lc_file, comment="#")
     df = df.sort_values(by=["obsmjd"])
 
     # Create directories
