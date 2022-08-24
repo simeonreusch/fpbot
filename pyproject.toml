@@ -18,7 +18,7 @@ classifiers = [
 python = ">=3.8,<3.11"
 astropy = "^5.1"
 backoff = "^2.1.2"
-fastapi = "^0.79.0"
+fastapi = ">=0.79,<0.81"
 keyring = "^23.7.0"
 matplotlib = "^3.5.2"
 numpy = "^1.23.1"
