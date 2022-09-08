@@ -3,15 +3,15 @@
 # License: BSD-3-Clause
 import os, logging, collections
 from typing import Union, Any, Sequence, Tuple
-from pymongo import MongoClient
+import pymongo
 
 
-def get_db() -> MongoClient:
+def get_db() -> pymongo.MongoClient:
     if "MONGO_DB_LOCATION_DOCKER" in os.environ:
         location = os.getenv("MONGO_DB_LOCATION_DOCKER")
         username = "root"
         password = "password"
-        mongo_db = MongoClient(
+        mongo_db = pymongo.MongoClient(
             f"mongodb://{username}:{password}@{location}:27017"
         ).fpbot
     else:
@@ -23,7 +23,7 @@ def get_db() -> MongoClient:
             )
             mongo_db.server_info()
         except pymongo.errors.ServerSelectionTimeoutError as err:
-            mongo_db = MongoClient("localhost", 27051)
+            mongo_db = pymongo.MongoClient("localhost", 27051)
 
     return mongo_db
 
