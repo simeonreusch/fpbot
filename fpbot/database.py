@@ -15,7 +15,15 @@ def get_db() -> MongoClient:
             f"mongodb://{username}:{password}@{location}:27017"
         ).fpbot
     else:
-        mongo_db = MongoClient("localhost", 27017)
+        try:
+            mongo_db = pymongo.MongoClient(
+                "localhost",
+                27017,
+                serverSelectionTimeoutMS=1000,
+            )
+            mongo_db.server_info()
+        except pymongo.errors.ServerSelectionTimeoutError as err:
+            mongo_db = MongoClient("localhost", 27051)
 
     return mongo_db
 
