@@ -12,13 +12,6 @@ from ztfquery import query
 from fpbot import connectors, database, utils
 
 
-def is_ztf_name(name):
-    """
-    Checks if a string adheres to the ZTF naming scheme
-    """
-    return re.match("^ZTF[1-2]\d[a-z]{7}$", name)
-
-
 def main(
     file_or_name,
     startitem=0,
@@ -35,7 +28,9 @@ def main(
 
     fname = None
 
-    if is_ztf_name(file_or_name):
+    if utils.is_ztf_name(file_or_name):
+        object_list = [file_or_name]
+    elif utils.is_wise_name(file_or_name):
         object_list = [file_or_name]
     else:
         object_list = []
@@ -44,12 +39,12 @@ def main(
             fname = os.path.splitext(file_or_name)[0]
             lines = file.read().splitlines()
             for line in lines:
-                if is_ztf_name(line):
+                if utils.is_ztf_name(line) or utils.is_wise_name(line):
                     object_list.append(line)
         except FileNotFoundError as error:
             print(errormessage)
             raise error
-        assert object_list[0][:3] == "ZTF" and len(object_list[0]) == 12, errormessage
+        # assert object_list[0][:3] == "ZTF" and len(object_list[0]) == 12, errormessage
 
     if delete:
         while True:
