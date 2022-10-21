@@ -50,7 +50,7 @@ def main(
         while True:
             if (
                 input(
-                    f"You have selected to delete {len(object_list)} transient(s). Do you want to continue? If so, type 'y'"
+                    f"You have selected to delete {len(object_list[startitem:])} transient(s). Do you want to continue? If so, type 'y'"
                 )
                 == "y"
             ):
