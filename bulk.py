@@ -20,6 +20,7 @@ def main(
     plot=False,
     size=False,
     delete=False,
+    daysago=None,
 ):
     """ """
     logger = logging.getLogger("pipeline")
@@ -75,7 +76,7 @@ def main(
         try:
             pl = ForcedPhotometryPipeline(
                 file_or_name=ztfid,
-                daysago=None,
+                daysago=daysago,
                 daysuntil=None,
                 nprocess=32,
                 ampel=True,
@@ -178,6 +179,13 @@ if __name__ == "__main__":
         default=0,
         help="Define with which item to start",
     )
+    parser.add_argument(
+        "--daysago",
+        "-daysago",
+        type=int,
+        default=None,
+        help="Number of days in the past you want to download data for. Default is all the complete dataset",
+    )
 
     parser.add_argument(
         "-dl", "--dl", action="store_true", help="Download the files from IPAC"
@@ -209,6 +217,7 @@ if __name__ == "__main__":
     plot = commandline_args.plot
     size = commandline_args.size
     delete = commandline_args.delete
+    daysago = commandline_args.daysago
 
     print("------------------------------------\n")
     print(
@@ -224,4 +233,5 @@ if __name__ == "__main__":
         plot=plot,
         size=size,
         delete=delete,
+        daysago=daysago,
     )
