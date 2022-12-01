@@ -2,7 +2,7 @@
 # License: BSD-3-Clause
 
 import pandas as pd
-import os, re, json, logging, argparse, logging
+import os, re, json, logging, argparse, logging, tarfile
 from datetime import datetime
 from tqdm import tqdm
 from astropy.time import Time
@@ -10,17 +10,19 @@ from fpbot.pipeline import ForcedPhotometryPipeline
 import ztfquery
 from ztfquery import query
 from fpbot import connectors, database, utils
+from fpbot.pipeline import FORCEPHOTODATA
 
 
 def main(
     file_or_name,
     startitem=0,
-    download=True,
-    fit=True,
+    download=False,
+    fit=False,
     plot=False,
     size=False,
     delete=False,
     daysago=None,
+    generate_tar=None,
 ):
     """ """
     logger = logging.getLogger("pipeline")
@@ -45,7 +47,6 @@ def main(
         except FileNotFoundError as error:
             print(errormessage)
             raise error
-        # assert object_list[0][:3] == "ZTF" and len(object_list[0]) == 12, errormessage
 
     if delete:
         while True:
@@ -163,6 +164,10 @@ def main(
             print(f"Deleting {name} from internal database")
             database.delete_from_database(name)
 
+    if generate_tar:
+        for ztfid in good_objects:
+            filepath_tarball = os.path.join()
+
 
 if __name__ == "__main__":
 
@@ -208,30 +213,29 @@ if __name__ == "__main__":
         help="ATTENTION: THIS DELETES THE TRANSIENTS FROM THE DATABASE AND REMOVES THE LOCAL FILES",
     )
 
-    commandline_args = parser.parse_args()
+    parser.add_argument(
+        "-tarfile",
+        "--tarfile",
+        action="store_true",
+        help="Export the objects to a tarfile.",
+    )
 
-    startitem = commandline_args.start
-    file_or_name = commandline_args.name
-    download = commandline_args.dl
-    fit = commandline_args.fit
-    plot = commandline_args.plot
-    size = commandline_args.size
-    delete = commandline_args.delete
-    daysago = commandline_args.daysago
+    args = parser.parse_args()
 
     print("------------------------------------\n")
     print(
-        f"Starting.\nRun config: file={file_or_name} / startitem={startitem} // download={download} // fit={fit} // size={size} // delete={delete}"
+        f"Starting.\nRun config: file={args.name} / startitem={args.start} // download={args.dl} // fit={args.fit} // plot={args.plot} // size={args.size} // delete={args.delete} // daysago={args.daysago} // tarfile={args.tarfile}"
     )
     print("\n------------------------------------")
 
     main(
-        file_or_name=file_or_name,
-        startitem=startitem,
-        download=download,
-        fit=fit,
-        plot=plot,
-        size=size,
-        delete=delete,
-        daysago=daysago,
+        file_or_name=args.name,
+        startitem=args.start,
+        download=args.dl,
+        fit=args.fit,
+        plot=args.plot,
+        size=args.size,
+        delete=args.delete,
+        daysago=args.daysago,
+        generate_tar=args.tarfile,
     )
