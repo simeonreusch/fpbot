@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fpbot"
-version = "1.0.5"
+version = "1.0.6"
 description = "Forced photometry pipeline for the Zwicky Transient Facility"
 authors = ["simeonreusch <simeon.reusch@desy.de>"]
 maintainers = ["Simeon Reusch <simeon.reusch@desy.de>"]
