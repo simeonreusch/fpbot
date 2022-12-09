@@ -885,7 +885,7 @@ ztfquery = "*"
 
 [[package]]
 name = "ztfquery"
-version = "1.19.1"
+version = "1.20.0"
 description = "access ZTF data from python"
 category = "main"
 optional = false
@@ -2151,5 +2151,5 @@ ztflc = [
     {file = "ztflc-0.2.4.tar.gz", hash = "sha256:a90d3a7e16ed9b73707f2cddd5706b76b24b3279790c8b32f0d2142a7d144ccd"},
 ]
 ztfquery = [
-    {file = "ztfquery-1.19.1.tar.gz", hash = "sha256:b5ddd1912d04feb77c4471ab299d29c03ae1b2740752f2703505aa4ddc33dc4e"},
+    {file = "ztfquery-1.20.0.tar.gz", hash = "sha256:fc54c21d432022847d7c1d1ef850e4f33b79da8bc590c4fe6b153ba5a8ed8f77"},
 ]
