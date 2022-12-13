@@ -2,7 +2,7 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import os, logging, collections, re, argparse
+import os, logging, collections, re, argparse, socket
 from typing import Union, Any, Sequence, Tuple
 from astropy.utils.console import ProgressBar
 from pymongo import MongoClient
@@ -13,6 +13,7 @@ if "MONGO_DB_LOCATION_DOCKER" in os.environ:
     password = "password"
     MONGO_DB = MongoClient(f"mongodb://{username}:{password}@{location}:27017").ztfhub
 else:
+    hostname = socket.gethostname()
     if hostname == "wgs33.zeuthen.desy.de":
         port = 27051
     else:
