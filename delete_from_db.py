@@ -49,10 +49,8 @@ def use_if_ztf(file_or_name):
             for line in lines:
                 if is_ztf_name(line):
                     object_list.append(line)
-        except FileNotFoundError as error:
-            print(errormessage)
-            raise error
-        assert object_list[0][:3] == "ZTF" and len(object_list[0]) == 12, errormessage
+        except:
+            object_list.append(file_or_name)
 
     return object_list
 
