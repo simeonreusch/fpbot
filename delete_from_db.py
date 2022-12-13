@@ -13,7 +13,11 @@ if "MONGO_DB_LOCATION_DOCKER" in os.environ:
     password = "password"
     MONGO_DB = MongoClient(f"mongodb://{username}:{password}@{location}:27017").ztfhub
 else:
-    MONGO_DB = MongoClient("localhost", 27017).ztfhub
+    if hostname == "wgs33.zeuthen.desy.de":
+        port = 27051
+    else:
+        port = 27017
+    MONGO_DB = MongoClient("localhost", port).ztfhub
 
 METADATA_COLL = MONGO_DB.metadata
 
