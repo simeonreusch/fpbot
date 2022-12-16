@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 # License: BSD-3-Clause
 
-import pandas as pd
+import pandas as pd  # type: ignore
 import os, re, json, logging, argparse, logging, tarfile
 from datetime import datetime
-from tqdm import tqdm
-from astropy.time import Time
+from tqdm import tqdm  # type: ignore
+from astropy.time import Time  # type: ignore
 from fpbot.pipeline import ForcedPhotometryPipeline
-import ztfquery
+import ztfquery  # type: ignore
 from ztfquery import query
 from fpbot import connectors, database, utils
 from fpbot.pipeline import FORCEPHOTODATA
 
 
 def main(
-    file_or_name,
-    startitem=0,
-    download=False,
-    fit=False,
-    plot=False,
-    size=False,
-    delete=False,
-    daysago=None,
-    generate_tar=None,
+    file_or_name: str,
+    startitem: int = 0,
+    download: bool = False,
+    fit: bool = False,
+    plot: bool = False,
+    size: bool = False,
+    delete: bool = False,
+    daysago: int = None,
+    generate_tar: None | str = None,
 ):
     """ """
     logger = logging.getLogger("pipeline")
