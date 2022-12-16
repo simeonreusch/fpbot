@@ -97,7 +97,8 @@ def main(
 
     if len(bad_objects) > 0:
         print("\nBad objects (have thrown an error) are:")
-        print(bad_objects)
+        for bad_object in bad_objects:
+            print(bad_object)
 
     if fname:
         if not os.path.exists("./bulk_logs"):
