@@ -148,10 +148,8 @@ class ForcedPhotometryPipeline:
                 coords = SkyCoord(f"{ra} {dec}", unit=(u.hourangle, u.deg))
             else:
                 coords = SkyCoord(f"{ra} {dec}", unit=u.deg)
-            self.ra = np.float(
-                coords.ra.to_string(decimal=True, unit=u.deg, precision=8)
-            )
-            self.dec = np.float(
+            self.ra = float(coords.ra.to_string(decimal=True, unit=u.deg, precision=8))
+            self.dec = float(
                 coords.dec.to_string(decimal=True, unit=u.deg, precision=8)
             )
             if isinstance(self.file_or_name, list):
