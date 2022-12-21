@@ -139,8 +139,6 @@ class ForcedPhotometryPipeline:
         else:
             self.convert_daysago_to_jd()
 
-        self.logger.info("BLA")
-
         # parse different formats of ra and dec
         if ra is not None and dec is not None:
             if str(ra)[2] == ":" or str(ra)[2] == "h":
