@@ -461,7 +461,6 @@ class ForcedPhotometryPipeline:
             jdmax=self.jdmax,
             nprocess=16,
         )
-        quit()
 
         for index, name in enumerate(download_requested):
             if ipac_filecounts[name]["local"] < ipac_filecounts[name]["ipac"]:
