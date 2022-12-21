@@ -654,7 +654,7 @@ class ForcedPhotometryPipeline:
                 fitted_datapoints = 0
 
             df_file = os.path.join(FORCEPHOTODATA, f"{name}.csv")
-            print(df_file)
+
             if os.path.isfile(df_file):
                 _df = pd.read_csv(df_file, comment="#", index_col=0)
                 if len(_df) == 0:
@@ -793,7 +793,7 @@ class ForcedPhotometryPipeline:
             plot_flux=plot_flux,
             plot_alertdata=plot_alertdata,
         )
-        print(f"{name} plotted")
+        self.logger.info(f"{name} plotted")
 
     def saltfit(self, snt=5, quality_checks=False, progress=True, alertfit=False):
         """
