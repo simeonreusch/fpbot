@@ -23,13 +23,11 @@ API_ZTF_ARCHIVE_URL = API_BASEURL + "/api/ztf/archive"
 class AmpelInfo:
     """ """
 
-    def __init__(self, ztf_names, nprocess=16, logger=None):
+    def __init__(self, ztf_names, nprocess=16):
         """ """
-        if logger is None:
-            logging.basicConfig(level=logging.INFO)
-            self.logger = logging.getLogger("cosmology")
-        else:
-            self.logger = logger
+        # logging.basicConfig(level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
 
         self.ztf_names = ztf_names
         self.nprocess = nprocess
@@ -182,9 +180,17 @@ def get_ipac_and_local_filecount(
     nprocess: int = 16,
 ) -> dict:
     """ """
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+
+    logger.info(
+        "Getting IPAC and local filecounts to see if there are new files to be downloaded"
+    )
+
     ipac_filecount = {}
 
-    progress_bar = tqdm(total=len(ras))
+    if (n_objects := len(ras)) > 1:
+        progress_bar = tqdm(total=len(ras))
 
     jdmins = [jdmin] * len(ras)
     jdmaxs = [jdmax] * len(ras)
@@ -202,9 +208,11 @@ def get_ipac_and_local_filecount(
                 ),
             )
         ):
-            progress_bar.update(j)
+            if n_objects > 1:
+                progress_bar.update(j)
             ipac_filecount.update(result)
 
-        progress_bar.update(len(ras))
+        if n_objects > 1:
+            progress_bar.update(len(ras))
 
     return ipac_filecount

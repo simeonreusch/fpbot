@@ -2,11 +2,18 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import os, time, argparse, multiprocessing, sys
+import os, time, argparse, multiprocessing, sys, logging
 import numpy as np
 from fpbot.pipeline import ForcedPhotometryPipeline
 
 if __name__ == "__main__":
+    import logging
+
+    logging.basicConfig()
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    logging.getLogger("fpbot.pipeline").setLevel(logging.INFO)
+
     # neccessary arg
     parser = argparse.ArgumentParser(
         description="Used to obtain forced photometry for selection of SNe in parallel"
@@ -281,4 +288,4 @@ if __name__ == "__main__":
     endtime = time.time()
     duration = endtime - pl.startime
 
-    print(f"\nThe script took {duration / 60:.2f} minutes")
+    logger.info(f"The script took {duration / 60:.2f} minutes")

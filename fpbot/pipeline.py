@@ -5,15 +5,7 @@
 import multiprocessing, time, os, sys, logging, argparse, tarfile, shutil
 
 from tqdm import tqdm
-
-from ztflc import forcephotometry
-from ztflc.io import LOCALDATA
-
-import ztfquery
-from ztfquery import query as zq
-
 import numpy as np
-
 import pandas as pd
 
 from astropy.time import Time
@@ -21,6 +13,11 @@ from astropy.coordinates import SkyCoord
 from astropy import units as u
 from astropy.utils.console import ProgressBar
 import requests.exceptions
+
+from ztflc import forcephotometry
+from ztflc.io import LOCALDATA
+import ztfquery
+from ztfquery import query as zq
 
 from fpbot import database, credentials
 from fpbot.thumbnails import generate_thumbnails
@@ -65,8 +62,6 @@ for path in [
     if not os.path.exists(path):
         os.makedirs(path)
 
-logger = logging.getLogger(__name__)
-
 
 class ForcedPhotometryPipeline:
     """ """
@@ -88,37 +83,39 @@ class ForcedPhotometryPipeline:
         sciimg=False,
         update_enforce=False,
         update_disable=False,
-        ampel=False,
+        ampel=True,
         download_newest=True,
         filecheck=False,
         verbose=False,
     ):
 
-        self.startime = time.time()
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
 
         # check for IRSA credentials
         _, _ = credentials.get_user_and_password("irsa")
 
+        self.startime = time.time()
+
         if file_or_name is None:
-            logger.error(
+            self.logger.error(
                 "You have to initialize this class with at least one name of a ZTF object for which to perform forced photometry a textfile containing one ZTF name per line or an arbitrary name if the -radec option is chosen."
             )
         else:
             self.file_or_name = file_or_name
 
-        if not logger.hasHandlers():
+        if not self.logger.hasHandlers():
             logFormatter = logging.Formatter(
                 "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s"
             )
 
             fileHandler = logging.FileHandler("./log")
             fileHandler.setFormatter(logFormatter)
-            logger.addHandler(fileHandler)
+            self.logger.addHandler(fileHandler)
 
             consoleHandler = logging.StreamHandler()
             consoleHandler.setFormatter(logFormatter)
-            logger.addHandler(consoleHandler)
-            logger.setLevel(logging.INFO)
+            self.logger.addHandler(consoleHandler)
 
         self.daysago = daysago
         self.daysuntil = daysuntil
@@ -142,6 +139,8 @@ class ForcedPhotometryPipeline:
         else:
             self.convert_daysago_to_jd()
 
+        self.logger.info("BLA")
+
         # parse different formats of ra and dec
         if ra is not None and dec is not None:
             if str(ra)[2] == ":" or str(ra)[2] == "h":
@@ -160,7 +159,7 @@ class ForcedPhotometryPipeline:
             self.update_database_with_given_radec()
 
         elif (ra is None and dec is not None) or (ra is not None and dec is None):
-            logger.info("Either both set RA and Dec or none.")
+            self.logger.info("Either both set RA and Dec or none.")
             raise ValueError
 
         else:
@@ -239,22 +238,22 @@ class ForcedPhotometryPipeline:
                     elif is_wise_name(line):
                         self.object_list.append(line)
             except FileNotFoundError as error:
-                logger.error(errormessage)
+                self.logger.error(errormessage)
                 raise error
             assert (
                 self.object_list[0][:3] == "ZTF" or self.object_list[0][:4] == "WISE"
             ), errormessage
         # Grammar check
         if len(self.object_list) == 1:
-            logger.info(
+            self.logger.info(
                 f"Doing forced photometry for {len(self.object_list)} transient"
             )
         else:
-            logger.info(
+            self.logger.info(
                 f"Doing forced photometry for {len(self.object_list)} transients"
             )
 
-        logger.info("Logs are stored in log")
+        self.logger.info("Logs are stored in log")
 
     def purge(self):
         """Deletes transient(s) from the database
@@ -262,12 +261,12 @@ class ForcedPhotometryPipeline:
         """
         from fpbot.utils import get_local_files
 
-        logger.info(f"Will delete (from disk and db): {self.object_list}")
+        self.logger.info(f"Will delete (from disk and db): {self.object_list}")
 
         for name in tqdm(self.object_list):
             local_files = get_local_files(names=[name])
 
-            logger.info(f"Deleting {len(local_files)} local files for {name}")
+            self.logger.info(f"Deleting {len(local_files)} local files for {name}")
 
             if local_files:
                 for file in local_files:
@@ -276,7 +275,7 @@ class ForcedPhotometryPipeline:
                     if os.path.exists(file + ".md5"):
                         os.remove(file + ".md5")
 
-            logger.info(f"Deleting {name} from internal database")
+            self.logger.info(f"Deleting {name} from internal database")
             database.delete_from_database(name)
 
     def check_for_duplicates(self):
@@ -308,12 +307,12 @@ class ForcedPhotometryPipeline:
         """
         Check for entry in Mongo database and update it via AMPEL
         """
-        logger.info("\nChecking database.")
+        self.logger.info("Checking database.")
 
         needs_external_database = []
 
         if self.update_enforce:
-            logger.info("\nForced update of alert data data from AMPEL")
+            self.logger.info("Forced update of alert data data from AMPEL")
 
         query = database.read_database(self.object_list, ["_id", "entries", "ra"])
 
@@ -341,42 +340,40 @@ class ForcedPhotometryPipeline:
             ):
                 needs_external_database.append(name)
 
-        logger.info("\nConnecting to AMPEL.")
+        self.logger.info("Connecting to AMPEL.")
 
         from fpbot import connectors
 
         try:
-            connector = connectors.AmpelInfo(
-                ztf_names=needs_external_database, logger=logger
-            )
+            connector = connectors.AmpelInfo(ztf_names=needs_external_database)
             ampel_failed = False
         except:
             ampel_failed = True
 
         if ampel_failed:
-            logger.error(
-                "\nConnection to AMPEL failed. Please check if the AMPEL API is currently working."
+            self.logger.error(
+                "Connection to AMPEL failed. Please check if the AMPEL API is currently working."
             )
 
         if self.jdmin is None:
             if self.daysago is None:
-                logger.info(
-                    "\nNo 'daysago' given, full timerange since ZTF operations used."
+                self.logger.info(
+                    "No 'daysago' given, full timerange since ZTF operations used."
                 )
             else:
                 if self.daysuntil is None:
-                    logger.info(
-                        f"\nData from {self.daysago:.2f} days ago till today is used."
+                    self.logger.info(
+                        f"Data from {self.daysago:.2f} days ago till today is used."
                     )
                 else:
-                    logger.info(
-                        f"\nData from {self.daysago:.2f} days ago till {self.daysuntil:.2f} days ago is used."
+                    self.logger.info(
+                        f"Data from {self.daysago:.2f} days ago till {self.daysuntil:.2f} days ago is used."
                     )
 
         now = Time(time.time(), format="unix", scale="utc").jd
 
         if not ampel_failed:
-            logger.info("\nUpdating local database.")
+            self.logger.info("Updating local database.")
 
             for index, result in enumerate(tqdm(connector.queryresult)):
                 if result is not None:
@@ -408,7 +405,7 @@ class ForcedPhotometryPipeline:
         Delete from object-list if no info is available
         """
 
-        logger.info("\nChecking if alert data is present in the local database.")
+        self.logger.info("Checking if alert data is present in the local database.")
 
         query = database.read_database(self.object_list, ["name", "entries"])
         not_found = []
@@ -422,8 +419,8 @@ class ForcedPhotometryPipeline:
         if not_found:
             for index in sorted(del_indices, reverse=True):
                 del self.object_list[index]
-            logger.info(
-                f"\nThese could not be found in meta database. Will not be downloaded or fit: {not_found}"
+            self.logger.info(
+                f"These could not be found in the local database. Will not be downloaded or fit: {not_found}"
             )
 
     def download(self):
@@ -456,8 +453,6 @@ class ForcedPhotometryPipeline:
 
         from fpbot.connectors import get_ipac_and_local_filecount
 
-        logger.info(f"\nObtaining information on available images at IRSA.")
-
         ipac_filecounts = get_ipac_and_local_filecount(
             ztf_names=download_requested,
             ras=ras,
@@ -466,17 +461,18 @@ class ForcedPhotometryPipeline:
             jdmax=self.jdmax,
             nprocess=16,
         )
+        quit()
 
         for index, name in enumerate(download_requested):
             if ipac_filecounts[name]["local"] < ipac_filecounts[name]["ipac"]:
                 download_needed.append(name)
 
         if download_needed:
-            logger.info(
-                f"\n{len(download_needed)} of {len(self.object_list)} objects have additional images available at IRSA.\nThese will be downloaded now."
+            self.logger.info(
+                f"{len(download_needed)} of {len(self.object_list)} objects have additional images available at IRSA.\nThese will be downloaded now."
             )
         else:
-            logger.info(
+            self.logger.info(
                 "For none of the transients are new images available, so no download needed."
             )
 
@@ -497,7 +493,9 @@ class ForcedPhotometryPipeline:
                 name=name,
             )
 
-            logger.info(f"\n{name} ({i+1} of {len(download_needed)}) Downloading data.")
+            self.logger.info(
+                f"{name} ({i+1} of {len(download_needed)}) Downloading data."
+            )
 
             marshal_dummyfile = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
@@ -638,12 +636,16 @@ class ForcedPhotometryPipeline:
             if not os.path.exists(dummyfile_target):
                 shutil.copyfile(marshal_dummyfile, dummyfile_target)
 
-            logger.info(f"\n{name} ({i+1} of {objects_total}) loading metadata.")
+            self.logger.info(f"{name} ({i+1} of {objects_total}) loading metadata.")
             fp.load_metadata()
-            logger.info(f"\n{name} ({i+1} of {objects_total}) metadata loaded.")
-            logger.info(f"\n{name} ({i+1} of {objects_total}) loading paths to files.")
+            self.logger.info(f"{name} ({i+1} of {objects_total}) metadata loaded.")
+            self.logger.info(
+                f"{name} ({i+1} of {objects_total}) loading paths to files."
+            )
             fp.load_filepathes(filecheck=self.filecheck)
-            logger.info(f"\n{name} ({i+1} of {objects_total}) paths to files loaded.")
+            self.logger.info(
+                f"{name} ({i+1} of {objects_total}) paths to files loaded."
+            )
 
             """
             Check how many forced photometry datapoints
@@ -655,6 +657,7 @@ class ForcedPhotometryPipeline:
                 fitted_datapoints = 0
 
             df_file = os.path.join(FORCEPHOTODATA, f"{name}.csv")
+            print(df_file)
             if os.path.isfile(df_file):
                 _df = pd.read_csv(df_file, comment="#", index_col=0)
                 if len(_df) == 0:
@@ -664,7 +667,7 @@ class ForcedPhotometryPipeline:
 
             # Compare to number of fitted datapoints from database
             if number_of_fitted_datapoints_expected > fitted_datapoints or force_refit:
-                logger.info(f"\n{name} ({i+1} of {objects_total}): Fitting PSF.")
+                self.logger.info(f"{name} ({i+1} of {objects_total}): Fitting PSF.")
 
                 fp.run_forcefit(
                     verbose=self.verbose,
@@ -705,8 +708,8 @@ class ForcedPhotometryPipeline:
                     },
                 )
             else:
-                logger.info(
-                    f"\n{name} ({i+1} of {objects_total}) No new images to fit, skipping PSF fit."
+                self.logger.info(
+                    f"{name} ({i+1} of {objects_total}) No new images to fit, skipping PSF fit."
                 )
 
     def plot(
@@ -716,7 +719,7 @@ class ForcedPhotometryPipeline:
         Plots the lightcurve (uses PSF fitted datapoints if available and
         checks for alert photometry otherwise)
         """
-        logger.info(f"\nPlotting")
+        self.logger.info(f"Plotting")
         object_count = len(self.object_list)
         if snt == None:
             snt = [self.snt] * object_count
@@ -758,13 +761,13 @@ class ForcedPhotometryPipeline:
         """
         Check if each image downloaded from IPAC with ztfquery can be opened
         """
-        logger.info(
+        self.logger.info(
             "Running filecheck. This can take several hours, depending on the size of your $ZTDFATA folder."
         )
         badfiles = ztfquery.io.run_full_filecheck(
             erasebad=True, nprocess=self.nprocess, redownload=True
         )
-        logger.info(f"BADFILES:\n{badfiles}")
+        self.logger.info(f"BADFILES:\n{badfiles}")
 
     @staticmethod
     def _plot_multiprocessing_(args):
@@ -793,7 +796,7 @@ class ForcedPhotometryPipeline:
             plot_flux=plot_flux,
             plot_alertdata=plot_alertdata,
         )
-        print(f"\n{name} plotted")
+        print(f"{name} plotted")
 
     def saltfit(self, snt=5, quality_checks=False, progress=True, alertfit=False):
         """
@@ -810,8 +813,8 @@ class ForcedPhotometryPipeline:
 
         objectcount = len(self.cleaned_object_list)
 
-        logger.info(
-            "\nChecking if the mwebv Milky Way dust map value is present and compute it if not."
+        self.logger.info(
+            "Checking if the mwebv Milky Way dust map value is present and compute it if not."
         )
 
         for index, name in enumerate(tqdm(self.cleaned_object_list)):
@@ -862,9 +865,9 @@ class ForcedPhotometryPipeline:
 
         for index, name in enumerate(tqdm(self.cleaned_object_list)):
             if alertfit:
-                logger.info(f"\n{name} performing SALT fit for alert photometry.")
+                self.logger.info(f"{name} performing SALT fit for alert photometry.")
             else:
-                logger.info(f"\n{name} performing SALT fit for forced photometry.")
+                self.logger.info(f"{name} performing SALT fit for forced photometry.")
 
             try:
                 fitresult, fitted_model = fit_salt(
@@ -877,7 +880,7 @@ class ForcedPhotometryPipeline:
                 fitresults.append(fitresult)
                 fitted_models.append(fitted_model)
             except:
-                logger.info(f"\n{name} Error while fitting.")
+                self.logger.info(f"{name} Error while fitting.")
 
         for fitresult in fitresults:
             if fitresult is not None:
@@ -902,13 +905,13 @@ class ForcedPhotometryPipeline:
 
         salt_dataframe.to_csv(salt_dataframe_path)
 
-        logger.info(
-            f"\n{len(fitresult_df)} of {object_count} fits were performed successfully.\n"
+        self.logger.info(
+            f"{len(fitresult_df)} of {object_count} fits were performed successfully."
         )
 
     def sendmail(self, send_to, tarball=False):
         """ """
-        logger.info("\nSending mail.")
+        self.logger.info("Sending mail.")
         import smtplib
 
         from email.mime.application import MIMEApplication

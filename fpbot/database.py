@@ -5,6 +5,9 @@ import os, logging, collections
 from typing import Union, Any, Sequence, Tuple
 import pymongo
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 
 def get_db() -> pymongo.MongoClient:
     if "MONGO_DB_LOCATION_DOCKER" in os.environ:
@@ -25,13 +28,14 @@ def get_db() -> pymongo.MongoClient:
         except pymongo.errors.ServerSelectionTimeoutError as err:
             mongo_db = pymongo.MongoClient("localhost", 27051)
 
+    logger.debug("Connected to local database")
+
     return mongo_db
 
 
 def read_database(
     ztf_objects: Union[list, str],
     requested_data: Union[list, str, None] = None,
-    logger=None,
 ) -> dict:
     """
     Returns entries in metadata database for all ztf_objects given that are requested in requested_data
@@ -43,9 +47,6 @@ def read_database(
 
     mongo_db = get_db()
     metadata_coll = mongo_db.fpbot.metadata
-
-    if logger is None:
-        logger = logging.getLogger("database")
 
     if requested_data is None:
         requested_data = []
@@ -87,6 +88,10 @@ def read_database(
 
     mongo_db.close()
 
+    logger.info(
+        f"Read {requested_data} for {len(ztf_objects)} objects from local database"
+    )
+
     return dict_for_return_values
 
 
@@ -119,6 +124,8 @@ def update_database(
 
     mongo_db.close()
 
+    logger.info(f"Updated metadata for {len(ztf_objects)} in the local database")
+
 
 def delete_from_database(ztf_objects: Union[list, str], logger=None) -> None:
     """
@@ -143,14 +150,13 @@ def delete_from_database(ztf_objects: Union[list, str], logger=None) -> None:
 
     mongo_db.close()
 
+    logger.info(f"Deleted {len(ztf_objects)} objects in the local database")
 
-def drop_database(logger=None) -> None:
+
+def drop_database() -> None:
     """
     WARNING: Drops the complete database
     """
-    if logger is None:
-        logger = logging.getLogger("database")
-
     mongo_db = get_db()
     metadata_coll = mongo_db.fpbot.metadata
 

@@ -8,6 +8,9 @@ import os, getpass, keyring, warnings, logging
 from ztfquery import io
 from os import environ
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 if environ.get("ZTFHUB_MODE") == "HEADLESS":
     HEADLESS = True
 
@@ -76,6 +79,8 @@ def get_user_and_password(service: str = None):
                 keyring.set_password(service, f"{service}_user", username)
                 keyring.set_password(service, f"{service}_password", password)
 
+            logger.info(f"Got {service} credentials")
+
             return username, password
 
         # Some systems don't provide the luxury of a system-wide keychain
@@ -97,20 +102,19 @@ def get_user(service: str = None):
                 username = input(f"Enter your {service} login: ")
                 keyring.set_password(service, f"{service}_user", username)
 
-            return username
-
         except keyring.errors.NoKeyringError:
-            print(
+            logger.info(
                 f"This is a workaround using base64 obfuscation. If it asks for input: Enter the {service} username and an arbitrary password."
             )
             username, _ = io._load_id_(service)
-            return username
     else:
-        print(
+        logger.info(
             f"This is a workaround using base64 obfuscation. If it asks for input: Enter the {service} username and an arbitrary password."
         )
         username, _ = io._load_id_(service)
-        return username
+
+    logger.info(f"Got {service} username")
+    return username
 
 
 def get_password(service: str = None):
@@ -125,18 +129,17 @@ def get_password(service: str = None):
                 )
                 keyring.set_password(service, f"{service}_password", password)
 
-            return password
-
         except keyring.errors.NoKeyringError:
-            print(
+            logger.info(
                 f"This is a workaround using base64 obfuscation. If it asks for input: Enter an arbitrary username and the {service} password."
             )
             _, password = io._load_id_(service)
-            return password
 
     else:
-        print(
+        logger.info(
             f"This is a workaround using base64 obfuscation. If it asks for input: Enter an arbitrary username and the {service} password."
         )
         _, password = io._load_id_(service)
-        return password
+
+    logger.info(f"Got {service} password")
+    return password
