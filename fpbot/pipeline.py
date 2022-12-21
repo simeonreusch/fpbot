@@ -793,7 +793,6 @@ class ForcedPhotometryPipeline:
             plot_flux=plot_flux,
             plot_alertdata=plot_alertdata,
         )
-        self.logger.info(f"{name} plotted")
 
     def saltfit(self, snt=5, quality_checks=False, progress=True, alertfit=False):
         """
