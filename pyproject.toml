@@ -13,6 +13,9 @@ classifiers = [
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.10",
 ]
+[tool.poetry.scripts]
+fp = "forcedphotometry:run"
+fpbulk = "bulk:main"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"

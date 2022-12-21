@@ -12,8 +12,13 @@ from ztfquery import query
 from fpbot import connectors, database, utils
 from fpbot.pipeline import FORCEPHOTODATA
 
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logging.getLogger("fpbot.pipeline").setLevel(logging.INFO)
 
-def main(
+
+def run(
     file_or_name: str,
     startitem: int = 0,
     download: bool = False,
@@ -25,8 +30,6 @@ def main(
     generate_tar: None | str = None,
 ):
     """ """
-    logger = logging.getLogger("pipeline")
-
     errormessage = "\nYou have to provide a either a ZTF name (a string adhering to the ZTF naming scheme), an ascii file containing ZTF names (1 per line) in the same directory or an arbitrary name if using the radec option.\n"
 
     fname = None
@@ -45,7 +48,7 @@ def main(
                 if utils.is_ztf_name(line) or utils.is_wise_name(line):
                     object_list.append(line)
         except FileNotFoundError as error:
-            print(errormessage)
+            logger.warn(errormessage)
             raise error
 
     if delete:
@@ -61,19 +64,19 @@ def main(
                 quit()
 
     if len(object_list) == 1:
-        print(f"Processing {len(object_list)} transient")
+        logger.info(f"Processing {len(object_list)} transient")
     else:
-        print(f"Processing {len(object_list)} transients")
+        logger.info(f"Processing {len(object_list)} transients")
 
     bad_objects = []
     good_objects = []
 
     for i, ztfid in enumerate(object_list[startitem:]):
-        print("\n-------------------------------------------------")
-        print(
+        logger.info("-------------------------------------------------")
+        logger.info(
             f"Processing {ztfid} ({i+1} of {len(object_list[startitem:])} transients)"
         )
-        print("\n-------------------------------------------------\n")
+        logger.info("-------------------------------------------------")
         try:
             pl = ForcedPhotometryPipeline(
                 file_or_name=ztfid,
@@ -96,9 +99,9 @@ def main(
             bad_objects.append(ztfid)
 
     if len(bad_objects) > 0:
-        print("\nBad objects (have thrown an error) are:")
+        logger.info("Bad objects (have thrown an error) are:")
         for bad_object in bad_objects:
-            print(bad_object)
+            logger.info(bad_object)
 
     if fname:
         if not os.path.exists("./bulk_logs"):
@@ -128,12 +131,12 @@ def main(
         file.close()
 
     if size:
-        print(
+        logger.info(
             "Obtaining the combined disk space used by the images for the given ZTF objects"
         )
         local_files = utils.get_local_files(ztf_names=object_list[startitem:])
 
-        print(f"Found {len(local_files)} local files")
+        logger.info(f"Found {len(local_files)} local files")
 
         total_bytes = 0
 
@@ -145,16 +148,16 @@ def main(
         total_diskspace_dec = utils.sizeof_fmt_dec(total_bytes)
         total_diskspace_bin = utils.sizeof_fmt_bin(total_bytes)
 
-        print(f"These take {total_diskspace_dec} ({total_diskspace_bin})")
+        logger.info(f"These take {total_diskspace_dec} ({total_diskspace_bin})")
 
     if delete:
-        print("\nNow we delete all the transient data!")
+        logger.info("Now we delete all the transient data!")
 
         for name in tqdm(object_list[startitem:]):
 
             local_files = utils.get_local_files(names=[name])
 
-            print(f"Deleting {len(local_files)} local files for {name}")
+            logger.info(f"Deleting {len(local_files)} local files for {name}")
 
             for file in local_files:
                 if os.path.exists(file):
@@ -162,7 +165,7 @@ def main(
                 if os.path.exists(file + ".md5"):
                     os.remove(file + ".md5")
 
-            print(f"Deleting {name} from internal database")
+            logger.info(f"Deleting {name} from internal database")
             database.delete_from_database(name)
 
     if generate_tar:
@@ -170,8 +173,7 @@ def main(
             filepath_tarball = os.path.join()
 
 
-if __name__ == "__main__":
-
+def main():
     parser = argparse.ArgumentParser(description="Bulk processing for fpbot")
 
     parser.add_argument(
@@ -223,13 +225,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print("------------------------------------\n")
-    print(
+    logger.info("------------------------------------")
+    logger.info(
         f"Starting.\nRun config: file={args.name} / startitem={args.start} // download={args.dl} // fit={args.fit} // plot={args.plot} // size={args.size} // delete={args.delete} // daysago={args.daysago} // tarfile={args.tarfile}"
     )
-    print("\n------------------------------------")
+    logger.info("------------------------------------")
 
-    main(
+    run(
         file_or_name=args.name,
         startitem=args.start,
         download=args.dl,
@@ -240,3 +242,7 @@ if __name__ == "__main__":
         daysago=args.daysago,
         generate_tar=args.tarfile,
     )
+
+
+if __name__ == "__main__":
+    main()

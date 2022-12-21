@@ -6,14 +6,15 @@ import os, time, argparse, multiprocessing, sys, logging
 import numpy as np
 from fpbot.pipeline import ForcedPhotometryPipeline
 
-if __name__ == "__main__":
-    import logging
+import logging
 
-    logging.basicConfig()
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    logging.getLogger("fpbot.pipeline").setLevel(logging.INFO)
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logging.getLogger("fpbot.pipeline").setLevel(logging.INFO)
 
+
+def run():
     # neccessary arg
     parser = argparse.ArgumentParser(
         description="Used to obtain forced photometry for selection of SNe in parallel"
@@ -289,3 +290,7 @@ if __name__ == "__main__":
     duration = endtime - pl.startime
 
     logger.info(f"The script took {duration / 60:.2f} minutes")
+
+
+if __name__ == "__main__":
+    run()
