@@ -33,9 +33,9 @@ sfdmap = "^0.1.1"
 slackclient = "^2.9.4"
 SQLAlchemy = "^1.4.39"
 tdqm = "^0.0.1"
-ztflc = "^0.2.4"
 ztfquery = "^1.18.4"
 mypy = "^0.991"
+ztflc = "^0.2.7"
 
 [tool.poetry.dev-dependencies]
 coveralls = "^3.3.1"
