@@ -2,7 +2,7 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import multiprocessing, time, os, sys, logging, argparse, tarfile, shutil
+import multiprocessing, time, os, sys, logging, argparse, tarfile, shutil, warnings
 
 from tqdm import tqdm
 import numpy as np
@@ -656,8 +656,11 @@ class ForcedPhotometryPipeline:
             df_file = os.path.join(FORCEPHOTODATA, f"{name}.csv")
 
             if os.path.isfile(df_file):
-                _df = pd.read_csv(df_file, comment="#", index_col=0)
-                if len(_df) == 0:
+                if os.stat(df_file).st_size > 1:
+                    _df = pd.read_csv(df_file, comment="#", index_col=0)
+                    if len(_df) == 0:
+                        force_refit = True
+                else:
                     force_refit = True
             else:
                 force_refit = True
@@ -666,6 +669,8 @@ class ForcedPhotometryPipeline:
             if number_of_fitted_datapoints_expected > fitted_datapoints or force_refit:
                 self.logger.info(f"{name} ({i+1} of {objects_total}): Fitting PSF.")
 
+                # with warnings.catch_warnings():
+                #     warnings.simplefilter("ignore")
                 fp.run_forcefit(
                     verbose=self.verbose,
                     nprocess=nprocess,
