@@ -661,6 +661,7 @@ class ForcedPhotometryPipeline:
                     if len(_df) == 0:
                         force_refit = True
                 else:
+                    os.remove(df_file)
                     force_refit = True
             else:
                 force_refit = True
