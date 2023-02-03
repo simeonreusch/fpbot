@@ -906,25 +906,6 @@ perf = ["ipython"]
 testing = ["flake8 (<5)", "flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)", "pytest-perf (>=0.9.2)"]
 
 [[package]]
-name = "importlib-resources"
-version = "5.10.2"
-description = "Read resources from Python packages"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "importlib_resources-5.10.2-py3-none-any.whl", hash = "sha256:7d543798b0beca10b6a01ac7cafda9f822c54db9e8376a6bf57e0cbd74d486b6"},
-    {file = "importlib_resources-5.10.2.tar.gz", hash = "sha256:e4a96c8cc0339647ff9a5e0550d9f276fc5a01ffa276012b58ec108cfd7b8484"},
-]
-
-[package.dependencies]
-zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
-
-[package.extras]
-docs = ["furo", "jaraco.packaging (>=9)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["flake8 (<5)", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)"]
-
-[[package]]
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
@@ -985,7 +966,6 @@ files = [
 
 [package.dependencies]
 importlib-metadata = {version = ">=4.11.4", markers = "python_version < \"3.12\""}
-importlib-resources = {version = "*", markers = "python_version < \"3.9\""}
 "jaraco.classes" = "*"
 jeepney = {version = ">=0.4.2", markers = "sys_platform == \"linux\""}
 pywin32-ctypes = {version = ">=0.2.0", markers = "sys_platform == \"win32\""}
@@ -1384,7 +1364,6 @@ files = [
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.20.3", markers = "python_version < \"3.10\""},
     {version = ">=1.21.0", markers = "python_version >= \"3.10\""},
     {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
 ]
@@ -2043,7 +2022,6 @@ files = [
 
 [package.dependencies]
 anyio = ">=3.4.0,<5"
-typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyaml"]
@@ -2231,13 +2209,13 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 
 [[package]]
 name = "ztflc"
-version = "0.2.8"
+version = "0.2.9"
 description = "ztflc: Force photometry lc fitter"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "ztflc-0.2.8.tar.gz", hash = "sha256:8b7032b6501703f0aeef7c32476bcdd7c6621ad5408b85cd14fb0fc3e70ffec9"},
+    {file = "ztflc-0.2.9.tar.gz", hash = "sha256:6caed9d2fc15d467da00d43bfcc9e2940cba189f471820fc348bd8e3dfc5f526"},
 ]
 
 [package.dependencies]
@@ -2248,13 +2226,13 @@ ztfquery = "*"
 
 [[package]]
 name = "ztfquery"
-version = "1.21.0"
+version = "1.21.1"
 description = "access ZTF data from python"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "ztfquery-1.21.0.tar.gz", hash = "sha256:0675bfbe94cc8728d32e00ac3275325b3776917be6de814b7f6cab8bb671e705"},
+    {file = "ztfquery-1.21.1.tar.gz", hash = "sha256:4f11b5a46e655e89965d8f9881b250fe423f8f49416999a7cf08ad0f85678cf7"},
 ]
 
 [extras]
@@ -2262,5 +2240,5 @@ slack = ["slackclient"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.8,<4"
-content-hash = "20b5358adfacdf1107d3b58ae43f90ac6f80589b1206e1f6edc654a35d9dc001"
+python-versions = ">=3.10,<4"
+content-hash = "0940f322fd6a1781d8241608594fab7a376ee3b31befd27681e7348e650eeccb"
