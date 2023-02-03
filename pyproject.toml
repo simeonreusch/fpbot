@@ -18,7 +18,7 @@ fp = "forcedphotometry:run"
 fpbulk = "bulk:main"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<4"
+python = ">=3.10,<4"
 astropy = "^5.1"
 backoff = "^2.1.2"
 fastapi = ">=0.79,<0.88"
