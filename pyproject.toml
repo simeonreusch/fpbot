@@ -34,7 +34,7 @@ slackclient = "^2.9.4"
 SQLAlchemy = "^1.4.39"
 tdqm = "^0.0.1"
 ztfquery = "^1.18.4"
-mypy = "^0.991"
+mypy = ">=0.991,<1.1"
 ztflc = "^0.2.7"
 
 [tool.poetry.dev-dependencies]
