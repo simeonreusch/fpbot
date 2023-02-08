@@ -196,8 +196,8 @@ def run_on_event(thread_id, channel_id, verbose=False):
                 dec = split_message[i + 2]
             else:
                 try:
-                    ra = np.float(split_message[i + 1])
-                    dec = np.float(split_message[i + 2])
+                    ra = float(split_message[i + 1])
+                    dec = float(split_message[i + 2])
                 except ValueError:
                     wc.chat_postMessage(
                         channel=channel_id,

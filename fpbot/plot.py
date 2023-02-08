@@ -48,37 +48,38 @@ def plot_lightcurve(
     has_alertdata = False
 
     if not is_wise_name(name):
-        if query["jdobs_alert"][0] is not None:
-            has_alertdata = True
-            alert_jd = query["jdobs_alert"][0]
-            alert_mag = query["mag_alert"][0]
-            alert_magerr = query["magerr_alert"][0]
-            alert_fid = query["fid_alert"][0]
-            alert_zp = query["magzp_alert"][0]
-            alert_zp_err = query["magzp_err_alert"][0]
-            alert_mjd = np.asarray(alert_jd) - 2400000.5
+        if len(query["jdobs_alert"]) > 0:
+            if query["jdobs_alert"][0] is not None:
+                has_alertdata = True
+                alert_jd = query["jdobs_alert"][0]
+                alert_mag = query["mag_alert"][0]
+                alert_magerr = query["magerr_alert"][0]
+                alert_fid = query["fid_alert"][0]
+                alert_zp = query["magzp_alert"][0]
+                alert_zp_err = query["magzp_err_alert"][0]
+                alert_mjd = np.asarray(alert_jd) - 2400000.5
 
-            # Cut values where magzp is NaN as no flux can be extracted
-            alert_fid = np.asarray(alert_fid, dtype=int)
-            alert_mjd = np.asarray(alert_mjd, dtype=float)
-            alert_mag = np.asarray(alert_mag, dtype=float)
-            alert_mag_err = np.asarray(alert_magerr, dtype=float)
-            alert_zp = np.asarray(alert_zp, dtype=float)
-            alert_zp_err = np.asarray(alert_zp_err, dtype=float)
-            alert_zp = np.ma.masked_invalid(alert_zp)
-            mask = np.ma.getmask(alert_zp)
-            alert_zp = np.ma.compressed(alert_zp)
-            alert_zp_err = np.ma.compressed(np.ma.masked_where(mask, alert_zp_err))
-            alert_mjd = np.ma.compressed(np.ma.masked_where(mask, alert_mjd))
-            alert_mag = np.ma.compressed(np.ma.masked_where(mask, alert_mag))
-            alert_magerr = np.ma.compressed(np.ma.masked_where(mask, alert_magerr))
-            alert_fid = np.ma.compressed(np.ma.masked_where(mask, alert_fid))
+                # Cut values where magzp is NaN as no flux can be extracted
+                alert_fid = np.asarray(alert_fid, dtype=int)
+                alert_mjd = np.asarray(alert_mjd, dtype=float)
+                alert_mag = np.asarray(alert_mag, dtype=float)
+                alert_mag_err = np.asarray(alert_magerr, dtype=float)
+                alert_zp = np.asarray(alert_zp, dtype=float)
+                alert_zp_err = np.asarray(alert_zp_err, dtype=float)
+                alert_zp = np.ma.masked_invalid(alert_zp)
+                mask = np.ma.getmask(alert_zp)
+                alert_zp = np.ma.compressed(alert_zp)
+                alert_zp_err = np.ma.compressed(np.ma.masked_where(mask, alert_zp_err))
+                alert_mjd = np.ma.compressed(np.ma.masked_where(mask, alert_mjd))
+                alert_mag = np.ma.compressed(np.ma.masked_where(mask, alert_mag))
+                alert_magerr = np.ma.compressed(np.ma.masked_where(mask, alert_magerr))
+                alert_fid = np.ma.compressed(np.ma.masked_where(mask, alert_fid))
 
-            # and now we calculate the flux
-            alert_flux = abmag_to_flux(alert_mag, alert_zp)
-            alert_flux_err = abmag_err_to_flux_err(
-                alert_mag, alert_magerr, alert_zp, alert_zp_err
-            )
+                # and now we calculate the flux
+                alert_flux = abmag_to_flux(alert_mag, alert_zp)
+                alert_flux_err = abmag_err_to_flux_err(
+                    alert_mag, alert_magerr, alert_zp, alert_zp_err
+                )
 
     ### apply time-range cut:
     now = Time(time.time(), format="unix", scale="utc").mjd
