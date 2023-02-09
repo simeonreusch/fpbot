@@ -2219,13 +2219,13 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 
 [[package]]
 name = "ztflc"
-version = "0.2.9"
+version = "0.2.10"
 description = "ztflc: Force photometry lc fitter"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "ztflc-0.2.9.tar.gz", hash = "sha256:6caed9d2fc15d467da00d43bfcc9e2940cba189f471820fc348bd8e3dfc5f526"},
+    {file = "ztflc-0.2.10.tar.gz", hash = "sha256:dd6806117e0cbfacc4c2b0556c9ea8232661776c6007806e99bc07b514cfc773"},
 ]
 
 [package.dependencies]
