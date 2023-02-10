@@ -27,6 +27,7 @@ def run(
     size: bool = False,
     delete: bool = False,
     daysago: int = None,
+    force_refit: bool = True,
     generate_tar: None | str = None,
 ):
     """ """
@@ -89,7 +90,7 @@ def run(
             if download:
                 pl.download()
             if fit:
-                pl.psffit(force_refit=True)
+                pl.psffit(force_refit=force_refit)
             if plot:
                 pl.plot(plot_alertdata=False, plot_flux=True, snt=None)
                 pl.plot(plot_alertdata=False, plot_flux=False, snt=2)
@@ -201,6 +202,13 @@ def main():
 
     parser.add_argument("-fit", "--fit", action="store_true", help="Run PSF fit")
 
+    parser.add_argument(
+        "-no_refit",
+        "--no_refit",
+        action="store_true",
+        help="Do not force to rerun PSF fit",
+    )
+
     parser.add_argument("-plot", "--plot", action="store_true", help="Plot lightcurves")
 
     parser.add_argument(
@@ -227,7 +235,7 @@ def main():
 
     logger.info("------------------------------------")
     logger.info(
-        f"Starting.\nRun config: file={args.name} / startitem={args.start} // download={args.dl} // fit={args.fit} // plot={args.plot} // size={args.size} // delete={args.delete} // daysago={args.daysago} // tarfile={args.tarfile}"
+        f"Starting.\nRun config: file={args.name} / startitem={args.start} // download={args.dl} // fit={args.fit} // plot={args.plot} // size={args.size} // delete={args.delete} // daysago={args.daysago} // tarfile={args.tarfile} // no_refit:{args.no_refit}"
     )
     logger.info("------------------------------------")
 
@@ -241,6 +249,7 @@ def main():
         delete=args.delete,
         daysago=args.daysago,
         generate_tar=args.tarfile,
+        force_refit=not args.no_refit,
     )
 
 
