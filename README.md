@@ -6,7 +6,7 @@
 
 Provides a Forced Photometry Pipeline based on [ztfquery](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery), needs [IPAC](https://irsa.ipac.caltech.edu/account/signon/login.do?josso_back_to=https://irsa.ipac.caltech.edu/frontpage/&ts=517) as well as [Marshal](http://skipper.caltech.edu:8080/cgi-bin/growth/marshal.cgi) or [AMPEL](https://github.com/ampelproject) access.
 
-Note: Requires Python >= 3.8. Also requires a MongoDB instance for storing the metadata, reachable under port 27017. This can be modified in database.py.
+Note: Requires Python >= 3.10. Also requires a MongoDB instance for storing the metadata, reachable under port 27017. This can be modified in database.py.
 
 ## Installation
 
@@ -41,7 +41,7 @@ in the directory containing 1) the Dockerfile, 2) the docker-compose.yml and 3) 
 ### Troubleshooting
 Make sure that `ztfquery` and `ztflc` are installed with the latest version.
 
-In case way too few images are downloaded, check your Marshal and IRSA credentials. These are stored in `~.ztfquery`. If there is a problem with these, `ztfquery` will not complain but simply only download publicly accessible images.
+In case way too few images are downloaded, check your IRSA credentials. These are stored in `~.ztfquery`. If there is a problem with these, `ztfquery` will not complain but simply only download publicly accessible images.
 
 ## Usage
 
@@ -121,7 +121,7 @@ optionally:
 ## Requirements
 - [ztfquery](https://github.com/mickaelrigault/ztfquery) is used to download the image files from IPAC.
 - [ztflc](https://github.com/mickaelrigault/ztflc) is used for PSF-fitting.
-- [Marshal](http://skipper.caltech.edu:8080/cgi-bin/growth/marshal.cgi) or [AMPEL](https://github.com/ampelproject) credentials are neccessary for the pipeline to work.
+- [AMPEL](https://github.com/ampelproject) credentials are neccessary for the pipeline to work.
 
 ## Notes
 ### Slackbot
