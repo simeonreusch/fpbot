@@ -96,7 +96,7 @@ def read_database(
 
 
 def update_database(
-    ztf_objects: Union[list, str], data_to_update: Union[list, dict], logger=None
+    ztf_objects: Union[list, str], data_to_update: Union[list, dict]
 ) -> None:
     """
     Updates metadata database for all ztf_objects given with data in data_to_update (must be a list of dictionaries or single dictionary if only one object is given)
@@ -106,8 +106,7 @@ def update_database(
     mongo_db = get_db()
     metadata_coll = mongo_db.fpbot.metadata
 
-    if logger is None:
-        logger = logging.getLogger("database")
+    logger = logging.getLogger("database")
 
     assert isinstance(data_to_update, list) or isinstance(data_to_update, dict)
     assert isinstance(ztf_objects, list) or isinstance(ztf_objects, str)
@@ -151,16 +150,3 @@ def delete_from_database(ztf_objects: Union[list, str], logger=None) -> None:
     mongo_db.close()
 
     logger.info(f"Deleted {len(ztf_objects)} objects in the local database")
-
-
-def drop_database() -> None:
-    """
-    WARNING: Drops the complete database
-    """
-    mongo_db = get_db()
-    metadata_coll = mongo_db.fpbot.metadata
-
-    metadata_coll.drop()
-    logger.info("fpbot database has been dropped")
-
-    mongo_db.close()

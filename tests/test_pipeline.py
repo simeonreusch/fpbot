@@ -126,6 +126,12 @@ class TestPipeline(unittest.TestCase):
         np.testing.assert_almost_equal(
             df_sorted.sigma.values, reference_sigma, decimal=2
         )
+        pl.purge()
+
+    def tearDown(self):
+        from fpbot.database import delete_from_database
+
+        delete_from_database(ztf_objects=["ZTF19aatubsj_radec", "ZTF19aatubsj"])
 
 
 if __name__ == "__main__":
