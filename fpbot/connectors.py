@@ -3,6 +3,7 @@
 # License: BSD-3-Clause
 
 import os, getpass, socket, sqlalchemy, logging, time, multiprocessing, keyring
+from pathlib import Path
 import numpy as np
 import requests
 import backoff
@@ -18,6 +19,8 @@ from fpbot import credentials
 MARSHAL_BASEURL = "http://skipper.caltech.edu:8080/cgi-bin/growth/view_avro.cgi?name="
 API_BASEURL = "https://ampel.zeuthen.desy.de"
 API_ZTF_ARCHIVE_URL = API_BASEURL + "/api/ztf/archive"
+
+ZTFDATA = os.getenv("ZTFDATA")
 
 
 class AmpelInfo:
@@ -67,7 +70,6 @@ class AmpelInfo:
         queryresult = []
 
         for index, ztf_name in enumerate(tqdm(self.ztf_names)):
-
             ampel_object = self.query_ampel_api_for_ztfname(ztf_name=ztf_name)
 
             query_res = [i for i in ampel_object]
@@ -166,9 +168,14 @@ def get_ipac_multiprocessing(args):
     sql_query = f"obsjd>={jdmin} and obsjd<={jdmax}"
     zquery.load_metadata(radec=[ra, dec], sql_query=sql_query, size=0.01)
     mt = zquery.metatable
-    local_data = zquery.get_local_data(suffix="scimrefdiffimg.fits.fz", filecheck=False)
+    download_dir = str(Path(ZTFDATA) / "sci" / ztf_name)
+    local_data = zquery.get_local_data(
+        suffix="scimrefdiffimg.fits.fz", filecheck=False, download_dir=download_dir
+    )
 
-    return {ztf_name: {"ipac": len(mt), "local": len(local_data)}}
+    return {
+        ztf_name: {"ipac": len(mt), "local": len(local_data), "local_paths": local_data}
+    }
 
 
 def get_ipac_and_local_filecount(

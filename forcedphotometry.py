@@ -11,7 +11,7 @@ import logging
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-logging.getLogger("fpbot.pipeline").setLevel(logging.INFO)
+logging.getLogger("fpbot.pipeline").setLevel(logging.DEBUG)
 
 
 def run():

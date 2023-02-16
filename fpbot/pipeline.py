@@ -4,6 +4,8 @@
 
 import multiprocessing, time, os, sys, logging, argparse, tarfile, shutil, warnings
 
+from pathlib import Path
+
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
@@ -86,9 +88,8 @@ class ForcedPhotometryPipeline:
         ampel=True,
         download_newest=True,
         filecheck=False,
-        verbose=False,
+        ztfquery_clean_metatable=True,
     ):
-
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
 
@@ -131,8 +132,8 @@ class ForcedPhotometryPipeline:
         self.update_disable = update_disable
         self.ampel = ampel
         self.download_newest = download_newest
-        self.verbose = verbose
         self.filecheck = filecheck
+        self.ztfquery_clean_metatable = ztfquery_clean_metatable
 
         if self.jdmin or self.jdmax:
             self.convert_jd_to_days()
@@ -316,7 +317,6 @@ class ForcedPhotometryPipeline:
 
         # Now we check if these are ZTF or WISE objects:
         for index, name in enumerate(self.object_list):
-
             if is_wise_name(name) and query["_id"][index] == None:
                 ra, dec = get_wise_ra_dec(name)
                 database.update_database(
@@ -375,7 +375,6 @@ class ForcedPhotometryPipeline:
 
             for index, result in enumerate(tqdm(connector.queryresult)):
                 if result is not None:
-
                     database.update_database(
                         result[0],
                         {
@@ -443,9 +442,7 @@ class ForcedPhotometryPipeline:
 
         # Check with IRSA how many images are present for each object. Only if this number is bigger than the local number of images, download will start.
         download_needed = []
-        query = database.read_database(
-            download_requested, ["ra", "dec"]  # , "local_filecount"]
-        )
+        query = database.read_database(download_requested, ["ra", "dec"])
         ras = query["ra"]
         decs = query["dec"]
 
@@ -466,7 +463,7 @@ class ForcedPhotometryPipeline:
 
         if download_needed:
             self.logger.info(
-                f"{len(download_needed)} of {len(self.object_list)} objects have additional images available at IRSA.\nThese will be downloaded now."
+                f"{len(download_needed)} of {len(self.object_list)} objects have additional images available at IRSA (IRSA: {ipac_filecounts[name]['ipac']}, local: {ipac_filecounts[name]['local']}).\nThese will be downloaded now."
             )
         else:
             self.logger.info(
@@ -504,29 +501,30 @@ class ForcedPhotometryPipeline:
             if not os.path.exists(dummyfile_target):
                 shutil.copyfile(marshal_dummyfile, dummyfile_target)
 
-            fp.load_metadata()
+            fp.load_metadata(clean=self.ztfquery_clean_metatable)
+
+            outdir = str(Path(ZTFDATA) / "sci" / name)
 
             if self.sciimg:
-                fp.io.download_data(
-                    nprocess=32,
-                    overwrite=False,
-                    show_progress=True,
-                    verbose=self.verbose,
-                    ignore_warnings=True,
-                    which=[
-                        "scimrefdiffimg.fits.fz",
-                        "diffimgpsf.fits",
-                        "sciimg.fits",
-                    ],
-                )
+                which = [
+                    "scimrefdiffimg.fits.fz",
+                    "diffimgpsf.fits",
+                    "sciimg.fits",
+                ]
             else:
-                fp.io.download_data(
-                    nprocess=32,
-                    overwrite=False,
-                    show_progress=True,
-                    verbose=self.verbose,
-                    ignore_warnings=True,
-                )
+                which = ["scimrefdiffimg.fits.fz", "diffimgpsf.fits"]
+
+            fp.io.download_data(
+                download_dir=outdir,
+                cutouts=True,
+                radec=[ra, dec],
+                cutout_size=30,
+                nprocess=32,
+                overwrite=False,
+                show_progress=True,
+                ignore_warnings=True,
+                which=which,
+            )
 
             last_download = Time(time.time(), format="unix", scale="utc").jd
 
@@ -576,7 +574,6 @@ class ForcedPhotometryPipeline:
         )
 
         for i, name in enumerate(self.object_list):
-
             objects_total = len(self.object_list)
             ra = query["ra"][i]
             dec = query["dec"][i]
@@ -634,12 +631,16 @@ class ForcedPhotometryPipeline:
                 shutil.copyfile(marshal_dummyfile, dummyfile_target)
 
             self.logger.info(f"{name} ({i+1} of {objects_total}) loading metadata.")
-            fp.load_metadata()
+
+            fp.load_metadata(clean=self.ztfquery_clean_metatable)
+
             self.logger.info(f"{name} ({i+1} of {objects_total}) metadata loaded.")
             self.logger.info(
                 f"{name} ({i+1} of {objects_total}) loading paths to files."
             )
-            fp.load_filepathes(filecheck=self.filecheck)
+
+            fp.load_filepathes(filecheck=self.filecheck, outdir=name)
+
             self.logger.info(
                 f"{name} ({i+1} of {objects_total}) paths to files loaded."
             )
@@ -673,7 +674,6 @@ class ForcedPhotometryPipeline:
                 # with warnings.catch_warnings():
                 #     warnings.simplefilter("ignore")
                 fp.run_forcefit(
-                    verbose=self.verbose,
                     nprocess=nprocess,
                     store=True,
                     force_refit=force_refit,
@@ -710,6 +710,7 @@ class ForcedPhotometryPipeline:
                         "fitted_datapoints": number_of_fitted_datapoints_expected,
                     },
                 )
+
             else:
                 self.logger.info(
                     f"{name} ({i+1} of {objects_total}) No new images to fit, skipping PSF fit."
@@ -1054,7 +1055,6 @@ class ForcedPhotometryPipeline:
         smtp.close()
 
     def thumbnails(self, nprocess=1):
-
         # Note: Currently when run at DESY, this generates distorted plot headings
         # when multiprocessed. Therefore nprocess is set to 1.
         query = database.read_database(self.object_list, ["ra", "dec"])
