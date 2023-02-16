@@ -92,8 +92,7 @@ def run(
             if fit:
                 pl.psffit(force_refit=force_refit)
             if plot:
-                pl.plot(plot_alertdata=False, plot_flux=True, snt=None)
-                pl.plot(plot_alertdata=False, plot_flux=False, snt=2)
+                pl.plot(plot_alertdata=False, plot_flux=False, snt=5)
             del pl
             good_objects.append(ztfid)
         except:
@@ -155,7 +154,6 @@ def run(
         logger.info("Now we delete all the transient data!")
 
         for name in tqdm(object_list[startitem:]):
-
             local_files = utils.get_local_files(names=[name])
 
             logger.info(f"Deleting {len(local_files)} local files for {name}")
