@@ -105,19 +105,6 @@ class ForcedPhotometryPipeline:
         else:
             self.file_or_name = file_or_name
 
-        if not self.logger.hasHandlers():
-            logFormatter = logging.Formatter(
-                "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s"
-            )
-
-            fileHandler = logging.FileHandler("./log")
-            fileHandler.setFormatter(logFormatter)
-            self.logger.addHandler(fileHandler)
-
-            consoleHandler = logging.StreamHandler()
-            consoleHandler.setFormatter(logFormatter)
-            self.logger.addHandler(consoleHandler)
-
         self.daysago = daysago
         self.daysuntil = daysuntil
         self.jdmin = jdmin

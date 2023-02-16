@@ -6,6 +6,7 @@ import unittest
 import ztfquery
 import pandas as pd
 import numpy as np
+from astropy.time import Time
 
 from fpbot.pipeline import ForcedPhotometryPipeline, FORCEPHOTODATA
 
@@ -18,7 +19,7 @@ class TestPipeline(unittest.TestCase):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
-    def test_pipeline(self):
+    def test_ztfid_jd(self):
         self.logger.info("\n\n Testing FP Pipeline \n\n")
         from fpbot.pipeline import ForcedPhotometryPipeline
 
@@ -63,6 +64,62 @@ class TestPipeline(unittest.TestCase):
             5.62588725,
             4.40947852,
             4.7902814,
+        ]
+
+        np.testing.assert_almost_equal(
+            df_sorted.sigma.values, reference_sigma, decimal=2
+        )
+
+    def test_radec_daysago(self):
+        self.logger.info("\n\n Testing FP Pipeline \n\n")
+        from fpbot.pipeline import ForcedPhotometryPipeline
+
+        jdmin = 2459761.50000
+
+        daysago = Time.now().jd - jdmin
+        daysuntil = daysago - 3
+
+        name = "ZTF19aatubsj_radec"
+
+        pl = ForcedPhotometryPipeline(
+            file_or_name=name,
+            ra=257.278575,
+            dec=26.855758,
+            daysago=daysago,
+            daysuntil=daysuntil,
+            ampel=True,
+        )
+
+        pl.download()
+        pl.psffit()
+        pl.plot()
+
+        df_filepath = os.path.join(FORCEPHOTODATA, name + ".csv")
+        plot_filepath = os.path.join(
+            FORCEPHOTODATA, "plots", "images", name + "_SNT_5.0.png"
+        )
+
+        self.assertTrue(os.path.isfile(plot_filepath))
+
+        df = pd.read_csv(df_filepath, comment="#")
+        df_sorted = df.sort_values(by=["obsmjd"]).reset_index(drop=True)
+        reference_sigma = [
+            5.76327977,
+            4.78801663,
+            4.21044524,
+            5.60294682,
+            4.96924292,
+            4.7557065,
+            5.59710224,
+            5.43577123,
+            5.57606086,
+            4.73703552,
+            4.67100567,
+            6.4011305,
+            5.93899969,
+            5.64609204,
+            4.51128704,
+            4.84932399,
         ]
 
         np.testing.assert_almost_equal(
