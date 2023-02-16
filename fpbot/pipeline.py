@@ -35,7 +35,7 @@ try:
     ZTFDATA = os.getenv("ZTFDATA")
     FORCEPHOTODATA = os.path.join(ZTFDATA, "forcephotometry")
 except (TypeError, NameError):
-    print(
+    warnings.warn(
         "You have to export the environment variable ZTFDATA in your shell profile (usually .bashrc or .zshrc); e.g. export ZTFDATA='ABSOLUTE/PATH/TO/ZTFDATA/'\nNote the trailing slash is important!"
     )
 
@@ -88,7 +88,7 @@ class ForcedPhotometryPipeline:
         ampel=True,
         download_newest=True,
         filecheck=False,
-        ztfquery_clean_metatable=True,
+        ztfquery_clean_metatable=False,
     ):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
@@ -515,7 +515,7 @@ class ForcedPhotometryPipeline:
                 which = ["scimrefdiffimg.fits.fz", "diffimgpsf.fits"]
 
             fp.io.download_data(
-                download_dir=outdir,
+                download_dir=self.get_outdir(name),
                 cutouts=True,
                 radec=[ra, dec],
                 cutout_size=30,
@@ -639,7 +639,9 @@ class ForcedPhotometryPipeline:
                 f"{name} ({i+1} of {objects_total}) loading paths to files."
             )
 
-            fp.load_filepathes(filecheck=self.filecheck, outdir=name)
+            fp.load_filepathes(
+                filecheck=self.filecheck, download_dir=self.get_outdir(name)
+            )
 
             self.logger.info(
                 f"{name} ({i+1} of {objects_total}) paths to files loaded."
@@ -671,8 +673,6 @@ class ForcedPhotometryPipeline:
             if number_of_fitted_datapoints_expected > fitted_datapoints or force_refit:
                 self.logger.info(f"{name} ({i+1} of {objects_total}): Fitting PSF.")
 
-                # with warnings.catch_warnings():
-                #     warnings.simplefilter("ignore")
                 fp.run_forcefit(
                     nprocess=nprocess,
                     store=True,
@@ -691,7 +691,7 @@ class ForcedPhotometryPipeline:
                 if len(df) > 0:
                     df = clean_lc(df, trim=False)
 
-                # Add ra dec as comment to FP dataframe
+                # Add header to comment to FP dataframe
                 os.remove(df_file)
                 f = open(df_file, "a")
                 f.write(f"#name={name}\n")
@@ -1073,6 +1073,11 @@ class ForcedPhotometryPipeline:
                 # nprocess=self.nprocess,
                 nprocess=nprocess,
             )
+
+    @staticmethod
+    def get_outdir(name):
+        outdir = str(Path(ZTFDATA) / "sci" / name)
+        return outdir
 
     def read_metadata(self):
         query = database.read_database(self.object_list)

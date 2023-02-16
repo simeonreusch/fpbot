@@ -192,6 +192,13 @@ def run():
         help="Delete all files and database entry for the object(s).",
     )
 
+    parser.add_argument(
+        "--noclean",
+        "-noclean",
+        action="store_true",
+        help="Do not automatically clean the ztfquery metatable (infobits==0 and ipac_gid>0)",
+    )
+
     commandline_args = parser.parse_args()
     nprocess = commandline_args.nprocess
     snt = commandline_args.snt
@@ -267,6 +274,7 @@ def run():
         ampel=True,
         download_newest=download_newest,
         filecheck=filecheck,
+        ztfquery_clean_metatable=commandline_args.noclean,
     )
     if do_global_filecheck:
         pl.global_filecheck()
