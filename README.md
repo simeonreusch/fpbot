@@ -84,8 +84,6 @@ optionally:
 
 `-plotflux`     Plots the lightcurve(s), but with flux instead of magnitude.
 
-`-saltfit`   Fits the lightcurve using SALT2 as provided by [sncosmo](https://github.com/sncosmo/).
-
 `-sciimg`  Experimental: Also downloads the science images from IPAC (note: to create thumbnails if specified)
 
 `-thumbnails` Experimental: Generates thumbnails for all science-images. Science images have to be downloaded (see `-sciimg`)
@@ -107,13 +105,11 @@ optionally:
 #### Examples
 `fp ZTF19aatubsj` downloads this ZTF object, does forced photometry, plots it and saves it to the default directory in "forcephotometry" (ZTFDATA, located at $ZTFDATA in your .bashrc/.zshrc/..., see ztfquery doc).
 
-`fp example_download.dat -dl -fit` downloads the two lightcurves in the file `example_download.dat`, fits, but does not plots them.
+`fp ZTF19abimkwn -dl -fit --nprocess 16` downloads all images for ZTF19abimkwn found on IPAC, performs PSF-fitting and plots the lightcurve with 16 processes in parallel.
 
-`fp ZTF19abimkwn -dl -fit -saltfit --nprocess 16` downloads all images for ZTF18abtmbaz found on IPAC, performs PSF-fitting, plots a lightcurve and fits the lightcurve with a SALT2 template with 16 processes in parallel.
+`fp supernovae.txt -dl -fit` Downloads all difference images for ZTF transients found in supernovae.txt, each line a ZTFname. These are then fitted, but not plotted. To get a nice example of ZTF lightcurves, issue: `fp example_download.txt -dl -fit -plot`.
 
-`fp supernovae.txt -dl` Downloads all difference images for ZTF transients found in supernovae.txt, each line a ZTFname. To get a cool example of ZTF lightcurves, issue: example_download.txt Note: Downloading the images usually takes a considerable amount of time.
-
-`fp this_looks_interesting -radec 143.3123 66.42342 -dl -fit -plot --daysago 10 -magrange 18 20` Downloads all images of the last ten days of the location given in ra and dec, performs PSF-fits and plots the lightcurve in the 18--20 magnitude range.
+`fp this_looks_interesting -radec 143.3123 66.42342 -dl -fit -plot --daysago 10 -magrange 18 20` Downloads all images of the last ten days of the location given in RA and dDecec, performs PSF-fits and plots the lightcurve in the 18--20 magnitude range.
 
 ### By systemwide bulk command (`fpbulk file.txt -operations --options`)
 `file.txt` must be an ASCII file containing one ZTF-ID per line. The usual options apply (e.g. `-dl`, `-fit`).
@@ -130,9 +126,6 @@ You have to create a classic Slack app for this, because the newer version depen
 Classic slack Apps can be created [here](https://api.slack.com/apps?new_classic_app=1). Make sure not to convert to the new permission/privilege system in the process (Slack tries to push you towards it, be careful).
 After successfully setting up the App/bot and giving it permissions, change the bot-username to the one of your bot in start_slackbot.py and it should basically work (first start requires you to enter the bot- and bot-user credentials, also provided by Slack).
 
-### Saltfit module
-Still experimental! Performs saltfits on the generated lightcurves.
-
 ### Resulting dataframe
 The dataframes resulting after plotting (located at `ZTDATA/forcephotometry/plot/dataframes`) consists of the following columns:
 - **sigma(.err)**: The intrinsic error
@@ -145,4 +138,4 @@ The dataframes resulting after plotting (located at `ZTDATA/forcephotometry/plot
 - **F0**: Zero point magnitude from header converted to flux
 - **Fratio(.err)**: Flux to flux zero point ratio (error)
 - **upper_limit**: For forced photometry result < signal to noise threshold, this is the limiting magnitude from the Marshal (see **maglim** column)
-- **mag(_err)**: Flux amplitude (error) converted to magnitude. For detections below signal to noise threshold, this is 99
+- **mag(_err)**: Flux amplitude (error) converted to magnitude. For detections below signal to noise threshold, this value is set to 99.
