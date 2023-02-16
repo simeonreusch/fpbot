@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7404998.svg)](https://doi.org/10.5281/zenodo.7404998)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7404997.svg)](https://doi.org/10.5281/zenodo.7404997)
 [![CI](https://github.com/simeonreusch/fpbot/actions/workflows/continous_integration.yml/badge.svg)](https://github.com/simeonreusch/fpbot/actions/workflows/continous_integration.yml)
 [![Coverage Status](https://coveralls.io/repos/github/simeonreusch/fpbot/badge.svg?branch=main)](https://coveralls.io/github/simeonreusch/fpbot?branch=main)
 
