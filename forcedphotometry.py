@@ -54,9 +54,6 @@ def run():
         action="store_true",
         help="Plot the lightcurve. Note: '-fit' always also plots.",
     )
-    parser.add_argument(
-        "-saltfit", "-salt", "-sf", action="store_true", help="Do a SALT2 fit"
-    )
 
     # operational args, defining HOW to run
 
@@ -212,7 +209,6 @@ def run():
     do_psffit = commandline_args.fit
     do_plot = commandline_args.plot
     do_fluxplot = commandline_args.plotflux
-    do_saltfit = commandline_args.saltfit
     filecheck = commandline_args.filecheck
     do_global_filecheck = commandline_args.filecheck_global
     targetmail = commandline_args.sendmail
@@ -286,9 +282,6 @@ def run():
         pl.plot(plot_alertdata=plot_alertdata)
     if do_fluxplot:
         pl.plot(plot_flux=True, plot_alertdata=plot_alertdata)
-    if do_saltfit:
-        pl.saltfit(quality_checks=True, alertfit=True)
-        pl.saltfit(quality_checks=True, alertfit=False)
     if targetmail:
         pl.sendmail(targetmail, tarball=True)
     if thumbnails:
