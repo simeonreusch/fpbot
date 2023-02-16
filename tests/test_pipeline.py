@@ -47,6 +47,7 @@ class TestPipeline(unittest.TestCase):
 
         df = pd.read_csv(df_filepath, comment="#")
         df_sorted = df.sort_values(by=["obsmjd"]).reset_index(drop=True)
+        print(df_sorted)
         self.assertEqual(df_sorted.to_string(), true_df_string)
 
 
