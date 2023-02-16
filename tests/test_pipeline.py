@@ -21,7 +21,6 @@ class TestPipeline(unittest.TestCase):
 
     def test_ztfid_jd(self):
         self.logger.info("\n\n Testing FP Pipeline \n\n")
-        from fpbot.pipeline import ForcedPhotometryPipeline
 
         jdmin = 2459761.50000
 
@@ -70,10 +69,18 @@ class TestPipeline(unittest.TestCase):
             df_sorted.sigma.values, reference_sigma, decimal=2
         )
 
-    def test_radec_daysago(self):
-        self.logger.info("\n\n Testing FP Pipeline \n\n")
-        from fpbot.pipeline import ForcedPhotometryPipeline
+        # re-download
+        pl.download()
 
+    def test_object_not_found(self):
+        ztfid = "ZTF19aatubsk"
+
+        pl = ForcedPhotometryPipeline(
+            file_or_name=ztfid,
+        )
+        pl.download()
+
+    def test_radec_daysago(self):
         jdmin = 2459761.50000
 
         daysago = Time.now().jd - jdmin
