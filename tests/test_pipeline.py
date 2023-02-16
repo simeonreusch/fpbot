@@ -93,6 +93,7 @@ class TestPipeline(unittest.TestCase):
         pl.download()
         pl.psffit()
         pl.plot()
+        pl.plot(plot_flux=True)
 
         df_filepath = os.path.join(FORCEPHOTODATA, name + ".csv")
         plot_filepath = os.path.join(
