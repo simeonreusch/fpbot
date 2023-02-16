@@ -35,7 +35,7 @@ SQLAlchemy = ">=1.4.39,<3.0.0"
 tdqm = "^0.0.1"
 ztfquery = "^1.18.4"
 mypy = ">=0.991,<1.1"
-ztflc = "^0.3.0"
+ztflc = "^0.3.1"
 
 [tool.poetry.dev-dependencies]
 coveralls = "^3.3.1"
