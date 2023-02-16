@@ -73,7 +73,7 @@ class TestPipeline(unittest.TestCase):
         pl.download()
 
     def test_object_not_found(self):
-        ztfid = "ZTF19aatubsk"
+        ztfid = "ZTF19mmaaaaa"
 
         pl = ForcedPhotometryPipeline(
             file_or_name=ztfid,
