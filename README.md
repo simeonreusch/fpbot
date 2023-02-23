@@ -4,7 +4,7 @@
 
 # fpbot
 
-This package a Forced Photometry Pipeline based on [ztfquery](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery). It needs [IPAC](https://irsa.ipac.caltech.edu/account/signon/login.do?josso_back_to=https://irsa.ipac.caltech.edu/frontpage/&ts=517) access to download the images, as well as [AMPEL](https://github.com/ampelproject) access to obtain information on the transients.
+This package a Forced Photometry Pipeline based on [ztfquery](https://github.com/mickaelrigault/ztfquery) and [ztflc](https://github.com/mickaelrigault/ztfquery). It needs [IPAC](https://irsa.ipac.caltech.edu/account/signon/login.do?josso_back_to=https://irsa.ipac.caltech.edu/frontpage/&ts=517) access to download the images, as well as access to the [AMPEL Archive](https://ampelproject.github.io/astronomy/ztf/index) to obtain information on the transients.
 
 If you are planning to run forced photometry on many ZTF transients, this is the right tool for you!
 
