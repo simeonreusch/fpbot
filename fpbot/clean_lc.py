@@ -17,10 +17,11 @@ THRESHOLD_FILE = pkg_resources.resource_filename(
 
 # THRESHOLD_FILE = os.path.join(os.getcwd(), "data", "zp_thresholds_quadID.txt")
 
+
 # --------------------------------------------------------------------#
 # Calculate IPAC's cloudy parameter given parameters
 # --------------------------------------------------------------------#
-def calc_cloudy(rcid, band, field, magzp, magzprms, nmatches, airmass):
+def calc_cloudy(rcid, band, field, magzp, magzprms, nmatches, airmass, exptime):
     # We need to read the suggested limiting magnitudes of each rcid
     read_opts = {
         "delim_whitespace": True,
@@ -40,11 +41,12 @@ def calc_cloudy(rcid, band, field, magzp, magzprms, nmatches, airmass):
     # zpmaginpsci -> MAGZP; zpmaginpscirms -> MAGZPRMS; ncalmatches -> NMATCHES
     # infobitssci -> INFOBITS
     cloudy = np.zeros_like(rcid)
+    magzp = magzp - 2.5 * np.log10(exptime / 30)
     clouds = np.where(
         (
             (band == "ztfg")
             & (
-                (magzp > 26.7 - 0.2 * airmass)
+                (magzp > 26.8 - 0.2 * airmass)
                 | (magzprms > 0.06)
                 | (nmatches < 80)
                 | (magzp < zp_rcid_g - 0.2 * airmass)
@@ -53,7 +55,7 @@ def calc_cloudy(rcid, band, field, magzp, magzprms, nmatches, airmass):
         | (
             (band == "ztfr")
             & (
-                (magzp > 26.65 - 0.15 * airmass)
+                (magzp > 26.75 - 0.15 * airmass)
                 | (magzprms > 0.05)
                 | (nmatches < 120)
                 | (magzp < zp_rcid_r - 0.15 * airmass)
@@ -62,7 +64,7 @@ def calc_cloudy(rcid, band, field, magzp, magzprms, nmatches, airmass):
         | (
             (band == "ztfi")
             & (
-                (magzp > 26.0 - 0.07 * airmass)
+                (magzp > 26.1 - 0.07 * airmass)
                 | (magzprms > 0.06)
                 | (nmatches < 100)
                 | (magzp < zp_rcid_i - 0.07 * airmass)
@@ -77,6 +79,7 @@ def calc_cloudy(rcid, band, field, magzp, magzprms, nmatches, airmass):
 
 # --------------------------------------------------------------------#
 
+
 # --------------------------------------------------------------------#
 # Calculate IPAC's cloudy parameter given a light-curve
 # --------------------------------------------------------------------#
@@ -89,12 +92,14 @@ def cloudy(lc):
         magzprms=lc.magzprms.values,
         nmatches=lc.nmatches.values,
         airmass=lc.airmass.values,
+        exptime=lc.exptime.values,
     )
 
     return lc
 
 
 # --------------------------------------------------------------------#
+
 
 # --------------------------------------------------------------------#
 # Given a light-curve, calculate the 'bad-flag' photometry.
@@ -133,6 +138,7 @@ def flag_lc(lc):
 
 
 # --------------------------------------------------------------------#
+
 
 # --------------------------------------------------------------------#
 # Trim a light-curve to only include 'good epochs'
