@@ -2,18 +2,27 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de); MarshalConnector based on code by Nora Linn Strotjohann (nora.linn.strotjohann@gmail.com)
 # License: BSD-3-Clause
 
-import os, getpass, socket, sqlalchemy, logging, time, multiprocessing, keyring
+import getpass
+import logging
+import multiprocessing
+import os
+import socket
+import time
+from itertools import product
 from pathlib import Path
+
+import backoff
+import keyring
 import numpy as np
 import requests
-import backoff
-from tqdm import tqdm
-from itertools import product
+import sqlalchemy
+import ztfquery
 from astropy.time import Time
 from astropy.utils.console import ProgressBar
-import ztfquery
-from ztfquery.query import ZTFQuery
 from requests.auth import HTTPBasicAuth
+from tqdm import tqdm
+from ztfquery.query import ZTFQuery
+
 from fpbot import credentials
 
 MARSHAL_BASEURL = "http://skipper.caltech.edu:8080/cgi-bin/growth/view_avro.cgi?name="

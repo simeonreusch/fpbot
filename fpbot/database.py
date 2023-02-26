@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
-import os, logging, collections
-from typing import Union, Any, Sequence, Tuple
+import collections
+import logging
+import os
+from typing import Any, Sequence, Tuple, Union
+
 import pymongo
 
 logger = logging.getLogger(__name__)

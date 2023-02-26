@@ -2,11 +2,14 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import warnings, re, os
+import os
+import re
+import warnings
+
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 from astropy import constants as const
+from tqdm import tqdm
 from ztfquery import query
 
 from fpbot import database

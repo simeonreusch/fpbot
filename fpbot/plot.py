@@ -2,22 +2,23 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import os, time, sys, logging
+import logging
+import os
+import sys
+import time
 from csv import reader
+from datetime import date, datetime
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from astropy.time import Time
-from astropy.table import Table
 from astropy.io import fits
-import matplotlib.pyplot as plt
-from datetime import datetime, date
-from fpbot import pipeline, database
-from fpbot.utils import (
-    calculate_magnitudes,
-    abmag_err_to_flux_err,
-    abmag_to_flux,
-    is_wise_name,
-)
+from astropy.table import Table
+from astropy.time import Time
+
+from fpbot import database, pipeline
+from fpbot.utils import (abmag_err_to_flux_err, abmag_to_flux,
+                         calculate_magnitudes, is_wise_name)
 
 
 def plot_lightcurve(

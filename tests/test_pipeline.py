@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import logging, os
+import logging
+import os
 import unittest
-import ztfquery
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+import ztfquery
 from astropy.time import Time
 
-from fpbot.pipeline import ForcedPhotometryPipeline, FORCEPHOTODATA
+from fpbot.pipeline import FORCEPHOTODATA, ForcedPhotometryPipeline
 
 
 class TestPipeline(unittest.TestCase):

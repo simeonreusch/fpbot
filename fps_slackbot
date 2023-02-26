@@ -2,12 +2,17 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de); part of this code is by Robert Stein (robert.stein@desy.de)
 # License: BSD-3-Clause
 
-import time, os, getpass, re, tarfile
-from slack import RTMClient, WebClient
+import getpass
+import os
+import re
+import tarfile
+import time
+
 import numpy as np
-from fpbot import pipeline
+from slack import RTMClient, WebClient
+
+from fpbot import credentials, pipeline
 from fpbot.pipeline import FORCEPHOTODATA
-from fpbot import credentials
 
 lc_dir = FORCEPHOTODATA
 

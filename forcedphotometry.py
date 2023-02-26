@@ -2,11 +2,16 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import os, time, argparse, multiprocessing, sys, logging
-import numpy as np
-from fpbot.pipeline import ForcedPhotometryPipeline
-
+import argparse
 import logging
+import multiprocessing
+import os
+import sys
+import time
+
+import numpy as np
+
+from fpbot.pipeline import ForcedPhotometryPipeline
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

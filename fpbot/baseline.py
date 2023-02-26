@@ -4,11 +4,15 @@
 
 # calculate baseline
 
-import os, time, sys, logging
+import logging
+import os
+import sys
+import time
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pipeline
-import matplotlib.pyplot as plt
 
 plot_colors = {"g": "green", "r": "red", "i": "orange"}
 plot_labels = {"g": "FP g", "r": "FP r", "i": "FP i"}

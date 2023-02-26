@@ -2,34 +2,35 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import multiprocessing, time, os, sys, logging, argparse, tarfile, shutil, warnings
-
+import argparse
+import logging
+import multiprocessing
+import os
+import shutil
+import sys
+import tarfile
+import time
+import warnings
 from pathlib import Path
 
-from tqdm import tqdm
 import numpy as np
 import pandas as pd
-
-from astropy.time import Time
-from astropy.coordinates import SkyCoord
-from astropy import units as u
-from astropy.utils.console import ProgressBar
 import requests.exceptions
-
+import ztfquery
+from astropy import units as u
+from astropy.coordinates import SkyCoord
+from astropy.time import Time
+from astropy.utils.console import ProgressBar
+from tqdm import tqdm
 from ztflc import forcephotometry
 from ztflc.io import LOCALDATA
-import ztfquery
 from ztfquery import query as zq
 
-from fpbot import database, credentials
-from fpbot.thumbnails import generate_thumbnails
-from fpbot.utils import (
-    calculate_magnitudes,
-    is_ztf_name,
-    is_wise_name,
-    get_wise_ra_dec,
-)
+from fpbot import credentials, database
 from fpbot.clean_lc import clean_lc
+from fpbot.thumbnails import generate_thumbnails
+from fpbot.utils import (calculate_magnitudes, get_wise_ra_dec, is_wise_name,
+                         is_ztf_name)
 
 try:
     ZTFDATA = os.getenv("ZTFDATA")
@@ -792,7 +793,6 @@ class ForcedPhotometryPipeline:
         """ """
         self.logger.info("Sending mail.")
         import smtplib
-
         from email.mime.application import MIMEApplication
         from email.mime.multipart import MIMEMultipart
         from email.mime.text import MIMEText

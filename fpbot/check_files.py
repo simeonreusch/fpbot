@@ -2,12 +2,15 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import argparse, re
+import argparse
+import re
+
 import ztfquery
-from ztfquery import query, io
-from fpbot import connectors
 from astropy.io import fits
 from astropy.utils.console import ProgressBar
+from ztfquery import io, query
+
+from fpbot import connectors
 
 
 def is_ztf_name(name):

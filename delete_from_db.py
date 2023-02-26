@@ -2,8 +2,14 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import os, logging, collections, re, argparse, socket
-from typing import Union, Any, Sequence, Tuple
+import argparse
+import collections
+import logging
+import os
+import re
+import socket
+from typing import Any, Sequence, Tuple, Union
+
 from astropy.utils.console import ProgressBar
 from pymongo import MongoClient
 

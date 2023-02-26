@@ -2,25 +2,27 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de)
 # License: BSD-3-Clause
 
-import os
-import tarfile
-import time
-import multiprocessing
 import argparse
 import logging
+import multiprocessing
+import os
+import shutil
+import tarfile
+import time
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from astropy import units as u
+from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.nddata import Cutout2D
-from astropy.wcs import WCS
-from astropy.coordinates import SkyCoord
-from astropy import units as u
-from astropy.visualization import astropy_mpl_style
-import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 from astropy.utils.console import ProgressBar
+from astropy.visualization import astropy_mpl_style
+from astropy.wcs import WCS
+from matplotlib.colors import LogNorm
+
 from fpbot import pipeline
-import shutil
 
 plt.style.use(astropy_mpl_style)
 

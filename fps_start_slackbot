@@ -2,12 +2,16 @@
 # Author: Simeon Reusch (simeon.reusch@desy.de); part of this code is by Robert Stein (robert.stein@desy.de)
 # License: BSD-3-Clause
 
-import os, io, argparse, re
+import argparse
+import io
+import os
+import re
+
 from slack import RTMClient, WebClient
 from ztflc.io import LOCALDATA
+
 from fpbot import credentials
 from fpbot.utils import is_wise_name, is_ztf_name
-
 
 parser = argparse.ArgumentParser(description="This is a realtime slackbot")
 parser.add_argument("-debug", action="store_true", help="Debug mode")

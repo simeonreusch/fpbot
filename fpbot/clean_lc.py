@@ -2,14 +2,13 @@
 # Author: Mathew Smith (m.smith@ipnl.in2p3.fr)
 
 
+import glob
+import os
+
 import numpy as np
 import pandas as pd
-import os
-import glob
-from scipy import stats
-
-
 import pkg_resources
+from scipy import stats
 
 THRESHOLD_FILE = pkg_resources.resource_filename(
     "fpbot", "data/zp_thresholds_quadID.txt"

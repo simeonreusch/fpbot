@@ -4,9 +4,14 @@
 
 HEADLESS = False
 
-import os, getpass, keyring, warnings, logging
-from ztfquery import io
+import getpass
+import logging
+import os
+import warnings
 from os import environ
+
+import keyring
+from ztfquery import io
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

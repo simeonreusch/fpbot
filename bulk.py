@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 # License: BSD-3-Clause
 
-import pandas as pd  # type: ignore
-import os, re, json, logging, argparse, logging, tarfile
+import argparse
+import json
+import logging
+import os
+import re
+import tarfile
 from datetime import datetime
-from tqdm import tqdm  # type: ignore
-from astropy.time import Time  # type: ignore
-from fpbot.pipeline import ForcedPhotometryPipeline
+
+import pandas as pd  # type: ignore
 import ztfquery  # type: ignore
+from astropy.time import Time  # type: ignore
+from tqdm import tqdm  # type: ignore
 from ztfquery import query
+
 from fpbot import connectors, database, utils
-from fpbot.pipeline import FORCEPHOTODATA
+from fpbot.pipeline import FORCEPHOTODATA, ForcedPhotometryPipeline
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
