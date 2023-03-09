@@ -6,13 +6,16 @@ import json
 import logging
 import os
 import re
+import shutil
 import tarfile
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd  # type: ignore
 import ztfquery  # type: ignore
 from astropy.time import Time  # type: ignore
 from tqdm import tqdm  # type: ignore
+from ztflc.io import LOCALDATA
 from ztfquery import query
 
 from fpbot import connectors, database, utils
@@ -30,7 +33,7 @@ def run(
     download: bool = False,
     fit: bool = False,
     plot: bool = False,
-    size: bool = False,
+    # size: bool = False,
     delete: bool = False,
     daysago: int = None,
     force_refit: bool = True,
@@ -136,39 +139,34 @@ def run(
             file.write(bad_object + "\n")
         file.close()
 
-    if size:
-        logger.info(
-            "Obtaining the combined disk space used by the images for the given ZTF objects"
-        )
-        local_files = utils.get_local_files(ztf_names=object_list[startitem:])
+    # if size:
+    #     logger.info(
+    #         "Obtaining the combined disk space used by the images for the given ZTF objects"
+    #     )
+    #     local_files = utils.get_local_files(ztf_names=object_list[startitem:])
 
-        logger.info(f"Found {len(local_files)} local files")
+    #     logger.info(f"Found {len(local_files)} local files")
 
-        total_bytes = 0
+    #     total_bytes = 0
 
-        for file in local_files:
-            if os.path.exists(file):
-                fs = os.path.getsize(file)
-                total_bytes += fs
+    #     for file in local_files:
+    #         if os.path.exists(file):
+    #             fs = os.path.getsize(file)
+    #             total_bytes += fs
 
-        total_diskspace_dec = utils.sizeof_fmt_dec(total_bytes)
-        total_diskspace_bin = utils.sizeof_fmt_bin(total_bytes)
+    #     total_diskspace_dec = utils.sizeof_fmt_dec(total_bytes)
+    #     total_diskspace_bin = utils.sizeof_fmt_bin(total_bytes)
 
-        logger.info(f"These take {total_diskspace_dec} ({total_diskspace_bin})")
+    #     logger.info(f"These take {total_diskspace_dec} ({total_diskspace_bin})")
 
     if delete:
         logger.info("Now we delete all the transient data!")
 
         for name in tqdm(object_list[startitem:]):
-            local_files = utils.get_local_files(names=[name])
-
-            logger.info(f"Deleting {len(local_files)} local files for {name}")
-
-            for file in local_files:
-                if os.path.exists(file):
-                    os.remove(file)
-                if os.path.exists(file + ".md5"):
-                    os.remove(file + ".md5")
+            logger.info(f"Deleting local files for {name}")
+            local_dir = Path(LOCALDATA).parent / "sci" / name
+            if local_dir.is_dir():
+                shutil.rmtree(local_dir)
 
             logger.info(f"Deleting {name} from internal database")
             database.delete_from_database(name)
@@ -215,12 +213,12 @@ def main():
 
     parser.add_argument("-plot", "--plot", action="store_true", help="Plot lightcurves")
 
-    parser.add_argument(
-        "-size",
-        "--size",
-        action="store_true",
-        help="Obtaining the combined disk space used by the images for the given ZTF objects.",
-    )
+    # parser.add_argument(
+    #     "-size",
+    #     "--size",
+    #     action="store_true",
+    #     help="Obtaining the combined disk space used by the images for the given ZTF objects.",
+    # )
 
     parser.add_argument(
         "-delete",
@@ -239,7 +237,7 @@ def main():
 
     logger.info("------------------------------------")
     logger.info(
-        f"Starting.\nRun config: file={args.name} / startitem={args.start} // download={args.dl} // fit={args.fit} // plot={args.plot} // size={args.size} // delete={args.delete} // daysago={args.daysago} // tarfile={args.tarfile} // no_refit:{args.no_refit}"
+        f"Starting.\nRun config: file={args.name} / startitem={args.start} // download={args.dl} // fit={args.fit} // plot={args.plot} // delete={args.delete} // daysago={args.daysago} // tarfile={args.tarfile} // no_refit:{args.no_refit}"
     )
     logger.info("------------------------------------")
 
@@ -249,7 +247,7 @@ def main():
         download=args.dl,
         fit=args.fit,
         plot=args.plot,
-        size=args.size,
+        # size=args.size,
         delete=args.delete,
         daysago=args.daysago,
         generate_tar=args.tarfile,
