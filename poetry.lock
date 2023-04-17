@@ -2313,14 +2313,14 @@ ztfquery = "*"
 
 [[package]]
 name = "ztfquery"
-version = "1.24.10"
+version = "1.26.1"
 description = "Python package to access ZTF data"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "ztfquery-1.24.10-py3-none-any.whl", hash = "sha256:3c51d4a3cfa5abd6e5add8ba69f8feee79169bcacb54555c62d5226015b41843"},
-    {file = "ztfquery-1.24.10.tar.gz", hash = "sha256:c4e8f7403d2c7c4d414e480cad43eabb2b1be0c1b36b38fcede52114fd1db2be"},
+    {file = "ztfquery-1.26.1-py3-none-any.whl", hash = "sha256:5f2ed24b4e02b1678274fd4a438b6d3e69f5e270c743a4dfb51c011100afeac8"},
+    {file = "ztfquery-1.26.1.tar.gz", hash = "sha256:c1831114452bc3d8766c97a41238cfceaa356effb74547b0d61041c575cd538c"},
 ]
 
 [package.dependencies]
