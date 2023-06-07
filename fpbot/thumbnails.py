@@ -9,6 +9,7 @@ import os
 import shutil
 import tarfile
 import time
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,22 +21,19 @@ from astropy.nddata import Cutout2D
 from astropy.utils.console import ProgressBar
 from astropy.visualization import astropy_mpl_style
 from astropy.wcs import WCS
-from matplotlib.colors import LogNorm
-
 from fpbot import pipeline
+from matplotlib.colors import LogNorm
 
 plt.style.use(astropy_mpl_style)
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
-def generate_thumbnails(
-    name, ra, dec, size=50, progress=True, snt=5.0, nprocess=4, logger=None
-):
-    """ """
-    if logger is None:
-        logging.basicConfig(level=logging.INFO)
-        logger = logging.getLogger("thumbnails")
-    else:
-        logger = logger
+
+def generate_thumbnails(name, ra, dec, size=50, progress=True, snt=5.0, nprocess=4):
+    """
+    Create thumbnails of the science or difference images
+    """
 
     lc_file = os.path.join(
         pipeline.PLOT_DATAFRAMES, "{}_SNT_{:.1f}.csv".format(name, snt)
@@ -54,8 +52,6 @@ def generate_thumbnails(
 
     # Now iterate over ZTF-filters
     for band in ["g", "r", "i"]:
-        print(name)
-
         # Generate lists to pass to multiprocessor function
         multiprocessing_args = get_lists_for_multiprocessing(
             name, df, band, ra, dec, size
@@ -70,6 +66,7 @@ def generate_thumbnails(
             progress_bar = ProgressBar(object_count)
 
         # Call the multiprocessing function with the multiprocessing args (a bunch of lists)
+        logger.info(f"{name}: Plotting thumbnails ({band}-band)")
         with multiprocessing.Pool(nprocess) as p:
             for j, result in enumerate(
                 p.imap_unordered(
@@ -122,18 +119,13 @@ def plot_thumbnail_multiprocess(args):
     """ """
     filename, name, quadrant, band, mag, obsmjd, ra, dec, size, index = args
     filename_split = filename.split("_")[1]
-    basedir = os.path.join(pipeline.ZTFDATA, "sci")
-    sciimg_path = os.path.join(
-        basedir,
-        filename_split[:4],
-        filename_split[4:8],
-        filename_split[8:14],
-        filename[:-5],
-    ) + "_q{}_sciimg.fits".format(quadrant + 1)
+    basedir = Path(pipeline.ZTFDATA) / "sci"
+
+    sciimg_path = basedir / name / (filename[:-5] + f"_q{quadrant + 1}_sciimg.fits")
 
     filter_color = {"ZTF_g": "green", "ZTF_r": "red", "ZTF_i": "orange"}
 
-    thumbnails_path = os.path.join(pipeline.THUMBNAILS, name, band)
+    thumbnails_path = Path(pipeline.THUMBNAILS) / name / band
 
     coords = SkyCoord("{} {}".format(ra, dec), unit=(u.deg, u.deg))
     hdu = fits.open(sciimg_path)[0]
@@ -153,21 +145,6 @@ def plot_thumbnail_multiprocess(args):
             fontweight="bold",
             color=filter_color[band],
         )
-    savepath = os.path.join(thumbnails_path, "{:0004.0f}.png".format(np.float(index)))
+    savepath = thumbnails_path / f"{float(index):0004.0f}.png"
     fig.savefig(savepath)
     plt.close()
-
-
-# if __name__ == "__main__":
-
-#     starttime = time.time()
-#     generate_thumbnails(
-#         name="ZTF19aaklqod",
-#         ra=134.656544,
-#         dec=+20.191857,
-#         progress=True,
-#         snt=5,
-#         nprocess=4,
-#     )
-#     endtime = time.time()
-#     print("\nThe script took {:.1f} seconds".format(endtime - starttime))

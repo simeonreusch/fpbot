@@ -9,6 +9,7 @@ import time
 from csv import reader
 from datetime import date, datetime
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -17,8 +18,16 @@ from astropy.table import Table
 from astropy.time import Time
 
 from fpbot import database, pipeline
-from fpbot.utils import (abmag_err_to_flux_err, abmag_to_flux,
-                         calculate_magnitudes, is_wise_name)
+from fpbot.utils import (
+    abmag_err_to_flux_err,
+    abmag_to_flux,
+    calculate_magnitudes,
+    is_wise_name,
+)
+
+matplotlib.rcParams["mathtext.fontset"] = "stix"
+matplotlib.rcParams["font.family"] = "serif"
+matplotlib.rcParams["font.serif"] = "Palatino"
 
 
 def plot_lightcurve(
@@ -192,7 +201,7 @@ def plot_lightcurve(
         return t0 + dist_to_t0
 
     ### actual plotting
-    fig, ax = plt.subplots(1, 1, figsize=[10, 4.2])
+    fig, ax = plt.subplots(1, 1, figsize=[7, 2.4 * 7 / 5])
     fig.subplots_adjust(top=0.8)
     ax2 = ax.secondary_xaxis("top", functions=(t0_dist, t0_to_mjd))
     # Get time now as UTC time
@@ -318,9 +327,9 @@ def plot_lightcurve(
         os.makedirs(images_dir)
     if not plot_flux:
         if snt:
-            image_path = os.path.join(images_dir, f"{name}_SNT_{snt}.png")
+            image_path = os.path.join(images_dir, f"{name}_SNT_{snt}.pdf")
         else:
-            image_path = os.path.join(images_dir, f"{name}.png")
+            image_path = os.path.join(images_dir, f"{name}.pdf")
     else:
-        image_path = os.path.join(images_dir, f"{name}_flux.png")
+        image_path = os.path.join(images_dir, f"{name}_flux.pdf")
     fig.savefig(image_path, dpi=300, bbox_inches="tight")
