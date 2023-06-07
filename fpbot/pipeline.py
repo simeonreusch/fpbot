@@ -937,6 +937,7 @@ class ForcedPhotometryPipeline:
             ra = query["ra"][index]
             dec = query["dec"][index]
 
+            # first we generate science image thumbnails, and then diffimg thumbs
             generate_thumbnails(
                 name=name,
                 ra=ra,
@@ -945,6 +946,7 @@ class ForcedPhotometryPipeline:
                 progress=True,
                 snt=self.snt,
                 nprocess=nprocess,
+                imgtype="sci",
             )
 
     @staticmethod

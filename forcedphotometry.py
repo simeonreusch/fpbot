@@ -10,7 +10,6 @@ import sys
 import time
 
 import numpy as np
-
 from fpbot.pipeline import ForcedPhotometryPipeline
 
 logging.basicConfig()
@@ -227,9 +226,6 @@ def run():
     reprocess = commandline_args.reprocess
     nosnt = commandline_args.nosnt
     plot_alertdata = commandline_args.noalert
-
-    # if thumbnails:
-    #     sciimg = True
 
     if len(sys.argv) == 2 or reprocess:
         do_download = True

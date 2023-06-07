@@ -22,7 +22,7 @@ from astropy.utils.console import ProgressBar
 from astropy.visualization import astropy_mpl_style
 from astropy.wcs import WCS
 from fpbot import pipeline
-from matplotlib.colors import LogNorm
+from matplotlib.colors import LogNorm, SymLogNorm
 
 plt.style.use(astropy_mpl_style)
 
@@ -30,43 +30,39 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def generate_thumbnails(name, ra, dec, size=50, progress=True, snt=5.0, nprocess=4):
+def generate_thumbnails(
+    name, ra, dec, size=50, progress=True, snt=5.0, nprocess=4, imgtype="sci"
+):
     """
     Create thumbnails of the science or difference images
     """
 
-    lc_file = os.path.join(
-        pipeline.PLOT_DATAFRAMES, "{}_SNT_{:.1f}.csv".format(name, snt)
-    )
+    lc_file = Path(pipeline.PLOT_DATAFRAMES) / f"{name}_SNT_{snt:.1f}.csv"
 
     df = pd.read_csv(lc_file, comment="#")
     df = df.sort_values(by=["obsmjd"])
 
     # Create directories
     for band in ["ZTF_g", "ZTF_r", "ZTF_i"]:
-        if not os.path.exists(pipeline.THUMBNAILS):
-            os.makedirs(pipeline.THUMBNAILS)
-        thumbnails_path = os.path.join(pipeline.THUMBNAILS, name, band)
-        if not os.path.exists(thumbnails_path):
-            os.makedirs(thumbnails_path)
+        thumbnails_path = Path(pipeline.THUMBNAILS) / name / imgtype / band
+        thumbnails_path.mkdir(exist_ok=True, parents=True)
 
     # Now iterate over ZTF-filters
     for band in ["g", "r", "i"]:
         # Generate lists to pass to multiprocessor function
         multiprocessing_args = get_lists_for_multiprocessing(
-            name, df, band, ra, dec, size
+            name, df, band, ra, dec, size, imgtype
         )
         filterstring = "ZTF_" + band
         object_count = len(df.query("filter == @filterstring"))
         logger.info(
-            f"\nGenerating thumbnails for {band}-band ({object_count} in total)"
+            f"{name}: Generating {imgtype} thumbnails for {band}-band ({object_count} in total)"
         )
 
         if progress:
             progress_bar = ProgressBar(object_count)
 
         # Call the multiprocessing function with the multiprocessing args (a bunch of lists)
-        logger.info(f"{name}: Plotting thumbnails ({band}-band)")
         with multiprocessing.Pool(nprocess) as p:
             for j, result in enumerate(
                 p.imap_unordered(
@@ -87,7 +83,7 @@ def generate_thumbnails(name, ra, dec, size=50, progress=True, snt=5.0, nprocess
     )
 
 
-def get_lists_for_multiprocessing(name, df, band, ra, dec, size):
+def get_lists_for_multiprocessing(name, df, band, ra, dec, size, imgtype):
     """ """
     filterstring = "ZTF_" + band
     df = df.query("filter == @filterstring")
@@ -101,6 +97,8 @@ def get_lists_for_multiprocessing(name, df, band, ra, dec, size):
     decs = [dec] * len(filenames)
     sizes = [size] * len(filenames)
     indices = np.arange(len(filenames))
+    imgtypes = [imgtype] * len(filenames)
+
     return (
         filenames,
         names,
@@ -112,39 +110,64 @@ def get_lists_for_multiprocessing(name, df, band, ra, dec, size):
         decs,
         sizes,
         indices,
+        imgtypes,
     )
 
 
 def plot_thumbnail_multiprocess(args):
     """ """
-    filename, name, quadrant, band, mag, obsmjd, ra, dec, size, index = args
+    filename, name, quadrant, band, mag, obsmjd, ra, dec, size, index, imgtype = args
     filename_split = filename.split("_")[1]
     basedir = Path(pipeline.ZTFDATA) / "sci"
 
-    sciimg_path = basedir / name / (filename[:-5] + f"_q{quadrant + 1}_sciimg.fits")
-
-    filter_color = {"ZTF_g": "green", "ZTF_r": "red", "ZTF_i": "orange"}
-
-    thumbnails_path = Path(pipeline.THUMBNAILS) / name / band
-
-    coords = SkyCoord("{} {}".format(ra, dec), unit=(u.deg, u.deg))
-    hdu = fits.open(sciimg_path)[0]
-    wcs = WCS(hdu.header)
-    size = size
-    cutout = Cutout2D(hdu.data, position=coords, size=(size, size), wcs=wcs)
-    img_data = cutout.data
-
-    # Plot
-    fig, ax = plt.subplots(1, 1, figsize=[5, 5], dpi=300)
-    ax.imshow(img_data, cmap="viridis", norm=LogNorm())
-    if mag == 99:
-        fig.suptitle("{} | {:.2f}".format(name, obsmjd), fontweight="bold")
+    if imgtype == "sci":
+        imgtype_long = "sciimg"
+        suffix = "fits"
+    elif imgtype == "diff":
+        imgtype_long = "scimrefdiffimg"
+        suffix = "fits.fz"
     else:
-        fig.suptitle(
-            "{} | {:.2f}".format(name, obsmjd),
-            fontweight="bold",
-            color=filter_color[band],
+        raise ValueError(
+            f"imgtype has to be either 'sci' or 'diff'. You passed {imgtype}"
         )
-    savepath = thumbnails_path / f"{float(index):0004.0f}.png"
-    fig.savefig(savepath)
-    plt.close()
+
+    img_path = (
+        basedir / name / (filename[:-5] + f"_q{quadrant + 1}_{imgtype_long}.{suffix}")
+    )
+
+    if img_path.is_file():
+        filter_color = {"ZTF_g": "green", "ZTF_r": "red", "ZTF_i": "orange"}
+
+        thumbnails_path = Path(pipeline.THUMBNAILS) / name / imgtype / band
+
+        coords = SkyCoord("{} {}".format(ra, dec), unit=(u.deg, u.deg))
+
+        if imgtype == "sci":
+            index = 0
+            norm = LogNorm()
+        else:
+            index = 1
+            norm = SymLogNorm(linthresh=1)
+
+        hdu = fits.open(img_path)[index]
+
+        wcs = WCS(hdu.header)
+        cutout = Cutout2D(hdu.data, position=(coords), size=(size, size), wcs=wcs)
+
+        img_data = cutout.data
+
+        # Plot
+        fig, ax = plt.subplots(1, 1, figsize=[5, 5], dpi=300)
+        ax.imshow(img_data, cmap="viridis", norm=norm)
+        if mag == 99:
+            fig.suptitle(f"{name} | {obsmjd:.2f}", fontweight="bold")
+            savepath = thumbnails_path / f"{obsmjd}_ul.png"
+        else:
+            fig.suptitle(
+                f"{name} | {obsmjd:.2f}",
+                fontweight="bold",
+                color=filter_color[band],
+            )
+            savepath = thumbnails_path / f"{obsmjd}_det.png"
+        fig.savefig(savepath)
+        plt.close()
