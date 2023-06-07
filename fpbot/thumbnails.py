@@ -144,10 +144,10 @@ def plot_thumbnail_multiprocess(args):
 
         if imgtype == "sci":
             index = 0
-            norm = LogNorm()
+            # norm = LogNorm()
         else:
             index = 1
-            norm = SymLogNorm(linthresh=1)
+            # norm = SymLogNorm(linthresh=1)
 
         hdu = fits.open(img_path)[index]
 
@@ -162,13 +162,14 @@ def plot_thumbnail_multiprocess(args):
         # ax.imshow(img_data, cmap="viridis", norm=norm)
 
         vmin, vmax = np.percentile(img_data[img_data == img_data], [0, 100])
-        _img_data = visualization.AsinhStretch()((img_data - vmin) / (vmax - vmin))
+        _img_data = AsinhStretch()((img_data - vmin) / (vmax - vmin))
 
         ax.imshow(
             _img_data,
             norm=Normalize(
                 *np.percentile(_img_data[_img_data == _img_data], [0.5, 99.5])
             ),
+            cmap="viridis",
             aspect="auto",
         )
 
