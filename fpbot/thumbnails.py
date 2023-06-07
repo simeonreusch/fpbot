@@ -19,10 +19,10 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.nddata import Cutout2D
 from astropy.utils.console import ProgressBar
-from astropy.visualization import astropy_mpl_style
+from astropy.visualization import AsinhStretch, astropy_mpl_style
 from astropy.wcs import WCS
 from fpbot import pipeline
-from matplotlib.colors import LogNorm, SymLogNorm
+from matplotlib.colors import LogNorm, Normalize
 
 plt.style.use(astropy_mpl_style)
 
@@ -158,7 +158,20 @@ def plot_thumbnail_multiprocess(args):
 
         # Plot
         fig, ax = plt.subplots(1, 1, figsize=[5, 5], dpi=300)
-        ax.imshow(img_data, cmap="viridis", norm=norm)
+
+        # ax.imshow(img_data, cmap="viridis", norm=norm)
+
+        vmin, vmax = np.percentile(img_data[img_data == img_data], [0, 100])
+        _img_data = visualization.AsinhStretch()((img_data - vmin) / (vmax - vmin))
+
+        ax.imshow(
+            _img_data,
+            norm=Normalize(
+                *np.percentile(_img_data[_img_data == _img_data], [0.5, 99.5])
+            ),
+            aspect="auto",
+        )
+
         if mag == 99:
             fig.suptitle(f"{name} | {obsmjd:.2f}", fontweight="bold")
             savepath = thumbnails_path / f"{obsmjd}_ul.png"

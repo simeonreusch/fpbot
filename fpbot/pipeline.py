@@ -946,7 +946,7 @@ class ForcedPhotometryPipeline:
                 progress=True,
                 snt=self.snt,
                 nprocess=nprocess,
-                imgtype="sci",
+                imgtype="diff",
             )
 
     @staticmethod
