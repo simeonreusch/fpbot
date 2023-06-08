@@ -249,7 +249,7 @@ def run():
 
     if thumbnails:
         sciimg = True
-        # do_download = True
+        do_download = True
 
     if nosnt:
         snt = None

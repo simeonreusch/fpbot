@@ -4,12 +4,12 @@
 import logging
 import os
 import unittest
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import ztfquery
 from astropy.time import Time
-
 from fpbot.pipeline import FORCEPHOTODATA, ForcedPhotometryPipeline
 
 
@@ -39,12 +39,12 @@ class TestPipeline(unittest.TestCase):
         pl.psffit()
         pl.plot()
 
-        df_filepath = os.path.join(FORCEPHOTODATA, ztf_id + ".csv")
-        plot_filepath = os.path.join(
-            FORCEPHOTODATA, "plots", "images", ztf_id + "_SNT_5.0.png"
+        df_filepath = Path(FORCEPHOTODATA) / (ztf_id + ".csv")
+        plot_filepath = (
+            Path(FORCEPHOTODATA) / "plots" / "images" / (ztf_id + "_SNT_5.0.pdf")
         )
 
-        self.assertTrue(os.path.isfile(plot_filepath))
+        self.assertTrue(plot_filepath.is_file())
 
         df = pd.read_csv(df_filepath, comment="#")
         df_sorted = df.sort_values(by=["obsmjd"]).reset_index(drop=True)
@@ -104,12 +104,12 @@ class TestPipeline(unittest.TestCase):
         pl.plot()
         pl.plot(plot_flux=True)
 
-        df_filepath = os.path.join(FORCEPHOTODATA, name + ".csv")
-        plot_filepath = os.path.join(
-            FORCEPHOTODATA, "plots", "images", name + "_SNT_5.0.png"
+        df_filepath = Path(FORCEPHOTODATA) / (name + ".csv")
+        plot_filepath = (
+            Path(FORCEPHOTODATA) / "plots" / "images" / (name + "_SNT_5.0.pdf")
         )
 
-        self.assertTrue(os.path.isfile(plot_filepath))
+        self.assertTrue(plot_filepath.is_file())
 
         df = pd.read_csv(df_filepath, comment="#")
         df_sorted = df.sort_values(by=["obsmjd"]).reset_index(drop=True)
