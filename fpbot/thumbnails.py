@@ -30,9 +30,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def generate_thumbnails(
-    name, ra, dec, size=50, progress=True, snt=5.0, nprocess=4, imgtype="sci"
-):
+def generate_thumbnails(name, ra, dec, size=50, progress=True, snt=5.0, nprocess=4):
     """
     Create thumbnails of the science or difference images
     """
@@ -44,19 +42,19 @@ def generate_thumbnails(
 
     # Create directories
     for band in ["ZTF_g", "ZTF_r", "ZTF_i"]:
-        thumbnails_path = Path(pipeline.THUMBNAILS) / name / imgtype / band
+        thumbnails_path = Path(pipeline.THUMBNAILS) / name / band
         thumbnails_path.mkdir(exist_ok=True, parents=True)
 
     # Now iterate over ZTF-filters
     for band in ["g", "r", "i"]:
         # Generate lists to pass to multiprocessor function
         multiprocessing_args = get_lists_for_multiprocessing(
-            name, df, band, ra, dec, size, imgtype
+            name, df, band, ra, dec, size
         )
         filterstring = "ZTF_" + band
         object_count = len(df.query("filter == @filterstring"))
         logger.info(
-            f"{name}: Generating {imgtype} thumbnails for {band}-band ({object_count} in total)"
+            f"{name}: Generating thumbnails for {band}-band ({object_count} in total)"
         )
 
         if progress:
@@ -83,7 +81,7 @@ def generate_thumbnails(
     )
 
 
-def get_lists_for_multiprocessing(name, df, band, ra, dec, size, imgtype):
+def get_lists_for_multiprocessing(name, df, band, ra, dec, size):
     """ """
     filterstring = "ZTF_" + band
     df = df.query("filter == @filterstring")
@@ -97,7 +95,6 @@ def get_lists_for_multiprocessing(name, df, band, ra, dec, size, imgtype):
     decs = [dec] * len(filenames)
     sizes = [size] * len(filenames)
     indices = np.arange(len(filenames))
-    imgtypes = [imgtype] * len(filenames)
 
     return (
         filenames,
@@ -110,68 +107,82 @@ def get_lists_for_multiprocessing(name, df, band, ra, dec, size, imgtype):
         decs,
         sizes,
         indices,
-        imgtypes,
     )
 
 
 def plot_thumbnail_multiprocess(args):
     """ """
-    filename, name, quadrant, band, mag, obsmjd, ra, dec, size, index, imgtype = args
+    filename, name, quadrant, band, mag, obsmjd, ra, dec, size, index = args
     filename_split = filename.split("_")[1]
     basedir = Path(pipeline.ZTFDATA) / "sci"
 
-    if imgtype == "sci":
-        imgtype_long = "sciimg"
-        suffix = "fits"
-    elif imgtype == "diff":
-        imgtype_long = "scimrefdiffimg"
-        suffix = "fits.fz"
-    else:
-        raise ValueError(
-            f"imgtype has to be either 'sci' or 'diff'. You passed {imgtype}"
-        )
-
-    img_path = (
-        basedir / name / (filename[:-5] + f"_q{quadrant + 1}_{imgtype_long}.{suffix}")
+    img_path_sci = basedir / name / (filename[:-5] + f"_q{quadrant + 1}_sciimg.fits")
+    img_path_diff = (
+        basedir / name / (filename[:-5] + f"_q{quadrant + 1}_scimrefdiffimg.fits.fz")
     )
 
-    if img_path.is_file():
+    if img_path_sci.is_file() and img_path_diff.is_file():
         filter_color = {"ZTF_g": "green", "ZTF_r": "red", "ZTF_i": "orange"}
 
-        thumbnails_path = Path(pipeline.THUMBNAILS) / name / imgtype / band
+        thumbnails_path = Path(pipeline.THUMBNAILS) / name / band
 
         coords = SkyCoord("{} {}".format(ra, dec), unit=(u.deg, u.deg))
 
-        if imgtype == "sci":
-            index = 0
-            # norm = LogNorm()
-        else:
-            index = 1
-            # norm = SymLogNorm(linthresh=1)
+        hdu_sci = fits.open(img_path_sci)[0]
+        hdu_diff = fits.open(img_path_diff)[1]
 
-        hdu = fits.open(img_path)[index]
+        wcs_sci = WCS(hdu_sci.header)
+        wcs_diff = WCS(hdu_sci.header)
+        cutout_sci = Cutout2D(
+            hdu_sci.data, position=(coords), size=(size, size), wcs=wcs_sci
+        )
+        cutout_diff = Cutout2D(
+            hdu_diff.data, position=(coords), size=(size, size), wcs=wcs_diff
+        )
 
-        wcs = WCS(hdu.header)
-        cutout = Cutout2D(hdu.data, position=(coords), size=(size, size), wcs=wcs)
-
-        img_data = cutout.data
+        img_data_sci = cutout_sci.data
+        img_data_diff = cutout_diff.data
 
         # Plot
-        fig, ax = plt.subplots(1, 1, figsize=[5, 5], dpi=300)
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=[10, 5], dpi=300)
 
-        # ax.imshow(img_data, cmap="viridis", norm=norm)
+        vmin_sci, vmax_sci = np.percentile(
+            img_data_sci[img_data_sci == img_data_sci], [0, 100]
+        )
+        vmin_diff, vmax_diff = np.percentile(
+            img_data_diff[img_data_diff == img_data_diff], [0, 100]
+        )
+        _img_data_sci = AsinhStretch()(
+            (img_data_sci - vmin_sci) / (vmax_sci - vmin_sci)
+        )
+        _img_data_diff = AsinhStretch()(
+            (img_data_diff - vmin_diff) / (vmax_diff - vmin_diff)
+        )
 
-        vmin, vmax = np.percentile(img_data[img_data == img_data], [0, 100])
-        _img_data = AsinhStretch()((img_data - vmin) / (vmax - vmin))
-
-        ax.imshow(
-            _img_data,
+        ax1.imshow(
+            _img_data_sci,
             norm=Normalize(
-                *np.percentile(_img_data[_img_data == _img_data], [0.5, 99.5])
+                *np.percentile(
+                    _img_data_sci[_img_data_sci == _img_data_sci], [0.5, 99.5]
+                )
             ),
             cmap="viridis",
             aspect="auto",
         )
+
+        ax2.imshow(
+            _img_data_diff,
+            norm=Normalize(
+                *np.percentile(
+                    _img_data_diff[_img_data_diff == _img_data_diff], [0.5, 99.5]
+                )
+            ),
+            cmap="viridis",
+            aspect="auto",
+        )
+
+        ax1.set_title("Sci")
+        ax2.set_title("Diff")
 
         if mag == 99:
             fig.suptitle(f"{name} | {obsmjd:.2f}", fontweight="bold")

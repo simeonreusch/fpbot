@@ -491,14 +491,7 @@ class ForcedPhotometryPipeline:
 
             outdir = str(Path(ZTFDATA) / "sci" / name)
 
-            if self.sciimg:
-                which = [
-                    "scimrefdiffimg.fits.fz",
-                    "diffimgpsf.fits",
-                    "sciimg.fits",
-                ]
-            else:
-                which = ["scimrefdiffimg.fits.fz", "diffimgpsf.fits"]
+            which = ["scimrefdiffimg.fits.fz", "diffimgpsf.fits"]
 
             fp.io.download_data(
                 download_dir=self.get_outdir(name),
@@ -512,15 +505,31 @@ class ForcedPhotometryPipeline:
                 which=which,
             )
 
-            last_download = Time(time.time(), format="unix", scale="utc").jd
+            if self.sciimg:
+                which = [
+                    "scimrefdiffimg.fits.fz",
+                    "diffimgpsf.fits",
+                    "sciimg.fits",
+                ]
 
-            # local_filecount = irsa_filecounts[name]
+                fp.io.download_data(
+                    download_dir=self.get_outdir(name),
+                    cutouts=True,
+                    radec=[ra, dec],
+                    cutout_size=30,
+                    nprocess=32,
+                    overwrite=False,
+                    show_progress=True,
+                    ignore_warnings=True,
+                    which=which,
+                )
+
+            last_download = Time(time.time(), format="unix", scale="utc").jd
 
             database.update_database(
                 name,
                 {
                     "lastdownload": last_download,
-                    # "local_filecount": local_filecount,
                 },
             )
 
@@ -946,7 +955,6 @@ class ForcedPhotometryPipeline:
                 progress=True,
                 snt=self.snt,
                 nprocess=nprocess,
-                imgtype="sci",
             )
 
     @staticmethod
