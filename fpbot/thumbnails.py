@@ -24,8 +24,6 @@ from astropy.wcs import WCS
 from fpbot import pipeline
 from matplotlib.colors import LogNorm, Normalize
 
-plt.style.use(astropy_mpl_style)
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -34,6 +32,7 @@ def generate_thumbnails(name, ra, dec, size=50, progress=True, snt=5.0, nprocess
     """
     Create thumbnails of the science or difference images
     """
+    plt.style.use(astropy_mpl_style)
 
     lc_file = Path(pipeline.PLOT_DATAFRAMES) / f"{name}_SNT_{snt:.1f}.csv"
 
@@ -112,6 +111,7 @@ def get_lists_for_multiprocessing(name, df, band, ra, dec, size):
 
 def plot_thumbnail_multiprocess(args):
     """ """
+    plt.style.use(astropy_mpl_style)
     filename, name, quadrant, band, mag, obsmjd, ra, dec, size, index = args
     filename_split = filename.split("_")[1]
     basedir = Path(pipeline.ZTFDATA) / "sci"
