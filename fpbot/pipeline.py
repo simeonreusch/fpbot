@@ -21,14 +21,15 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
 from astropy.utils.console import ProgressBar
-from fpbot import credentials, database
-from fpbot.clean_lc import clean_lc
-from fpbot.thumbnails import generate_thumbnails
-from fpbot.utils import calculate_magnitudes, get_wise_ra_dec, is_wise_name, is_ztf_name
 from tqdm import tqdm
 from ztflc import forcephotometry
 from ztflc.io import LOCALDATA
 from ztfquery import query as zq
+
+from fpbot import credentials, database
+from fpbot.clean_lc import clean_lc
+from fpbot.thumbnails import generate_thumbnails
+from fpbot.utils import calculate_magnitudes, get_wise_ra_dec, is_wise_name, is_ztf_name
 
 try:
     ZTFDATA = os.getenv("ZTFDATA")

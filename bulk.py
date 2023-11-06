@@ -33,24 +33,28 @@ def run(
     download: bool = False,
     fit: bool = False,
     plot: bool = False,
-    # size: bool = False,
     delete: bool = False,
     daysago: int = None,
     force_refit: bool = True,
     generate_tar: None | str = None,
 ):
     """ """
-    errormessage = "\nYou have to provide a either a ZTF name (a string adhering to the ZTF naming scheme), an ascii file containing ZTF names (1 per line) in the same directory or an arbitrary name if using the radec option.\n"
+    errormessage = "\nYou have to provide a either a ZTF name (a string adhering to the ZTF naming scheme), an ascii file containing ZTF names (1 per line) in the same directory or a csv with arbitrary names and coordinates if using the radec option.\n"
 
     fname = None
+    radec = False
 
     if utils.is_ztf_name(file_or_name):
         object_list = [file_or_name]
     elif utils.is_wise_name(file_or_name):
         object_list = [file_or_name]
+    elif Path(file_or_name).suffix == ".csv":
+        radec = True
+        df = pd.read_csv(file_or_name, index_col="name")
+        object_list = df.index.values
     else:
-        object_list = []
         try:
+            object_list = []
             file = open(f"{file_or_name}", "r")
             fname = os.path.splitext(file_or_name)[0]
             lines = file.read().splitlines()
@@ -87,9 +91,17 @@ def run(
             f"Processing {ztfid} ({i+1} of {len(object_list[startitem:])} transients)"
         )
         logger.info("-------------------------------------------------")
+        if radec:
+            ra = df.loc[ztfid].ra
+            dec = df.loc[ztfid].dec
+        else:
+            ra = None
+            dec = None
         try:
             pl = ForcedPhotometryPipeline(
                 file_or_name=ztfid,
+                ra=ra,
+                dec=dec,
                 daysago=daysago,
                 daysuntil=None,
                 nprocess=32,
@@ -212,13 +224,6 @@ def main():
     )
 
     parser.add_argument("-plot", "--plot", action="store_true", help="Plot lightcurves")
-
-    # parser.add_argument(
-    #     "-size",
-    #     "--size",
-    #     action="store_true",
-    #     help="Obtaining the combined disk space used by the images for the given ZTF objects.",
-    # )
 
     parser.add_argument(
         "-delete",

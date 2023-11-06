@@ -58,6 +58,7 @@ class AmpelInfo:
             API_ZTF_ARCHIVE_URL + f"/object/{ztf_name}/alerts?with_history=false"
         )
         self.logger.debug(queryurl_ztf_name)
+
         response = requests.get(
             queryurl_ztf_name,
             auth=HTTPBasicAuth(self.api_user, self.api_pass),
