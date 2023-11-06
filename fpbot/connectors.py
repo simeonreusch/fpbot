@@ -57,12 +57,10 @@ class AmpelInfo:
         queryurl_ztf_name = (
             API_ZTF_ARCHIVE_URL + f"/v3/object/{ztf_name}/alerts?with_history=false"
         )
-        self.logger.debug(queryurl_ztf_name)
 
-        response = requests.get(
-            queryurl_ztf_name,
-            auth=HTTPBasicAuth(self.api_user, self.api_pass),
-        )
+        headers = {"Authorization": f"Bearer {self.api_pass}"}
+
+        response = requests.get(queryurl_ztf_name, headers=headers)
 
         if response.status_code == 503:
             raise requests.exceptions.RequestException
