@@ -4,6 +4,7 @@
 import collections
 import logging
 import os
+import socket
 from typing import Any, Sequence, Tuple, Union
 
 import pymongo
@@ -29,7 +30,14 @@ def get_db() -> pymongo.MongoClient:
             )
             mongo_db.server_info()
         except pymongo.errors.ServerSelectionTimeoutError as err:
-            mongo_db = pymongo.MongoClient("localhost", 27051)
+            hostname = socket.gethostname()
+            if hostname == "wgs33.zeuthen.desy.de":
+                mongoport = 27051
+            elif hostname == "wgs18.zeuthen.desy.de":
+                mongoport = 27053
+            else:
+                raise ValueError(f"Notify technician")
+            mongo_db = pymongo.MongoClient("localhost", mongoport)
 
     logger.debug("Connected to local database")
 

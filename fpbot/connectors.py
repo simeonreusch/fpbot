@@ -55,7 +55,7 @@ class AmpelInfo:
     )
     def query_ampel_api_for_ztfname(self, ztf_name):
         queryurl_ztf_name = (
-            API_ZTF_ARCHIVE_URL + f"/object/{ztf_name}/alerts?with_history=false"
+            API_ZTF_ARCHIVE_URL + f"/v3/object/{ztf_name}/alerts?with_history=false"
         )
         self.logger.debug(queryurl_ztf_name)
 

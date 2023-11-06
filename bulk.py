@@ -39,7 +39,7 @@ def run(
     generate_tar: None | str = None,
 ):
     """ """
-    errormessage = "\nYou have to provide a either a ZTF name (a string adhering to the ZTF naming scheme), an ascii file containing ZTF names (1 per line) in the same directory or a csv with arbitrary names and coordinates if using the radec option.\n"
+    errormessage = "\nYou have to provide a either a ZTF name (a string adhering to the ZTF naming scheme), an ascii file containing ZTF names (1 per line) in the same directory or a csv with arbitrary names and coordinates. In the last case, the first column must be 'name', followed by 'ra' and 'dec'\n"
 
     fname = None
     radec = False
@@ -192,9 +192,9 @@ def main():
     parser = argparse.ArgumentParser(description="Bulk processing for fpbot")
 
     parser.add_argument(
-        "name",
+        "file",
         type=str,
-        help='Provide a ZTF name (e.g. "ZTF19aaelulu") or a .txt-file containing a list of ZTF names',
+        help='Provide an ascii file containing a list of ZTF names, or a .csv file containing a "name" column, a "ra" column and a "dec" column',
     )
     parser.add_argument(
         "-start",
@@ -242,12 +242,12 @@ def main():
 
     logger.info("------------------------------------")
     logger.info(
-        f"Starting.\nRun config: file={args.name} / startitem={args.start} // download={args.dl} // fit={args.fit} // plot={args.plot} // delete={args.delete} // daysago={args.daysago} // tarfile={args.tarfile} // no_refit:{args.no_refit}"
+        f"Starting.\nRun config: file={args.file} / startitem={args.start} // download={args.dl} // fit={args.fit} // plot={args.plot} // delete={args.delete} // daysago={args.daysago} // tarfile={args.tarfile} // no_refit:{args.no_refit}"
     )
     logger.info("------------------------------------")
 
     run(
-        file_or_name=args.name,
+        file_or_name=args.file,
         startitem=args.start,
         download=args.dl,
         fit=args.fit,
