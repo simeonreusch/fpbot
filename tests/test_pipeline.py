@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import ztfquery
 from astropy.time import Time
+
 from fpbot.pipeline import FORCEPHOTODATA, ForcedPhotometryPipeline
 
 
@@ -41,7 +42,7 @@ class TestPipeline(unittest.TestCase):
 
         df_filepath = Path(FORCEPHOTODATA) / (ztf_id + ".csv")
         plot_filepath = (
-            Path(FORCEPHOTODATA) / "plots" / "images" / (ztf_id + "_SNT_5.0.pdf")
+            Path(FORCEPHOTODATA) / "plots" / "images" / (ztf_id + "_SNT_5.0.png")
         )
 
         self.assertTrue(plot_filepath.is_file())
@@ -106,7 +107,7 @@ class TestPipeline(unittest.TestCase):
 
         df_filepath = Path(FORCEPHOTODATA) / (name + ".csv")
         plot_filepath = (
-            Path(FORCEPHOTODATA) / "plots" / "images" / (name + "_SNT_5.0.pdf")
+            Path(FORCEPHOTODATA) / "plots" / "images" / (name + "_SNT_5.0.png")
         )
 
         self.assertTrue(plot_filepath.is_file())
