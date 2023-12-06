@@ -211,7 +211,7 @@ def plot_lightcurve(
     ax2.set_xlabel(f"Days from {utc_string} UT")
 
     fig.suptitle(f"{name}", fontweight="bold")
-    ax2.grid(which="major", axis="both")
+    ax.grid(visible=True, which="major", axis="both")
     ax.set_xlabel("MJD")
     if not plot_flux:
         ax.set_ylabel("Magnitude [AB]")
