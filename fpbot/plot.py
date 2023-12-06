@@ -323,13 +323,17 @@ def plot_lightcurve(
             title_fontsize="x-small",
         )
     images_dir = os.path.join(lc_plotdir, "images")
+    if not plot_pdf:
+        file_ext = "png"
+    else:
+        file_ext = "pdf"
     if not os.path.exists(images_dir):
         os.makedirs(images_dir)
     if not plot_flux:
         if snt:
-            image_path = os.path.join(images_dir, f"{name}_SNT_{snt}.pdf")
+            image_path = os.path.join(images_dir, f"{name}_SNT_{snt}.{file_ext}")
         else:
-            image_path = os.path.join(images_dir, f"{name}.pdf")
+            image_path = os.path.join(images_dir, f"{name}.{file_ext}")
     else:
-        image_path = os.path.join(images_dir, f"{name}_flux.pdf")
+        image_path = os.path.join(images_dir, f"{name}_flux.{file_ext}")
     fig.savefig(image_path, dpi=300, bbox_inches="tight")
