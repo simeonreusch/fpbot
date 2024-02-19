@@ -39,7 +39,7 @@ ztflc = "^0.3.1"
 
 [tool.poetry.dev-dependencies]
 coveralls = "^3.3.1"
-pytest = "^8.0.0"
+pytest = "^8.0.1"
 
 [tool.poetry.extras]
 slack = ["slackclient"]
