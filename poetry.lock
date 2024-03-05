@@ -2265,21 +2265,21 @@ ztfquery = "*"
 
 [[package]]
 name = "ztfquery"
-version = "1.26.1"
+version = "1.27.0"
 description = "Python package to access ZTF data"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = ">=3.8"
 files = [
-    {file = "ztfquery-1.26.1-py3-none-any.whl", hash = "sha256:5f2ed24b4e02b1678274fd4a438b6d3e69f5e270c743a4dfb51c011100afeac8"},
-    {file = "ztfquery-1.26.1.tar.gz", hash = "sha256:c1831114452bc3d8766c97a41238cfceaa356effb74547b0d61041c575cd538c"},
+    {file = "ztfquery-1.27.0-py3-none-any.whl", hash = "sha256:70e1baaf3ceaeb6c18fc5f8f233ab0fe389f39158cf3c49e9611e03619e65438"},
+    {file = "ztfquery-1.27.0.tar.gz", hash = "sha256:4c7e784a0c36a30ac05fe949fc7bfc4e5b1be670c9b7bbf77a62d3583f685af8"},
 ]
 
 [package.dependencies]
-astropy = ">=5.2.1,<6.0.0"
-matplotlib = ">=3.7.0,<4.0.0"
-numpy = ">=1.24.2,<2.0.0"
-pandas = ">=1.5.3,<2.0.0"
-requests = ">=2.28.2,<3.0.0"
+astropy = ">=5.2.1"
+matplotlib = ">=3.7.0"
+numpy = ">=1.24.2"
+pandas = ">=1.5.3"
+requests = ">=2.28.2"
 
 [extras]
 slack = ["slackclient"]
