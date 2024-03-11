@@ -2318,21 +2318,21 @@ ztfquery = "*"
 
 [[package]]
 name = "ztfquery"
-version = "1.27.0"
+version = "1.27.1"
 description = "Python package to access ZTF data"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ztfquery-1.27.0-py3-none-any.whl", hash = "sha256:70e1baaf3ceaeb6c18fc5f8f233ab0fe389f39158cf3c49e9611e03619e65438"},
-    {file = "ztfquery-1.27.0.tar.gz", hash = "sha256:4c7e784a0c36a30ac05fe949fc7bfc4e5b1be670c9b7bbf77a62d3583f685af8"},
+    {file = "ztfquery-1.27.1-py3-none-any.whl", hash = "sha256:a717ff9bed70d31f3cee7b80baffd9945d6c8bbc669b736b2410251d92c9e6b2"},
+    {file = "ztfquery-1.27.1.tar.gz", hash = "sha256:19801e66e8b33b67feb6bf05886c104c9b96fd5c03fe23e8b1d559f50e67cf0f"},
 ]
 
 [package.dependencies]
-astropy = ">=5.2.1"
-matplotlib = ">=3.7.0"
-numpy = ">=1.24.2"
-pandas = ">=1.5.3"
-requests = ">=2.28.2"
+astropy = ">=5.2"
+matplotlib = ">=3.7"
+numpy = ">=1.24"
+pandas = ">=1.7"
+requests = ">=2.28"
 
 [extras]
 slack = ["slackclient"]
