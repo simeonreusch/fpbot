@@ -2,24 +2,18 @@
 # License: BSD-3-Clause
 
 import argparse
-import json
 import logging
 import os
-import re
 import shutil
 import tarfile
 from datetime import datetime
 from pathlib import Path
 
 import pandas as pd  # type: ignore
-import ztfquery  # type: ignore
-from astropy.time import Time  # type: ignore
+from fpbot import database, utils
+from fpbot.pipeline import ForcedPhotometryPipeline
 from tqdm import tqdm  # type: ignore
 from ztflc.io import LOCALDATA
-from ztfquery import query
-
-from fpbot import connectors, database, utils
-from fpbot.pipeline import FORCEPHOTODATA, ForcedPhotometryPipeline
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -151,26 +145,6 @@ def run(
             file.write(bad_object + "\n")
         file.close()
 
-    # if size:
-    #     logger.info(
-    #         "Obtaining the combined disk space used by the images for the given ZTF objects"
-    #     )
-    #     local_files = utils.get_local_files(ztf_names=object_list[startitem:])
-
-    #     logger.info(f"Found {len(local_files)} local files")
-
-    #     total_bytes = 0
-
-    #     for file in local_files:
-    #         if os.path.exists(file):
-    #             fs = os.path.getsize(file)
-    #             total_bytes += fs
-
-    #     total_diskspace_dec = utils.sizeof_fmt_dec(total_bytes)
-    #     total_diskspace_bin = utils.sizeof_fmt_bin(total_bytes)
-
-    #     logger.info(f"These take {total_diskspace_dec} ({total_diskspace_bin})")
-
     if delete:
         logger.info("Now we delete all the transient data!")
 
@@ -184,8 +158,17 @@ def run(
             database.delete_from_database(name)
 
     if generate_tar:
-        for ztfid in good_objects:
-            filepath_tarball = os.path.join()
+        basedir = Path(os.environ.get("ZTFDATA")) / "forcephotometry"
+
+        tar_path = Path(file_or_name).with_suffix(".tar.gz")
+
+        with tarfile.open(tar_path, "w:gz") as tar:
+            for ztfid in good_objects:
+                obj_path = basedir / f"{ztfid}.csv"
+                if obj_path.is_file():
+                    tar.add(obj_path, arcname=obj_path.name)
+
+        logging.info(f"Created tar file at {tar_path}")
 
 
 def main():
