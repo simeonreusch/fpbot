@@ -38,7 +38,7 @@ mypy = ">=0.991,<1.21"
 ztflc = "^0.3.1"
 
 [tool.poetry.dev-dependencies]
-coveralls = "^3.3.1"
+coveralls = "^4.1.0"
 pytest = "^9.0.3"
 
 [tool.poetry.extras]
