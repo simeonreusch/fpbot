@@ -846,14 +846,14 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fastapi"
-version = "0.139.2"
+version = "0.140.5"
 description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "fastapi-0.139.2-py3-none-any.whl", hash = "sha256:b9ad015a835173d59865e2f5d8296fbc2b317bf56a2ba1a5bfbdd03de2fd4b1c"},
-    {file = "fastapi-0.139.2.tar.gz", hash = "sha256:333145a6891e9b5b3cfceb69baf817e8240cde4d4588ae5a10bf56ffacb6255e"},
+    {file = "fastapi-0.140.5-py3-none-any.whl", hash = "sha256:82e7a988a801d8d71e712cb7d12ebb5c87c2e74bccb104f5741cce46a742f806"},
+    {file = "fastapi-0.140.5.tar.gz", hash = "sha256:db294174362b7f65911cb51855e20e8ff0b5eb588407c611fe77d498938f3ea8"},
 ]
 
 [package.dependencies]
@@ -3424,4 +3424,4 @@ slack = ["slackclient"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4"
-content-hash = "5848b8815126a2a60a149e57038d8a7ffaeb17bd4d8359cb1ca63d70ed818a80"
+content-hash = "feca907084b1b4fb7570436056313afc1af511a50cd63e62778f97731cafb5d2"
